@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
 import lumoColorLogo from '../Lumo logo (1).png'
 import lumoLogoOnLight from '../fghneth.png'
@@ -302,9 +303,129 @@ const normalizeSearchText = (value) => String(value ?? '')
   .replace(/[\u0300-\u036f]/g, '')
   .toLowerCase()
 
+const USER_SESSION_KEY = 'lumo-user'
+
+function getStoredUser() {
+  const storedUser = localStorage.getItem(USER_SESSION_KEY)
+  if (!storedUser) return null
+
+  try {
+    const user = JSON.parse(storedUser)
+    const validName = typeof user.name === 'string' && user.name.length > 0
+    const validTeacher = user.role === 'teacher' && validName && user.grade === null
+    const validStudent = user.role === 'student' && validName && [1, 2, 3].includes(user.grade)
+    return validTeacher || validStudent ? user : null
+  } catch {
+    localStorage.removeItem(USER_SESSION_KEY)
+    return null
+  }
+}
+
+function getUserHomePath(user) {
+  return user.role === 'teacher' ? '/docente' : `/estudiante/${user.grade}`
+}
+
 function App() {
-  const [currentGrade, setCurrentGrade] = useState(1)
-  const [hasEnteredSite, setHasEnteredSite] = useState(false)
+  const [session, setSession] = useState(getStoredUser)
+  const navigate = useNavigate()
+
+  const signIn = (email, password) => {
+    const normalizedEmail = email.trim().toLowerCase()
+    const studentMatch = normalizedEmail.match(/^([a-záéíóúüñ]+)@artesestudiante([123])$/u)
+    const teacherMatch = normalizedEmail.match(/^([a-záéíóúüñ]+)@artesplasticasdocente$/u)
+    let user
+
+    if (studentMatch) {
+      user = {
+        name: studentMatch[1],
+        role: 'student',
+        grade: Number(studentMatch[2]),
+      }
+    } else if (teacherMatch && password.trim().toLowerCase() === teacherMatch[1]) {
+      user = {
+        name: teacherMatch[1],
+        role: 'teacher',
+        grade: null,
+      }
+    } else {
+      return 'Verifica el correo institucional y la contraseña.'
+    }
+
+    localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user))
+    setSession(user)
+    navigate(getUserHomePath(user), { replace: true })
+    return ''
+  }
+
+  const signOut = () => {
+    localStorage.removeItem(USER_SESSION_KEY)
+    setSession(null)
+    navigate('/login', { replace: true })
+  }
+
+  return (
+    <Routes>
+      <Route
+        path="/login"
+        element={session
+          ? <Navigate to={getUserHomePath(session)} replace />
+          : <AppPage pageView="login" onLogin={signIn} />}
+      />
+      <Route path="/estudiante/:grade/*" element={<StudentRoute session={session} onLogout={signOut} />} />
+      <Route path="/docente/*" element={<TeacherRoute session={session} onLogout={signOut} />} />
+      <Route
+        path="*"
+        element={<Navigate to={session ? getUserHomePath(session) : '/login'} replace />}
+      />
+    </Routes>
+  )
+}
+
+function StudentRoute({ session, onLogout }) {
+  const { grade: routeGrade } = useParams()
+  const grade = Number(routeGrade)
+  const navigate = useNavigate()
+
+  if (!session) return <Navigate to="/login" replace />
+  if (session.role !== 'student') return <Navigate to={getUserHomePath(session)} replace />
+  if (![1, 2, 3].includes(grade) || grade !== session.grade) {
+    return <Navigate to={getUserHomePath(session)} replace />
+  }
+
+  return (
+    <AppPage
+      session={session}
+      grade={grade}
+      pageView="student"
+      onLogout={onLogout}
+      onGoHome={() => navigate(getUserHomePath(session))}
+    />
+  )
+}
+
+function TeacherRoute({ session, onLogout }) {
+  const location = useLocation()
+  const navigate = useNavigate()
+
+  if (!session) return <Navigate to="/login" replace />
+  if (session.role !== 'teacher') return <Navigate to={getUserHomePath(session)} replace />
+
+  const pageView = location.pathname.endsWith('/actividad') ? 'activity' : 'recent'
+
+  return (
+    <AppPage
+      session={session}
+      pageView={pageView}
+      onLogout={onLogout}
+      onGoHome={() => navigate('/docente')}
+      onTeacherNavigate={(view) => navigate(view === 'activity' ? '/docente/actividad' : '/docente')}
+    />
+  )
+}
+
+function AppPage({ session = null, grade = 1, pageView, onLogin, onLogout, onGoHome, onTeacherNavigate }) {
+  const [currentGrade, setCurrentGrade] = useState(grade)
+  const hasEnteredSite = session?.role === 'student'
   const [showAboutPage, setShowAboutPage] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
   const [activityUnit, setActivityUnit] = useState('all')
@@ -318,7 +439,7 @@ function App() {
   const [toolSizes, setToolSizes] = useState({ brush: 8, pencil: 4, eraser: 18 })
   const [currentColor, setCurrentColor] = useState('#03658C')
   const [colorPickerOpen, setColorPickerOpen] = useState(false)
-  const [selectedVideo, setSelectedVideo] = useState(curriculumData[1].videos[0])
+  const [selectedVideo, setSelectedVideo] = useState(curriculumData[grade].videos[0])
   const [modalText, setModalText] = useState(null)
 
   // Estados para el Buscador Asistido
@@ -396,7 +517,6 @@ function App() {
 
   const enterGrade = (grade) => {
     selectGrade(grade)
-    setHasEnteredSite(true)
     setActiveTab(null)
   }
 
@@ -837,20 +957,14 @@ function App() {
         <div className="header-inner">
           <div
             className="brand"
-            onClick={() => {
-              setShowAboutPage(false)
-              setHasEnteredSite(false)
-              setActiveTab(null)
-            }}
+            onClick={() => onGoHome?.()}
             role="button"
             tabIndex={0}
-            aria-label="Volver a la selección de cursos"
+            aria-label="Ir al inicio"
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
-                setShowAboutPage(false)
-                setHasEnteredSite(false)
-                setActiveTab(null)
+                onGoHome?.()
               }
             }}
           >
@@ -924,25 +1038,43 @@ function App() {
           </div>
 
           <div className="profile-box">
-            <input id="usernameInput" type="text" aria-label="Nombre del estudiante" defaultValue="Usuario" />
-            <div className="profile-avatar">
-              <i className="fa-solid fa-user" aria-hidden="true" />
-            </div>
+            <span className="teacher-header-name">
+              {session?.name ?? 'Usuario'}
+            </span>
             <button
               type="button"
-              className="school-link-button"
-              onClick={() => setShowAboutPage(true)}
-              aria-label="Ir a la página Nosotros"
-              title="Ir a la página Nosotros"
+              className="profile-avatar"
+              onClick={onLogout}
+              aria-label={session ? 'Cerrar sesión' : 'Usuario'}
+              title={session ? 'Cerrar sesión' : 'Usuario'}
             >
-              <img src={colSamShield} alt="Escudo COLSAM" />
+              <i className="fa-solid fa-user" aria-hidden="true" />
             </button>
+            {session?.role === 'student' && (
+              <button
+                type="button"
+                className="school-link-button"
+                onClick={() => setShowAboutPage(true)}
+                aria-label="Ir a la página Nosotros"
+                title="Ir a la página Nosotros"
+              >
+                <img src={colSamShield} alt="Escudo COLSAM" />
+              </button>
+            )}
           </div>
         </div>
       </header>
 
       <main className="main-shell">
-        {showAboutPage ? (
+        {pageView === 'login' ? (
+          <LoginScreen onSubmit={onLogin} />
+        ) : session?.role === 'teacher' ? (
+          <TeacherDashboard
+            view={pageView}
+            teacherName={session.name}
+            onNavigate={onTeacherNavigate}
+          />
+        ) : showAboutPage ? (
           <NosotrosPage hideNavbar />
         ) : !hasEnteredSite ? (
           <section className="grade-lobby" aria-labelledby="grade-lobby-title">
@@ -1519,6 +1651,245 @@ function App() {
 }
 
 export default App
+
+function LoginScreen({ onSubmit }) {
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [error, setError] = useState('')
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    setError(onSubmit(email, password))
+  }
+
+  return (
+    <section className="teacher-login-page" aria-labelledby="teacher-login-title">
+      <div className="teacher-login-art" aria-hidden="true">
+        <i className="fa-regular fa-images" />
+        <span>Un espacio para crear y compartir</span>
+      </div>
+      <form className="teacher-login-card" onSubmit={handleSubmit}>
+        <h1 id="teacher-login-title">¡BIENVENIDO!</h1>
+        <p>Ingresa con tus credenciales institucionales</p>
+        <div className="teacher-login-divider"><span>✦</span></div>
+        <label className="teacher-login-field">
+          <i className="fa-regular fa-envelope" aria-hidden="true" />
+          <input
+            type="text"
+            inputMode="email"
+            autoComplete="username"
+            placeholder="Correo"
+            aria-label="Correo institucional"
+            value={email}
+            onChange={(event) => setEmail(event.target.value)}
+            required
+          />
+        </label>
+        <label className="teacher-login-field">
+          <i className="fa-solid fa-lock" aria-hidden="true" />
+          <input
+            type="password"
+            autoComplete="current-password"
+            placeholder="Contraseña"
+            aria-label="Contraseña (solo docentes)"
+            value={password}
+            onChange={(event) => setPassword(event.target.value)}
+          />
+        </label>
+        {error && <p className="teacher-form-error" role="alert">{error}</p>}
+        <button className="teacher-login-submit" type="submit">
+          <i className="fa-solid fa-arrow-right-to-bracket" aria-hidden="true" />
+          Ingresar
+        </button>
+        <span className="teacher-login-brand">LÜMØ</span>
+      </form>
+    </section>
+  )
+}
+
+function TeacherDashboard({ view, teacherName, onNavigate }) {
+  const [sidebarExpanded, setSidebarExpanded] = useState(false)
+  const [selectedGrade, setSelectedGrade] = useState(1)
+  const [showDiagnostics, setShowDiagnostics] = useState(false)
+  const [activityTitle, setActivityTitle] = useState('')
+  const [activityContent, setActivityContent] = useState('')
+  const [activityDate, setActivityDate] = useState('')
+  const [activityImage, setActivityImage] = useState(null)
+  const [latestActivity, setLatestActivity] = useState(null)
+  const [formError, setFormError] = useState('')
+
+  const saveActivity = (event) => {
+    event.preventDefault()
+    const action = event.nativeEvent.submitter?.value
+    if (!activityTitle.trim() || !activityContent.trim()) {
+      setFormError('Escribe el título y el contenido de la actividad.')
+      return
+    }
+    if (action === 'schedule' && !activityDate) {
+      setFormError('Elige una fecha para programar la actividad.')
+      return
+    }
+
+    setLatestActivity({
+      title: activityTitle.trim(),
+      content: activityContent.trim(),
+      date: activityDate,
+      imageName: activityImage?.name ?? '',
+      status: action === 'schedule' ? 'Programada' : 'Publicada',
+    })
+    setFormError('')
+    setActivityTitle('')
+    setActivityContent('')
+    setActivityDate('')
+    setActivityImage(null)
+    onNavigate('recent')
+  }
+
+  return (
+    <section className="teacher-portal" aria-label="Panel docente">
+      <aside className={`teacher-sidebar ${sidebarExpanded ? 'is-expanded' : ''}`}>
+        <button
+          type="button"
+          className="teacher-menu-toggle"
+          onClick={() => setSidebarExpanded((expanded) => !expanded)}
+          aria-label={sidebarExpanded ? 'Contraer menú docente' : 'Expandir menú docente'}
+          aria-expanded={sidebarExpanded}
+        >
+          <i className="fa-solid fa-bars" aria-hidden="true" />
+        </button>
+        {[1, 2, 3].map((grade) => (
+          <button
+            key={grade}
+            type="button"
+            className={`teacher-grade-button teacher-grade-${grade} ${selectedGrade === grade && view === 'recent' ? 'is-selected' : ''}`}
+            onClick={() => {
+              setSelectedGrade(grade)
+              setShowDiagnostics(false)
+              onNavigate('recent')
+            }}
+            aria-label={`Ver panel de ${grade}° grado`}
+            title={`${grade}° grado`}
+          >
+            <span>{grade}</span>
+            {sidebarExpanded && <span className="teacher-sidebar-label">{grade}° grado</span>}
+          </button>
+        ))}
+        <button
+          type="button"
+          className={`teacher-chat-button ${view === 'activity' ? 'is-selected' : ''}`}
+          onClick={() => {
+            setFormError('')
+            onNavigate('activity')
+          }}
+          aria-label="Crear nueva actividad"
+          title="Nueva actividad"
+        >
+          <i className="fa-regular fa-comment-dots" aria-hidden="true" />
+          {sidebarExpanded && <span className="teacher-sidebar-label">Nueva actividad</span>}
+        </button>
+      </aside>
+
+      <div className="teacher-main">
+        <h1 className="teacher-page-title">
+          {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
+        </h1>
+        <div className="teacher-panel-frame">
+          {view === 'recent' ? (
+            <>
+              <div className="teacher-panel-toolbar">
+                <span className="teacher-grade-caption">{selectedGrade}° grado</span>
+                <span className="teacher-name-caption">Docente {teacherName}</span>
+                <button
+                  type="button"
+                  className="teacher-diagnostics-button"
+                  onClick={() => setShowDiagnostics((visible) => !visible)}
+                >
+                  {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : 'RESULTADOS DEL DIAGNÓSTICO'}
+                </button>
+              </div>
+              <div className="teacher-panel-content">
+                {showDiagnostics ? (
+                  <div className="teacher-diagnostics-empty">
+                    <i className="fa-solid fa-chart-column" aria-hidden="true" />
+                    <h2>Resultados del diagnóstico</h2>
+                    <p>Los resultados de {selectedGrade}° grado aparecerán aquí cuando estén disponibles.</p>
+                  </div>
+                ) : latestActivity ? (
+                  <article className="teacher-latest-activity">
+                    <span className="teacher-activity-status">{latestActivity.status}</span>
+                    <h2>{latestActivity.title}</h2>
+                    {latestActivity.date && <time>{latestActivity.date}</time>}
+                    <p>{latestActivity.content}</p>
+                    {latestActivity.imageName && (
+                      <span className="teacher-attachment-name">
+                        <i className="fa-regular fa-image" aria-hidden="true" /> {latestActivity.imageName}
+                      </span>
+                    )}
+                  </article>
+                ) : (
+                  <p className="teacher-empty-history">Texto o historial de lo último hecho por el docente</p>
+                )}
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="teacher-panel-toolbar" aria-hidden="true" />
+              <form className="teacher-activity-form" onSubmit={saveActivity}>
+                <div className="teacher-activity-form-inner">
+                  <label className="teacher-visually-hidden" htmlFor="teacher-activity-title">Título de la actividad</label>
+                  <input
+                    id="teacher-activity-title"
+                    className="teacher-activity-title-input"
+                    type="text"
+                    placeholder="Título de la actividad..."
+                    value={activityTitle}
+                    onChange={(event) => setActivityTitle(event.target.value)}
+                  />
+                  <label className="teacher-visually-hidden" htmlFor="teacher-activity-content">Contenido de la actividad</label>
+                  <textarea
+                    id="teacher-activity-content"
+                    className="teacher-activity-content-input"
+                    placeholder="Contenido..."
+                    value={activityContent}
+                    onChange={(event) => setActivityContent(event.target.value)}
+                  />
+                  <div className="teacher-activity-options">
+                    <label className="teacher-image-upload">
+                      <i className="fa-regular fa-images" aria-hidden="true" />
+                      <span>{activityImage ? activityImage.name : 'Adjuntar imagen'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => setActivityImage(event.target.files?.[0] ?? null)}
+                      />
+                    </label>
+                    <div className="teacher-activity-actions">
+                      <label className="teacher-visually-hidden" htmlFor="teacher-activity-date">Programar fecha</label>
+                      <input
+                        id="teacher-activity-date"
+                        className="teacher-date-input"
+                        type="date"
+                        value={activityDate}
+                        onChange={(event) => setActivityDate(event.target.value)}
+                      />
+                      <button className="teacher-upload-button" type="submit" value="publish">
+                        <i className="fa-solid fa-arrow-up" aria-hidden="true" /> SUBIR
+                      </button>
+                      <button className="teacher-schedule-button" type="submit" value="schedule">
+                        <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
+                      </button>
+                    </div>
+                  </div>
+                  {formError && <p className="teacher-form-error" role="alert">{formError}</p>}
+                </div>
+              </form>
+            </>
+          )}
+        </div>
+      </div>
+    </section>
+  )
+}
 
 function NosotrosPage({ hideNavbar = false }) {
   const [activeTab, setActiveTab] = useState('nosotros')
