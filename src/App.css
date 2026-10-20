@@ -4420,6 +4420,35 @@ button {
   padding: clamp(1.75rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3.5rem);
 }
 
+.about-back-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-bottom: 1.5rem;
+  padding: 0.4rem 0.8rem 0.4rem 0.45rem;
+  border: 1px solid #c9e5ed;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #03658c;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  box-shadow: 0 6px 16px rgba(3, 101, 140, 0.08);
+  transition: transform 160ms ease, box-shadow 160ms ease;
+}
+
+.about-back-button:hover,
+.about-back-button:focus-visible {
+  transform: translateY(-2px);
+  box-shadow: 0 9px 20px rgba(3, 101, 140, 0.14);
+}
+
+.about-back-button img {
+  width: 2.8rem;
+  height: 2.2rem;
+  object-fit: contain;
+}
+
 .about-page .page-header {
   margin-bottom: clamp(2rem, 4vw, 3rem);
 }

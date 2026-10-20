@@ -140,12 +140,23 @@ body h6 {
   font-family: var(--font-title) !important;
 }
 
+body h1 :not(i):not([class*="fa-"]),
+body h2 :not(i):not([class*="fa-"]),
+body h3 :not(i):not([class*="fa-"]),
+body h4 :not(i):not([class*="fa-"]),
+body h5 :not(i):not([class*="fa-"]),
+body h6 :not(i):not([class*="fa-"]) {
+  font-family: var(--font-title) !important;
+}
+
 body .brand-letter,
 body .grade-card-digit,
 body .grade-card-caption strong,
 body .nav-title,
 body .nav-card-title,
 body .reading-card-number,
+body .activity-summary strong,
+body .digital-practice-heading,
 body .teacher-login-brand,
 body .diagnostic-featured-card strong,
 body .profile-menu-heading strong,

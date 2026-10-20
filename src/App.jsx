@@ -1282,7 +1282,7 @@ function AppPage({
             onNavigate={onTeacherNavigate}
           />
         ) : showAboutPage ? (
-          <NosotrosPage hideNavbar />
+          <NosotrosPage hideNavbar onBack={() => setShowAboutPage(false)} />
         ) : !hasEnteredSite ? (
           <section className="grade-lobby" aria-labelledby="grade-lobby-title">
             <div className="grade-lobby-heading">
@@ -2227,7 +2227,7 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   )
 }
 
-function NosotrosPage({ hideNavbar = false }) {
+function NosotrosPage({ hideNavbar = false, onBack }) {
   const [activeTab, setActiveTab] = useState('nosotros')
 
   // Lista de estudiantes según requerimiento (Nombre + Inicial de Apellido)
@@ -2759,6 +2759,18 @@ function NosotrosPage({ hideNavbar = false }) {
 
       {/* CONTENIDO PRINCIPAL */}
       <main className="main-container">
+        {hideNavbar && (
+          <button
+            type="button"
+            className="about-back-button"
+            onClick={onBack}
+            aria-label="Volver al contenido de LÜMØ"
+            title="Volver al contenido"
+          >
+            <img src={lumoColorLogo} alt="" />
+            <span>Volver</span>
+          </button>
+        )}
         {activeTab === 'nosotros' ? (
           <div>
             <div className="page-header">
