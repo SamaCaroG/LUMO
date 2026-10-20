@@ -2231,16 +2231,21 @@ function NosotrosPage({ hideNavbar = false }) {
     <div className="about-page">
       {/* Estilos CSS Integrados en el mismo archivo */}
       <style>{`
-        * {
+        .about-page,
+        .about-page * {
           box-sizing: border-box;
           margin: 0;
           padding: 0;
-          font-family: 'Comic Sans MS', 'Bubblegum Sans', system-ui, -apple-system, sans-serif;
+          font-family: var(--font-body);
         }
 
-        body {
-          background-color: #f4fbfd;
-          color: #2c3e50;
+        .about-page h1,
+        .about-page h2,
+        .about-page h3,
+        .about-page h4,
+        .about-page h5,
+        .about-page h6 {
+          font-family: var(--font-title);
         }
 
         .about-page {

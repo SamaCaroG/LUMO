@@ -3164,9 +3164,10 @@ button {
   display: grid;
   grid-template-columns: 1.2fr 0.9fr;
   gap: 0.65rem;
-  padding: 0.65rem;
+  align-items: stretch;
+  padding: clamp(0.5rem, 2vw, 1.25rem);
   border-radius: 2rem;
-  background: #68bad8;
+  background: transparent;
 }
 
 .teacher-login-art,
@@ -3182,11 +3183,17 @@ button {
 
 .teacher-login-art {
   gap: 1.5rem;
-  border: 5px dashed #128bb3;
-  background: rgba(90, 177, 212, 0.68);
-  color: #087fa7;
+  border: 3px dashed rgba(3, 101, 140, 0.3);
+  background: rgba(255, 255, 255, 0.72);
+  color: #03658c;
   font-family: var(--font-title);
   font-size: clamp(1.2rem, 2.5vw, 2rem);
+  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
+}
+
+.teacher-login-art span {
+  font-family: var(--font-body);
+  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
 }
 
 .teacher-login-art i {
@@ -3196,7 +3203,9 @@ button {
 .teacher-login-card {
   gap: 1rem;
   padding: clamp(1.4rem, 3vw, 2.5rem);
-  background: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.9);
+  background: rgba(255, 255, 255, 0.92);
+  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.1);
 }
 
 .teacher-login-card h1,
@@ -3251,7 +3260,7 @@ button {
   border: 0;
   border-radius: 2rem;
   outline-color: #1082a8;
-  background: #d0d9e0;
+  background: #f1f7f9;
   color: #344d56;
 }
 
@@ -3309,7 +3318,7 @@ button {
   margin-top: -1.25rem;
   margin-bottom: -1.5rem;
   margin-left: calc((100% - 100vw) / 2);
-  background: rgba(255, 255, 255, 0.64);
+  background: rgba(255, 255, 255, 0.5);
 }
 
 .teacher-sidebar {
@@ -3325,8 +3334,8 @@ button {
   flex-direction: column;
   gap: 1.9rem;
   padding: 1rem 0.55rem;
-  border-right: 6px solid #8ed8e7;
-  background: rgba(255, 255, 255, 0.88);
+  border-right: 4px solid #8ed8e7;
+  background: rgba(255, 255, 255, 0.84);
   transition: width 180ms ease;
 }
 
@@ -3424,7 +3433,7 @@ button {
 
 .teacher-sidebar-label {
   color: #526d77;
-  font-family: var(--font-title);
+  font-family: var(--font-body);
   font-size: 1rem;
 }
 
@@ -3453,9 +3462,10 @@ button {
 .teacher-panel-frame {
   min-height: min(720px, calc(100vh - 13rem));
   overflow: hidden;
-  border: 12px solid #68bad8;
+  border: 8px solid #8ed8e7;
   border-radius: 2.5rem;
-  background: #fff;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
 }
 
 .teacher-panel-toolbar {
@@ -3465,24 +3475,24 @@ button {
   justify-content: flex-end;
   gap: 1rem;
   padding: 1rem 5%;
-  border-bottom: 3px solid #68828c;
+  border-bottom: 2px solid #dcecf0;
 }
 
 .teacher-grade-caption,
 .teacher-name-caption {
   color: #68828c;
-  font-family: var(--font-title);
+  font-family: var(--font-body);
   font-size: 1rem;
 }
 
 .teacher-diagnostics-button {
   max-width: 16rem;
   padding: 0.7rem 1.4rem;
-  border: 3px solid #00b84a;
+  border: 2px solid #3cae68;
   border-radius: 2rem;
-  background: #8fe0a2;
-  color: #203b2a;
-  font-family: var(--font-title);
+  background: #e9f8ee;
+  color: #27613a;
+  font-family: var(--font-body);
   font-size: 0.95rem;
 }
 
@@ -3499,7 +3509,7 @@ button {
 .teacher-empty-history {
   margin: 0;
   color: #68828c;
-  font-family: var(--font-title);
+  font-family: var(--font-body);
   font-size: clamp(1.1rem, 2vw, 1.6rem);
   text-align: center;
 }
@@ -3928,7 +3938,7 @@ button {
   padding: 0.7rem 1.25rem;
   border: 0;
   border-radius: 0.8rem;
-  background: #70469a;
+  background: #8549ba;
   color: #fff;
   font: inherit;
   font-weight: 800;
@@ -4267,5 +4277,152 @@ button {
   .diagnostic-report-heading {
     align-items: flex-start;
     flex-direction: column;
+  }
+}
+
+.diagnostic-eyebrow,
+.diagnostic-question legend small {
+  color: #8549ba;
+}
+
+.diagnostic-question-number {
+  background: #f1e8fa;
+  color: #63398c;
+}
+
+.diagnostic-options label.is-checked {
+  border-color: #8549ba;
+  background: #f7f1fc;
+  color: #44305c;
+}
+
+.diagnostic-options input {
+  accent-color: #8549ba;
+}
+
+.about-page {
+  color: #1f2937;
+  font-family: var(--font-body);
+}
+
+.about-page .navbar {
+  background: rgba(3, 101, 140, 0.98);
+  box-shadow: 0 4px 14px rgba(3, 101, 140, 0.12);
+}
+
+.about-page .logo-text {
+  font-family: var(--font-title);
+}
+
+.about-page .main-container {
+  max-width: 1280px;
+  padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 4vw, 3.5rem);
+}
+
+.about-page .page-title {
+  background: linear-gradient(90deg, #0788bc, #8e4ec0, #dc3d71, #f29c24);
+  background-clip: text;
+  color: transparent;
+  font-family: var(--font-title);
+  line-height: 1.15;
+  text-shadow: none;
+  -webkit-background-clip: text;
+}
+
+.about-page .page-subtitle,
+.about-page .section-subheading {
+  color: #667085;
+  font-family: var(--font-body);
+  line-height: 1.6;
+}
+
+.about-page .card,
+.about-page .objectives-section,
+.about-page .team-card,
+.about-page .tech-box,
+.about-page .resource-box {
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
+}
+
+.about-page .card:hover,
+.about-page .team-card:hover {
+  box-shadow: 0 16px 32px rgba(31, 41, 55, 0.12);
+}
+
+.about-page .card-title,
+.about-page .section-heading,
+.about-page .obj-specifics-title {
+  color: #03658c;
+  font-family: var(--font-title);
+}
+
+.about-page .card-text,
+.about-page .obj-general p,
+.about-page .obj-item,
+.about-page .member-name,
+.about-page .member-role,
+.about-page .member-desc,
+.about-page .badge,
+.about-page .footer {
+  font-family: var(--font-body);
+  line-height: 1.65;
+}
+
+.about-page .card-text,
+.about-page .obj-item {
+  color: #53636e;
+}
+
+.about-page .illustration-box {
+  border-radius: 1.2rem;
+  border-color: rgba(3, 101, 140, 0.2);
+  background: #effaff !important;
+}
+
+.about-page .obj-general {
+  border-radius: 1.25rem;
+  background: linear-gradient(110deg, #03658c, #0788bc);
+}
+
+.about-page .obj-general h4 {
+  font-family: var(--font-title);
+}
+
+.about-page .obj-general p {
+  font-weight: 400;
+}
+
+.about-page .obj-item {
+  border-left-color: #8e4ec0;
+  border-radius: 0.9rem;
+  background: #f8fbfc;
+}
+
+.about-page .member-name {
+  font-weight: 700;
+}
+
+.about-page .badge {
+  border-radius: 999px;
+  background: #eef8fb;
+  color: #326779;
+}
+
+.about-page .footer {
+  border-top-color: #dcecf0;
+  background: rgba(255, 255, 255, 0.88);
+}
+
+.about-page .footer-logo {
+  color: #03658c;
+  font-family: var(--font-title);
+}
+
+@media (max-width: 768px) {
+  .about-page .main-container {
+    padding: 1.25rem 1rem;
   }
 }
