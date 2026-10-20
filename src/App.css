@@ -1416,6 +1416,45 @@ button {
   background: #fff;
 }
 
+.profile-edit-form .profile-image-field input {
+  width: 100%;
+  padding: 0.45rem;
+  border: 1px dashed #9bbbc6;
+  border-radius: 0.55rem;
+  background: #f5fbfc;
+  color: #536f79;
+  font-size: 0.75rem;
+}
+
+.profile-image-preview {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.profile-image-preview img {
+  width: 3rem;
+  height: 3rem;
+  border: 2px solid #b6d3df;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.profile-image-preview button {
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: #bd3049;
+  font-size: 0.8rem;
+  text-decoration: underline;
+}
+
+.profile-edit-error {
+  margin: 0;
+  color: #b4233a;
+  font-size: 0.78rem;
+}
+
 .curriculum-game-card .activity-unit-tag {
   background: #fff0f2;
   color: #a72e49;
@@ -2979,6 +3018,13 @@ button {
   padding: 0;
 }
 
+.profile-avatar img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
 .teacher-header-name {
   color: #fff;
   font-family: var(--font-title);
@@ -3256,15 +3302,24 @@ button {
 }
 
 .teacher-portal {
-  width: calc(100% + 2rem);
+  width: 100vw;
   min-height: calc(100vh - 6.1rem);
   display: grid;
   grid-template-columns: 82px minmax(0, 1fr);
-  margin: -1.25rem -1rem -1.5rem;
+  margin-top: -1.25rem;
+  margin-bottom: -1.5rem;
+  margin-left: calc((100% - 100vw) / 2);
   background: rgba(255, 255, 255, 0.64);
 }
 
 .teacher-sidebar {
+  position: fixed;
+  left: 0;
+  top: 6.1rem;
+  z-index: 40;
+  width: 82px;
+  height: calc(100vh - 6.1rem);
+  overflow-y: auto;
   display: flex;
   align-items: center;
   flex-direction: column;
@@ -3298,19 +3353,57 @@ button {
 }
 
 .teacher-grade-button {
-  width: 4.25rem;
-  height: 4.25rem;
+  width: 64px;
+  min-height: 76px;
+  height: 76px;
   flex-shrink: 0;
-  border-radius: 1.5rem;
-  color: #fff;
+  justify-content: center;
+  padding: 0.2rem;
+  border: 3px solid #fff;
+  border-radius: 1.15rem;
+  box-shadow: 0 6px 12px rgba(50, 58, 93, 0.14);
 }
 
-.teacher-grade-button > span:first-child {
-  font-family: var(--font-title);
-  font-size: 3.6rem;
-  font-weight: 700;
-  line-height: 1;
-  text-shadow: 1px 2px 0 rgba(64, 65, 116, 0.55);
+.teacher-grade-button .grade-card-art {
+  min-height: 0;
+  width: 100%;
+  height: 100%;
+  flex: 1;
+}
+
+.teacher-grade-button .grade-card-digit {
+  top: 50%;
+  font-size: 4rem;
+  -webkit-text-stroke: 2px #fff;
+  text-shadow: 0 3px 0 var(--grade-digit-shadow);
+  transform: translate(-50%, -45%);
+  animation: none;
+}
+
+.teacher-grade-button .grade-card-eyes {
+  top: 12%;
+  width: 2.8rem;
+}
+
+.teacher-grade-button .grade-card-eye,
+.teacher-grade-button .grade-card-eye:nth-child(2),
+.teacher-grade-button .grade-card-pupil,
+.teacher-grade-button.grade-card-1 .grade-card-pupil,
+.teacher-grade-button.grade-card-2 .grade-card-pupil,
+.teacher-grade-button.grade-card-3 .grade-card-pupil {
+  animation: none;
+}
+
+.teacher-grade-button .grade-card-eye {
+  border-width: 2px;
+  box-shadow: none;
+}
+
+.teacher-grade-button,
+.teacher-grade-button:hover,
+.teacher-grade-button:active {
+  transition: none;
+  transform: none;
 }
 
 .teacher-grade-1 { background: #8549ba; }
@@ -3322,7 +3415,6 @@ button {
   outline-offset: 3px;
 }
 
-.teacher-sidebar.is-expanded .teacher-grade-button,
 .teacher-sidebar.is-expanded .teacher-chat-button {
   width: 100%;
   justify-content: flex-start;
@@ -3347,6 +3439,7 @@ button {
 }
 
 .teacher-main {
+  grid-column: 2;
   min-width: 0;
   padding: 1rem clamp(1rem, 2.5vw, 2.3rem) 2rem;
 }
@@ -3438,6 +3531,12 @@ button {
   font-weight: 700;
 }
 
+.teacher-activity-course {
+  margin-left: 0.75rem;
+  color: #68828c;
+  font-size: 0.9rem;
+}
+
 .teacher-activity-form {
   margin: 1.2rem 2.5%;
   padding: clamp(1rem, 3vw, 2rem);
@@ -3474,6 +3573,26 @@ button {
   min-height: 13rem;
   resize: vertical;
   font-family: var(--font-body);
+}
+
+.teacher-course-field {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  color: #536f79;
+  font-family: var(--font-title);
+  font-size: 1.15rem;
+}
+
+.teacher-course-field select {
+  min-width: min(15rem, 55%);
+  padding: 0.75rem 1rem;
+  border: 3px solid #68828c;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #536f79;
+  font: inherit;
 }
 
 .teacher-activity-options {
@@ -3555,7 +3674,7 @@ button {
   clip-path: inset(50%);
 }
 
-@media (max-width: 700px) {
+@media (max-width: 768px) {
   .teacher-login-page {
     min-height: auto;
     grid-template-columns: 1fr;
@@ -3570,23 +3689,29 @@ button {
   }
 
   .teacher-portal {
+    width: calc(100% + 2rem);
     min-height: calc(100vh - 5rem);
     grid-template-columns: 58px minmax(0, 1fr);
+    margin-left: -1rem;
   }
 
   .teacher-sidebar {
+    left: 0;
+    top: 5rem;
+    width: 58px;
+    height: calc(100vh - 5rem);
     gap: 1.3rem;
     padding: 0.7rem 0.25rem;
   }
 
   .teacher-grade-button {
-    width: 2.8rem;
-    height: 2.8rem;
-    border-radius: 1rem;
+    width: 64px;
+    min-height: 76px;
+    height: 76px;
   }
 
-  .teacher-grade-button > span:first-child {
-    font-size: 2.5rem;
+  .teacher-grade-button .grade-card-digit {
+    font-size: 4rem;
   }
 
   .teacher-main {
@@ -3622,7 +3747,24 @@ button {
     grid-template-columns: 1fr;
   }
 
+  .teacher-course-field {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .teacher-course-field select {
+    width: 100%;
+    min-width: 0;
+  }
+
   .teacher-image-upload {
     min-height: 8rem;
+  }
+}
+
+@media (min-width: 701px) and (max-width: 1280px) {
+  .teacher-portal {
+    width: calc(100% + 2rem);
+    margin-left: -1rem;
   }
 }

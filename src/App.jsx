@@ -304,6 +304,7 @@ const normalizeSearchText = (value) => String(value ?? '')
   .toLowerCase()
 
 const USER_SESSION_KEY = 'lumo-user'
+const PROFILE_PHOTO_CLEANUP_KEY = 'lumo-profile-photo-cleanup-v1'
 
 function getStoredUser() {
   const storedUser = localStorage.getItem(USER_SESSION_KEY)
@@ -311,6 +312,11 @@ function getStoredUser() {
 
   try {
     const user = JSON.parse(storedUser)
+    if (localStorage.getItem(PROFILE_PHOTO_CLEANUP_KEY) !== 'done') {
+      delete user.avatarImage
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user))
+      localStorage.setItem(PROFILE_PHOTO_CLEANUP_KEY, 'done')
+    }
     const validName = typeof user.name === 'string' && user.name.length > 0
     const validTeacher = user.role === 'teacher' && validName && user.grade === null
     const validStudent = user.role === 'student' && validName && [1, 2, 3].includes(user.grade)
@@ -367,8 +373,14 @@ function App() {
 
   const updateSession = (changes) => {
     const updatedUser = { ...session, ...changes }
-    localStorage.setItem(USER_SESSION_KEY, JSON.stringify(updatedUser))
-    setSession(updatedUser)
+    try {
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(updatedUser))
+      setSession(updatedUser)
+      return ''
+    } catch (error) {
+      console.error('No se pudo guardar el perfil del usuario.', error)
+      return 'No se pudieron guardar los cambios del perfil en este navegador.'
+    }
   }
 
   return (
@@ -460,6 +472,8 @@ function AppPage({
   const [profileEditing, setProfileEditing] = useState(false)
   const [profileNameDraft, setProfileNameDraft] = useState(session?.displayName ?? session?.name ?? '')
   const [profileColorDraft, setProfileColorDraft] = useState(session?.avatarColor ?? '#03658c')
+  const [profileImageDraft, setProfileImageDraft] = useState(session?.avatarImage ?? '')
+  const [profileError, setProfileError] = useState('')
   const profileUser = session
   const profileBoxRef = useRef(null)
   const [currentGrade, setCurrentGrade] = useState(grade)
@@ -1105,7 +1119,9 @@ function AppPage({
               aria-expanded={session ? profileOpen : undefined}
               title={session ? 'Abrir menú de perfil' : 'Usuario'}
             >
-              <i className="fa-solid fa-user" aria-hidden="true" />
+              {profileUser?.avatarImage
+                ? <img src={profileUser.avatarImage} alt="" />
+                : <i className="fa-solid fa-user" aria-hidden="true" />}
             </button>
             {session && profileOpen && (
               <div className="profile-menu" role="menu" aria-label="Menú de perfil">
@@ -1122,6 +1138,8 @@ function AppPage({
                       onClick={() => {
                         setProfileNameDraft(profileUser?.displayName ?? profileUser?.name ?? '')
                         setProfileColorDraft(profileUser?.avatarColor ?? '#03658c')
+                        setProfileImageDraft(profileUser?.avatarImage ?? '')
+                        setProfileError('')
                         setProfileEditing(true)
                       }}
                     >
@@ -1140,7 +1158,15 @@ function AppPage({
                       event.preventDefault()
                       const displayName = profileNameDraft.trim()
                       if (!displayName) return
-                      onUpdateSession({ displayName, avatarColor: profileColorDraft })
+                      const saveError = onUpdateSession({
+                        displayName,
+                        avatarColor: profileColorDraft,
+                        avatarImage: profileImageDraft,
+                      })
+                      if (saveError) {
+                        setProfileError(saveError)
+                        return
+                      }
                       setProfileEditing(false)
                       setProfileOpen(false)
                     }}
@@ -1164,11 +1190,58 @@ function AppPage({
                         onChange={(event) => setProfileColorDraft(event.target.value)}
                       />
                     </label>
+                    <label className="profile-image-field">
+                      Foto de perfil
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={(event) => {
+                          const file = event.target.files?.[0]
+                          if (!file) return
+                          if (!file.type.startsWith('image/')) {
+                            setProfileError('Selecciona un archivo de imagen válido.')
+                            return
+                          }
+                          if (file.size > 1_500_000) {
+                            setProfileError('La imagen debe pesar menos de 1.5 MB.')
+                            return
+                          }
+
+                          const reader = new FileReader()
+                          reader.onload = () => {
+                            if (typeof reader.result === 'string') {
+                              setProfileImageDraft(reader.result)
+                              setProfileError('')
+                            } else {
+                              setProfileError('No se pudo leer la imagen seleccionada.')
+                            }
+                          }
+                          reader.onerror = () => setProfileError('No se pudo leer la imagen seleccionada.')
+                          reader.readAsDataURL(file)
+                        }}
+                      />
+                    </label>
+                    {profileImageDraft && (
+                      <div className="profile-image-preview">
+                        <img src={profileImageDraft} alt="Vista previa del perfil" />
+                        <button
+                          type="button"
+                          onClick={() => setProfileImageDraft('')}
+                          aria-label="Quitar foto de perfil"
+                        >
+                          Quitar foto
+                        </button>
+                      </div>
+                    )}
+                    {profileError && <p className="profile-edit-error" role="alert">{profileError}</p>}
                     <button type="submit" className="profile-save-button">Guardar cambios</button>
                     <button
                       type="button"
                       className="profile-cancel-button"
-                      onClick={() => setProfileEditing(false)}
+                      onClick={() => {
+                        setProfileError('')
+                        setProfileEditing(false)
+                      }}
                     >
                       Cancelar
                     </button>
@@ -1875,6 +1948,7 @@ function LoginScreen({ onSubmit }) {
 function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
+  const [activityGrade, setActivityGrade] = useState(grade)
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
   const [activityDate, setActivityDate] = useState('')
@@ -1899,6 +1973,7 @@ function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
       content: activityContent.trim(),
       date: activityDate,
       imageName: activityImage?.name ?? '',
+      grade: activityGrade,
       status: action === 'schedule' ? 'Programada' : 'Publicada',
     })
     setFormError('')
@@ -1906,7 +1981,7 @@ function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
     setActivityContent('')
     setActivityDate('')
     setActivityImage(null)
-    onNavigate('recent', grade)
+    onNavigate('recent', activityGrade)
   }
 
   return (
@@ -1923,18 +1998,24 @@ function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
         </button>
         {[1, 2, 3].map((gradeOption) => (
           <button
-              key={gradeOption}
+            key={gradeOption}
             type="button"
-              className={`teacher-grade-button teacher-grade-${gradeOption} ${gradeOption === grade && view === 'recent' ? 'is-selected' : ''}`}
-              onClick={() => {
-                setShowDiagnostics(false)
-                onNavigate('recent', gradeOption)
-              }}
-              aria-label={`Ver panel de ${gradeOption}° grado`}
-              title={`${gradeOption}° grado`}
+            className={`teacher-grade-button teacher-grade-${gradeOption} grade-card grade-card-${gradeOption} ${gradeOption === grade && view === 'recent' ? 'is-selected' : ''}`}
+            onClick={() => {
+              setShowDiagnostics(false)
+              setActivityGrade(gradeOption)
+              onNavigate('recent', gradeOption)
+            }}
+            aria-label={`Ver panel de ${gradeOption}° grado`}
+            title={`${gradeOption}° grado`}
           >
-              <span>{gradeOption}</span>
-              {sidebarExpanded && <span className="teacher-sidebar-label">{gradeOption}° grado</span>}
+            <span className="grade-card-art" aria-hidden="true">
+              <span className="grade-card-digit">{gradeOption}</span>
+              <span className="grade-card-eyes">
+                <span className="grade-card-eye"><span className="grade-card-pupil"><i /></span></span>
+                <span className="grade-card-eye"><span className="grade-card-pupil"><i /></span></span>
+              </span>
+            </span>
           </button>
         ))}
         <button
@@ -1980,6 +2061,7 @@ function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
                 ) : latestActivity ? (
                   <article className="teacher-latest-activity">
                     <span className="teacher-activity-status">{latestActivity.status}</span>
+                    <span className="teacher-activity-course">{latestActivity.grade}° grado</span>
                     <h2>{latestActivity.title}</h2>
                     {latestActivity.date && <time>{latestActivity.date}</time>}
                     <p>{latestActivity.content}</p>
@@ -2016,6 +2098,20 @@ function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
                     value={activityContent}
                     onChange={(event) => setActivityContent(event.target.value)}
                   />
+                  <label className="teacher-course-field" htmlFor="teacher-activity-grade">
+                    Curso destinatario
+                    <select
+                      id="teacher-activity-grade"
+                      value={activityGrade}
+                      onChange={(event) => setActivityGrade(Number(event.target.value))}
+                    >
+                      {[1, 2, 3].map((gradeOption) => (
+                        <option key={gradeOption} value={gradeOption}>
+                          {gradeOption}° grado
+                        </option>
+                      ))}
+                    </select>
+                  </label>
                   <div className="teacher-activity-options">
                     <label className="teacher-image-upload">
                       <i className="fa-regular fa-images" aria-hidden="true" />
