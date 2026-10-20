@@ -2681,12 +2681,28 @@ button {
   gap: 0.6rem;
 }
 
+.footer-logos {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
 .footer-logo {
   width: 110px;
   height: 45px;
   object-fit: cover;
   object-position: center 75%;
   border-radius: 0.5rem;
+}
+
+.footer-partner-logo {
+  width: 3.5rem;
+  height: 3.5rem;
+  object-fit: contain;
+  padding: 0.2rem;
+  border: 1px solid #e5edf0;
+  border-radius: 0.8rem;
+  background: #fff;
 }
 
 
@@ -3168,6 +3184,7 @@ button {
   padding: clamp(0.5rem, 2vw, 1.25rem);
   border-radius: 2rem;
   background: transparent;
+  font-family: var(--font-body);
 }
 
 .teacher-login-art,
@@ -3182,22 +3199,22 @@ button {
 }
 
 .teacher-login-art {
-  gap: 1.5rem;
-  border: 3px dashed rgba(3, 101, 140, 0.3);
-  background: rgba(255, 255, 255, 0.72);
-  color: #03658c;
-  font-family: var(--font-title);
-  font-size: clamp(1.2rem, 2.5vw, 2rem);
-  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
+  position: relative;
+  min-height: 24rem;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background:
+    radial-gradient(ellipse at 50% 45%, rgba(136, 222, 239, 0.6), transparent 62%),
+    linear-gradient(145deg, #64b8d7, #1689af 58%, #03658c);
+  box-shadow: 0 16px 34px rgba(3, 72, 100, 0.18);
 }
 
-.teacher-login-art span {
-  font-family: var(--font-body);
-  font-size: clamp(0.95rem, 1.8vw, 1.15rem);
-}
-
-.teacher-login-art i {
-  font-size: clamp(5rem, 11vw, 9rem);
+.teacher-login-crest {
+  width: min(82%, 30rem);
+  max-height: min(68vh, 31rem);
+  object-fit: contain;
+  opacity: 0.72;
+  filter: drop-shadow(0 16px 28px rgba(2, 48, 68, 0.28));
 }
 
 .teacher-login-card {
@@ -3221,6 +3238,7 @@ button {
 .teacher-login-card > p {
   margin: 0;
   color: #68828c;
+  font-family: var(--font-body);
   font-size: 1rem;
 }
 
@@ -3262,6 +3280,7 @@ button {
   outline-color: #1082a8;
   background: #f1f7f9;
   color: #344d56;
+  font-family: var(--font-body);
 }
 
 .teacher-login-field input::placeholder {
@@ -3319,6 +3338,23 @@ button {
   margin-bottom: -1.5rem;
   margin-left: calc((100% - 100vw) / 2);
   background: rgba(255, 255, 255, 0.5);
+  font-family: var(--font-body);
+}
+
+.teacher-portal h1,
+.teacher-portal h2,
+.teacher-portal h3,
+.teacher-portal h4,
+.teacher-portal h5,
+.teacher-portal h6 {
+  font-family: var(--font-title);
+}
+
+.teacher-portal button,
+.teacher-portal input,
+.teacher-portal textarea,
+.teacher-portal select {
+  font-family: var(--font-body);
 }
 
 .teacher-sidebar {
@@ -3502,8 +3538,9 @@ button {
   display: grid;
   place-items: center;
   padding: 2rem;
-  border: 3px solid #b6d3df;
-  border-radius: 2rem;
+  border: 2px solid #c9e5ed;
+  border-radius: 1.7rem;
+  background: rgba(255, 255, 255, 0.68);
 }
 
 .teacher-empty-history {
@@ -3541,6 +3578,30 @@ button {
   font-weight: 700;
 }
 
+.teacher-attachment-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.8rem;
+  color: #087eae;
+  overflow-wrap: anywhere;
+}
+
+.teacher-attachment-name:hover,
+.teacher-attachment-name:focus-visible {
+  color: #8549ba;
+  text-decoration: underline;
+}
+
+.teacher-latest-activity time {
+  display: block;
+  margin: 0.4rem 0;
+  color: #8549ba;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
 .teacher-activity-course {
   margin-left: 0.75rem;
   color: #68828c;
@@ -3548,17 +3609,22 @@ button {
 }
 
 .teacher-activity-form {
-  margin: 1.2rem 2.5%;
+  width: 95%;
+  margin: 1.2rem auto;
   padding: clamp(1rem, 3vw, 2rem);
-  border: 3px solid #b6d3df;
-  border-radius: 2rem;
+  border: 2px solid #c9e5ed;
+  border-radius: 1.7rem;
+  background: linear-gradient(145deg, #fff, #f5fbff);
+  box-shadow: 0 10px 24px rgba(3, 101, 140, 0.08);
 }
 
 .teacher-activity-form-inner {
+  width: 100%;
   max-width: 55rem;
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
+  margin: 0 auto;
 }
 
 .teacher-activity-title-input,
@@ -3566,12 +3632,22 @@ button {
 .teacher-date-input {
   width: 100%;
   padding: 0.9rem 1.2rem;
-  border: 3px solid #68828c;
-  border-radius: 0;
+  border: 2px solid #c9e0e8;
+  border-radius: 1rem;
   background: #fff;
   color: #344d56;
-  font-family: var(--font-title);
-  font-size: 1.25rem;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  transition: border-color 160ms ease, box-shadow 160ms ease;
+}
+
+.teacher-activity-title-input:focus,
+.teacher-activity-content-input:focus,
+.teacher-date-input:focus,
+.teacher-course-field select:focus {
+  border-color: #42a8c8;
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(66, 168, 200, 0.16);
 }
 
 .teacher-activity-title-input::placeholder,
@@ -3580,9 +3656,10 @@ button {
 }
 
 .teacher-activity-content-input {
-  min-height: 13rem;
+  min-height: 15rem;
   resize: vertical;
   font-family: var(--font-body);
+  line-height: 1.6;
 }
 
 .teacher-course-field {
@@ -3590,18 +3667,19 @@ button {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
-  color: #536f79;
-  font-family: var(--font-title);
-  font-size: 1.15rem;
+  color: #365d6b;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
 }
 
 .teacher-course-field select {
   min-width: min(15rem, 55%);
   padding: 0.75rem 1rem;
-  border: 3px solid #68828c;
-  border-radius: 0.65rem;
+  border: 2px solid #c9e0e8;
+  border-radius: 0.9rem;
   background: #fff;
-  color: #536f79;
+  color: #365d6b;
   font: inherit;
 }
 
@@ -3612,7 +3690,7 @@ button {
 }
 
 .teacher-image-upload {
-  min-height: 11rem;
+  min-height: 12rem;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3620,13 +3698,22 @@ button {
   gap: 0.8rem;
   overflow: hidden;
   padding: 1rem;
-  border: 4px dashed #839da5;
-  border-radius: 2rem;
-  background: #d0d9e0;
-  color: #68828c;
+  border: 3px dashed #9acbd9;
+  border-radius: 1.5rem;
+  background: #eefaff;
+  color: #32758a;
   cursor: pointer;
-  font-family: var(--font-title);
+  font-family: var(--font-body);
+  font-weight: 700;
   text-align: center;
+  transition: border-color 160ms ease, background-color 160ms ease, transform 160ms ease;
+}
+
+.teacher-image-upload:hover,
+.teacher-image-upload:focus-within {
+  border-color: #42a8c8;
+  background: #e4f7fc;
+  transform: translateY(-2px);
 }
 
 .teacher-image-upload i {
@@ -3660,18 +3747,35 @@ button {
   align-items: center;
   justify-content: center;
   gap: 0.7rem;
-  border: 3px solid #68828c;
+  border: 2px solid transparent;
   border-radius: 2rem;
-  background: #fff;
-  color: #536f79;
-  font-family: var(--font-title);
-  font-size: 1.2rem;
+  background: #f1f7f9;
+  color: #365d6b;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  font-weight: 700;
+  transition: filter 160ms ease, transform 160ms ease, box-shadow 160ms ease;
+}
+
+.teacher-upload-button:hover,
+.teacher-upload-button:focus-visible,
+.teacher-schedule-button:hover,
+.teacher-schedule-button:focus-visible {
+  filter: brightness(0.97);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 14px rgba(31, 41, 55, 0.1);
 }
 
 .teacher-upload-button {
-  border-color: #00b84a;
-  background: #8fe0a2;
-  color: #203b2a;
+  border-color: #a9dfb7;
+  background: #e9f8ee;
+  color: #27613a;
+}
+
+.teacher-schedule-button {
+  border-color: #b9dbea;
+  background: #edf8fc;
+  color: #286980;
 }
 
 .teacher-visually-hidden {
@@ -3691,11 +3795,7 @@ button {
   }
 
   .teacher-login-art {
-    min-height: 11rem;
-  }
-
-  .teacher-login-art i {
-    font-size: 4rem;
+    min-height: 15rem;
   }
 
   .teacher-portal {
@@ -3748,7 +3848,7 @@ button {
   }
 
   .teacher-activity-form {
-    margin: 0.7rem;
+    margin: 0.7rem auto;
     padding: 0.8rem;
     border-radius: 1.3rem;
   }
@@ -4315,8 +4415,13 @@ button {
 }
 
 .about-page .main-container {
-  max-width: 1280px;
-  padding: clamp(1.25rem, 3vw, 2.5rem) clamp(1rem, 4vw, 3.5rem);
+  width: 100%;
+  max-width: 1440px;
+  padding: clamp(1.75rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3.5rem);
+}
+
+.about-page .page-header {
+  margin-bottom: clamp(2rem, 4vw, 3rem);
 }
 
 .about-page .page-title {
@@ -4324,6 +4429,7 @@ button {
   background-clip: text;
   color: transparent;
   font-family: var(--font-title);
+  font-size: clamp(2.3rem, 5vw, 3.8rem);
   line-height: 1.15;
   text-shadow: none;
   -webkit-background-clip: text;
@@ -4333,7 +4439,14 @@ button {
 .about-page .section-subheading {
   color: #667085;
   font-family: var(--font-body);
+  font-size: clamp(1rem, 1.5vw, 1.2rem);
   line-height: 1.6;
+}
+
+.about-page .grid-two,
+.about-page .tech-resources-grid {
+  gap: clamp(1.25rem, 2.5vw, 2rem);
+  margin-bottom: clamp(2rem, 4vw, 3rem);
 }
 
 .about-page .card,
@@ -4341,6 +4454,7 @@ button {
 .about-page .team-card,
 .about-page .tech-box,
 .about-page .resource-box {
+  padding: clamp(1.5rem, 3vw, 2.25rem);
   border: 1px solid rgba(255, 255, 255, 0.92);
   border-radius: 1.5rem;
   background: rgba(255, 255, 255, 0.9);
@@ -4357,6 +4471,7 @@ button {
 .about-page .obj-specifics-title {
   color: #03658c;
   font-family: var(--font-title);
+  font-size: clamp(1.45rem, 2.5vw, 1.9rem);
 }
 
 .about-page .card-text,
@@ -4374,6 +4489,11 @@ button {
 .about-page .card-text,
 .about-page .obj-item {
   color: #53636e;
+  font-size: 1rem;
+}
+
+.about-page .card-text {
+  line-height: 1.8;
 }
 
 .about-page .illustration-box {
@@ -4393,22 +4513,116 @@ button {
 
 .about-page .obj-general p {
   font-weight: 400;
+  font-size: 1.05rem;
+  line-height: 1.8;
 }
 
 .about-page .obj-item {
   border-left-color: #8e4ec0;
   border-radius: 0.9rem;
   background: #f8fbfc;
+  font-size: 1rem;
+  padding: 1rem 1.2rem;
+}
+
+.about-page .team-section {
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.about-page .team-grid {
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.about-page .team-card {
+  min-height: 17rem;
+}
+
+.about-page .team-photo {
+  width: 8rem;
+  height: 8rem;
+  margin-bottom: 1rem;
 }
 
 .about-page .member-name {
   font-weight: 700;
+  font-size: 1.15rem;
+}
+
+.about-page .member-role {
+  color: #326779;
+  font-size: 0.8rem;
+}
+
+.about-page .member-desc {
+  color: #667085;
+  font-size: 0.9rem;
+}
+
+.about-page .tech-resources-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.about-page .tech-box,
+.about-page .resource-box {
+  padding: clamp(1.5rem, 3vw, 2.5rem);
+}
+
+.about-page .tech-box .card-title,
+.about-page .resource-box .card-title {
+  margin-bottom: 1rem;
+  font-size: clamp(1.6rem, 2.7vw, 2.1rem);
+}
+
+.about-page .tech-box .card-text,
+.about-page .resource-box .card-text {
+  margin-bottom: 1.25rem;
 }
 
 .about-page .badge {
-  border-radius: 999px;
-  background: #eef8fb;
+  min-height: 5.5rem;
+  flex: 1 1 9rem;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.55rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid #d8edf3;
+  border-radius: 1.1rem;
+  background: linear-gradient(145deg, #f4fcff, #eaf7fb);
   color: #326779;
+  box-shadow: 0 6px 14px rgba(3, 101, 140, 0.07);
+  font-size: 0.9rem;
+  text-align: center;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.about-page .badge:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(3, 101, 140, 0.12);
+}
+
+.about-page .badge i {
+  color: #0788bc;
+  font-size: 1.7rem;
+}
+
+.about-page .badge-firebase i {
+  color: #f39b25;
+}
+
+.about-page .badge-category {
+  color: #667085;
+  font-size: 0.68rem;
+  font-weight: 400;
+}
+
+.about-page .tech-box .badge:nth-child(3n + 2) i,
+.about-page .resource-box .badge:nth-child(3n + 2) i {
+  color: #8549ba;
+}
+
+.about-page .tech-box .badge:nth-child(3n) i,
+.about-page .resource-box .badge:nth-child(3n) i {
+  color: #d93d59;
 }
 
 .about-page .footer {
@@ -4421,8 +4635,55 @@ button {
   font-family: var(--font-title);
 }
 
+.diagnostic-card,
+.diagnostic-report,
+.diagnostic-report-state,
+.diagnostic-resource-dialog,
+.diagnostic-featured-card {
+  font-family: var(--font-body);
+}
+
+.diagnostic-card h1,
+.diagnostic-card h2,
+.diagnostic-card h3,
+.diagnostic-card h4,
+.diagnostic-report h1,
+.diagnostic-report h2,
+.diagnostic-report h3,
+.diagnostic-report h4,
+.diagnostic-resource-dialog h1,
+.diagnostic-resource-dialog h2,
+.diagnostic-resource-dialog h3,
+.diagnostic-resource-dialog h4 {
+  font-family: var(--font-title);
+}
+
+.diagnostic-primary-button,
+.diagnostic-resource-actions button {
+  font-family: var(--font-body);
+}
+
 @media (max-width: 768px) {
   .about-page .main-container {
     padding: 1.25rem 1rem;
+  }
+
+  .about-page .tech-resources-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page .team-card {
+    min-height: auto;
+  }
+
+  .footer-brand {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-page .badge {
+    transition: none;
   }
 }

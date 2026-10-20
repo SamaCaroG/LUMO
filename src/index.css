@@ -127,6 +127,37 @@ h6 {
   font-family: var(--font-title);
 }
 
+body :not(h1):not(h2):not(h3):not(h4):not(h5):not(h6):not(i) {
+  font-family: var(--font-body) !important;
+}
+
+body h1,
+body h2,
+body h3,
+body h4,
+body h5,
+body h6 {
+  font-family: var(--font-title) !important;
+}
+
+body .brand-letter,
+body .grade-card-digit,
+body .grade-card-caption strong,
+body .nav-title,
+body .nav-card-title,
+body .reading-card-number,
+body .teacher-login-brand,
+body .diagnostic-featured-card strong,
+body .profile-menu-heading strong,
+body .profile-edit-form > strong,
+body .about-page .logo-text,
+body .about-page .card-title,
+body .about-page .section-heading,
+body .about-page .obj-specifics-title,
+body .about-page .footer-logo {
+  font-family: var(--font-title) !important;
+}
+
 #root {
   min-height: 100vh;
 }

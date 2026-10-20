@@ -4,6 +4,7 @@ import './App.css'
 import lumoColorLogo from '../Lumo logo (1).png'
 import lumoLogoOnLight from '../fghneth.png'
 import colSamShield from '../escudo colsam png.png'
+import houseShield from '../escudo de la casa.png'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -1840,7 +1841,11 @@ function AppPage({
       {hasEnteredSite && <footer className="main-footer">
         <div className="footer-inner">
           <div className="footer-brand">
-            <img className="footer-logo" src={lumoLogoOnLight} alt="LÜMØ" />
+            <div className="footer-logos" role="group" aria-label="Identidad de LÜMØ y COLSAM">
+              <img className="footer-logo" src={lumoLogoOnLight} alt="LÜMØ" />
+              <img className="footer-partner-logo" src={colSamShield} alt="Escudo COLSAM" />
+              <img className="footer-partner-logo" src={houseShield} alt="Escudo de la Casa" />
+            </div>
             <span>— Arte Digital de 1° a 3° Grado de Primaria.</span>
           </div>
           <p>© 2026 LÜMØ Educativo. Arte, cultura y patrimonio para aprender en comunidad.</p>
@@ -1932,8 +1937,7 @@ function LoginScreen({ onSubmit }) {
   return (
     <section className="teacher-login-page" aria-labelledby="teacher-login-title">
       <div className="teacher-login-art" aria-hidden="true">
-        <i className="fa-regular fa-images" />
-        <span>Un espacio para crear y compartir</span>
+        <img className="teacher-login-crest" src={colSamShield} alt="" />
       </div>
       <form className="teacher-login-card" onSubmit={handleSubmit}>
         <h1 id="teacher-login-title">¡BIENVENIDO!</h1>
@@ -1981,9 +1985,14 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
   const [activityDate, setActivityDate] = useState('')
-  const [activityImage, setActivityImage] = useState(null)
+  const [activityAttachment, setActivityAttachment] = useState(null)
   const [latestActivity, setLatestActivity] = useState(null)
   const [formError, setFormError] = useState('')
+  const [minScheduleDateValue] = useState(() => {
+    const date = new Date()
+    date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+    return date.toISOString().slice(0, 10)
+  })
 
   const saveActivity = (event) => {
     event.preventDefault()
@@ -1996,12 +2005,22 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
       setFormError('Elige una fecha para programar la actividad.')
       return
     }
+    if (action === 'schedule' && activityDate < minScheduleDateValue) {
+      setFormError('Elige hoy o una fecha futura para programar la actividad.')
+      return
+    }
 
+    const attachment = activityAttachment
+      ? {
+          name: activityAttachment.name,
+          url: URL.createObjectURL(activityAttachment),
+        }
+      : null
     setLatestActivity({
       title: activityTitle.trim(),
       content: activityContent.trim(),
-      date: activityDate,
-      imageName: activityImage?.name ?? '',
+      date: action === 'schedule' ? activityDate : '',
+      attachment,
       grade: activityGrade,
       status: action === 'schedule' ? 'Programada' : 'Publicada',
     })
@@ -2009,9 +2028,16 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
     setActivityTitle('')
     setActivityContent('')
     setActivityDate('')
-    setActivityImage(null)
+    setActivityAttachment(null)
     onNavigate('recent', activityGrade)
   }
+
+  useEffect(() => {
+    const attachmentUrl = latestActivity?.attachment?.url
+    return () => {
+      if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+    }
+  }, [latestActivity])
 
   return (
     <section className="teacher-portal" aria-label="Panel docente">
@@ -2103,12 +2129,24 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                     <span className="teacher-activity-status">{latestActivity.status}</span>
                     <span className="teacher-activity-course">{latestActivity.grade}° grado</span>
                     <h2>{latestActivity.title}</h2>
-                    {latestActivity.date && <time>{latestActivity.date}</time>}
+                    {latestActivity.date && (
+                      <time dateTime={latestActivity.date}>
+                        Programada para {new Date(`${latestActivity.date}T12:00:00`).toLocaleDateString('es-CO', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </time>
+                    )}
                     <p>{latestActivity.content}</p>
-                    {latestActivity.imageName && (
-                      <span className="teacher-attachment-name">
-                        <i className="fa-regular fa-image" aria-hidden="true" /> {latestActivity.imageName}
-                      </span>
+                    {latestActivity.attachment && (
+                      <a
+                        className="teacher-attachment-name"
+                        href={latestActivity.attachment.url}
+                        download={latestActivity.attachment.name}
+                      >
+                        <i className="fa-solid fa-paperclip" aria-hidden="true" /> {latestActivity.attachment.name}
+                      </a>
                     )}
                   </article>
                 ) : (
@@ -2118,7 +2156,6 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
             </>
           ) : (
             <>
-              <div className="teacher-panel-toolbar" aria-hidden="true" />
               <form className="teacher-activity-form" onSubmit={saveActivity}>
                 <div className="teacher-activity-form-inner">
                   <label className="teacher-visually-hidden" htmlFor="teacher-activity-title">Título de la actividad</label>
@@ -2154,12 +2191,11 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                   </label>
                   <div className="teacher-activity-options">
                     <label className="teacher-image-upload">
-                      <i className="fa-regular fa-images" aria-hidden="true" />
-                      <span>{activityImage ? activityImage.name : 'Adjuntar imagen'}</span>
+                      <i className="fa-solid fa-paperclip" aria-hidden="true" />
+                      <span>{activityAttachment ? activityAttachment.name : 'Adjuntar contenido'}</span>
                       <input
                         type="file"
-                        accept="image/*"
-                        onChange={(event) => setActivityImage(event.target.files?.[0] ?? null)}
+                        onChange={(event) => setActivityAttachment(event.target.files?.[0] ?? null)}
                       />
                     </label>
                     <div className="teacher-activity-actions">
@@ -2168,6 +2204,7 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                         id="teacher-activity-date"
                         className="teacher-date-input"
                         type="date"
+                        min={minScheduleDateValue}
                         value={activityDate}
                         onChange={(event) => setActivityDate(event.target.value)}
                       />
@@ -2765,13 +2802,12 @@ function NosotrosPage({ hideNavbar = false }) {
               
               <div className="obj-general">
                 <h4>Objetivo General</h4>
-                <p>FLÜM proviene del latín luz infinita.
-                Los puntos en Ü son como ojitos.
-                Los ojos representan la curiosidad infantil.
-                La Ø es la marca de los programadores.
-                LÜMØ une tecnología y uso infantil.
-                Es luz creativa en un entorno digital.
-</p>
+                <p>
+                LÜMØ representa una luz creativa en el entorno digital.
+                Los dos puntos sobre la Ü forman una diéresis y evocan curiosidad.
+                La Ø representa la conexión entre creatividad y tecnología.
+                El nombre reúne exploración artística, aprendizaje y expresión.
+                </p>
               </div>
 
               <div className="obj-specifics-title">Objetivos específicos:</div>
@@ -2816,10 +2852,15 @@ function NosotrosPage({ hideNavbar = false }) {
                 <h3 className="card-title">💻 Tecnologías empleadas</h3>
                 <p className="card-text">Lenguajes y herramientas para la estructuración y dinamismo del sitio:</p>
                 <div className="badge-list">
-                  <span className="badge">🌐 HTML5</span>
-                  <span className="badge">🎨 CSS3 Puro</span>
-                  <span className="badge">⚛️ React JS</span>
-                  <span className="badge">⚡ JavaScript (ES6+)</span>
+                  <span className="badge"><i className="fa-brands fa-html5" aria-hidden="true" /> HTML5</span>
+                  <span className="badge"><i className="fa-brands fa-css3-alt" aria-hidden="true" /> CSS3</span>
+                  <span className="badge"><i className="fa-brands fa-react" aria-hidden="true" /> React</span>
+                  <span className="badge"><i className="fa-brands fa-js" aria-hidden="true" /> JavaScript</span>
+                  <span className="badge badge-firebase">
+                    <i className="fa-solid fa-fire-flame-curved" aria-hidden="true" />
+                    Firebase
+                    <span className="badge-category">Backend como servicio</span>
+                  </span>
                 </div>
               </div>
 
@@ -2827,10 +2868,10 @@ function NosotrosPage({ hideNavbar = false }) {
                 <h3 className="card-title">🛠️ Recursos usados</h3>
                 <p className="card-text">Plataformas e instrumentos de apoyo pedagógico y visual:</p>
                 <div className="badge-list">
-                  <span className="badge">📦 GitHub</span>
-                  <span className="badge">🚀 Vercel</span>
-                  <span className="badge">🎨 Canva / Ilustración</span>
-                  <span className="badge">📚 Contenido Pedagógico</span>
+                  <span className="badge"><i className="fa-brands fa-github" aria-hidden="true" /> GitHub</span>
+                  <span className="badge"><i className="fa-solid fa-triangle" aria-hidden="true" /> Vercel</span>
+                  <span className="badge"><i className="fa-solid fa-palette" aria-hidden="true" /> Canva e ilustración</span>
+                  <span className="badge"><i className="fa-solid fa-book-open" aria-hidden="true" /> Contenido pedagógico</span>
                 </div>
               </div>
             </div>
