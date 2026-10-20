@@ -2,6 +2,12 @@ import { useEffect, useRef, useState } from 'react'
 import './App.css'
 import lumoColorLogo from '../Lumo logo (1).png'
 import lumoLogoOnLight from '../fghneth.png'
+import colSamShield from '../escudo colsam png.png'
+import alanPhoto from '../Alan E.png'
+import hectorPhoto from '../Hector B.png'
+import juanPhoto from '../juan D.png'
+import luzPhoto from '../luz d.png'
+import samanthaPhoto from '../Samantha E.png'
 import {
   curriculumDigitalPractices,
   curriculumGames,
@@ -299,6 +305,7 @@ const normalizeSearchText = (value) => String(value ?? '')
 function App() {
   const [currentGrade, setCurrentGrade] = useState(1)
   const [hasEnteredSite, setHasEnteredSite] = useState(false)
+  const [showAboutPage, setShowAboutPage] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
@@ -831,6 +838,7 @@ function App() {
           <div
             className="brand"
             onClick={() => {
+              setShowAboutPage(false)
               setHasEnteredSite(false)
               setActiveTab(null)
             }}
@@ -840,6 +848,7 @@ function App() {
             onKeyDown={(event) => {
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault()
+                setShowAboutPage(false)
                 setHasEnteredSite(false)
                 setActiveTab(null)
               }
@@ -919,12 +928,23 @@ function App() {
             <div className="profile-avatar">
               <i className="fa-solid fa-user" aria-hidden="true" />
             </div>
+            <button
+              type="button"
+              className="school-link-button"
+              onClick={() => setShowAboutPage(true)}
+              aria-label="Ir a la página Nosotros"
+              title="Ir a la página Nosotros"
+            >
+              <img src={colSamShield} alt="Escudo COLSAM" />
+            </button>
           </div>
         </div>
       </header>
 
       <main className="main-shell">
-        {!hasEnteredSite ? (
+        {showAboutPage ? (
+          <NosotrosPage hideNavbar />
+        ) : !hasEnteredSite ? (
           <section className="grade-lobby" aria-labelledby="grade-lobby-title">
             <div className="grade-lobby-heading">
               <h1 id="grade-lobby-title">¡BIENVENIDO!</h1>
@@ -1498,53 +1518,47 @@ function App() {
   )
 }
 
-export default App 
-import React, { useState } from 'react';
+export default App
 
-export default function App() {
-  const [activeTab, setActiveTab] = useState('nosotros'); // 'inicio' o 'nosotros'
+function NosotrosPage({ hideNavbar = false }) {
+  const [activeTab, setActiveTab] = useState('nosotros')
 
   // Lista de estudiantes según requerimiento (Nombre + Inicial de Apellido)
   const equipoEstudiantes = [
     {
       nombre: "Héctor B.",
       rol: "Desarrollador Frontend",
-      avatar: "🎨",
+      foto: hectorPhoto,
       color: "#9333ea",
-      descripcion: "Especialista en interfaces accesibles y dinámicas para primaria."
     },
     {
       nombre: "Luz C.",
       rol: "Diseñadora UX/UI",
-      avatar: "🌸",
+      foto: luzPhoto,
       color: "#eab308",
-      descripcion: "Creadora de la paleta amigable y experiencia visual interactiva."
-    },
-    {
-      nombre: "Samantha E.",
-      rol: "Coordinadora de Contenido",
-      avatar: "⭐",
-      color: "#22c55e",
-      descripcion: "Encargada de la estructura pedagógica y material didáctico."
     },
     {
       nombre: "Juan D.",
       rol: "Desarrollador de Juegos",
-      avatar: "🚀",
+      foto: juanPhoto,
       color: "#ec4899",
-      descripcion: "Creador de los retos digitales y dinámicas motrices."
     },
     {
       nombre: "Alan E.",
       rol: "Especialista en QA & Multimedia",
-      avatar: "🎧",
+      foto: alanPhoto,
       color: "#06b6d4",
-      descripcion: "Aseguramiento de calidad técnica y optimización de recursos."
+    },
+    {
+      nombre: "Samantha E.",
+      rol: "Coordinadora de Contenido",
+      foto: samanthaPhoto,
+      color: "#22c55e",
     }
   ];
 
   return (
-    <div className="lumo-app">
+    <div className="about-page">
       {/* Estilos CSS Integrados en el mismo archivo */}
       <style>{`
         * {
@@ -1559,11 +1573,11 @@ export default function App() {
           color: #2c3e50;
         }
 
-        .lumo-app {
-          min-height: 100vh;
+        .about-page {
+          width: 100%;
           display: flex;
           flex-direction: column;
-          background: radial-gradient(circle at 10% 20%, rgba(186, 230, 253, 0.3) 0%, rgba(243, 232, 255, 0.4) 90%);
+          background: transparent;
         }
 
         /* --- NAVBAR ESTILO LUMØ --- */
@@ -1868,16 +1882,18 @@ export default function App() {
           box-shadow: 0 12px 20px rgba(0,0,0,0.08);
         }
 
-        .avatar-circle {
-          width: 70px;
-          height: 70px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-size: 32px;
+        .team-photo {
+          width: 100px;
+          height: 100px;
+          display: grid;
+          place-items: center;
           margin-bottom: 14px;
-          box-shadow: inset 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .team-photo img {
+          width: 100%;
+          height: 100%;
+          object-fit: contain;
         }
 
         .member-name {
@@ -1996,7 +2012,7 @@ export default function App() {
       `}</style>
 
       {/* ENCABEZADO / NAVBAR CON ACCESO A "NOSOTROS" */}
-      <nav className="navbar">
+      {!hideNavbar && <nav className="navbar">
         <div className="logo-container" onClick={() => setActiveTab('inicio')}>
           <div className="logo-text">LÜMØ<span className="logo-dot">•</span></div>
         </div>
@@ -2027,7 +2043,7 @@ export default function App() {
             <div className="user-avatar">👤</div>
           </div>
         </div>
-      </nav>
+      </nav>}
 
       {/* CONTENIDO PRINCIPAL */}
       <main className="main-container">
@@ -2108,12 +2124,12 @@ export default function App() {
               <div className="team-grid">
                 {equipoEstudiantes.map((estudiante, idx) => (
                   <div className="team-card" key={idx}>
-                    <div className="avatar-circle" style={{ background: `${estudiante.color}20`, color: estudiante.color }}>
-                      {estudiante.avatar}
+                    <div className="team-photo">
+                      <img src={estudiante.foto} alt={estudiante.nombre} />
                     </div>
                     <div className="member-name">{estudiante.nombre}</div>
                     <div className="member-role">{estudiante.rol}</div>
-                    <div className="member-desc">{estudiante.descripcion}</div>
+                    <div className="member-desc">Avatares hechos con CREAR TU AVATAR</div>
                   </div>
                 ))}
               </div>
