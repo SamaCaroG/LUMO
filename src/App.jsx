@@ -13,6 +13,8 @@ import {
   curriculumDigitalPractices,
   curriculumGames,
 } from './curriculumActivities.js'
+import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
+import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
 
 const formatCompletionDate = (dateValue) => {
   const date = new Date(dateValue)
@@ -593,6 +595,7 @@ function AppPage({
     videos: 'Videos',
     actividades: 'Actividades',
     dibujos: 'Dibujos',
+    diagnostico: 'Diagnóstico Artístico Integral',
   }
 
   useEffect(() => {
@@ -1274,6 +1277,7 @@ function AppPage({
             view={pageView}
             teacherName={profileUser?.displayName ?? session.name}
             grade={teacherGrade}
+            gradeResources={curriculumData[teacherGrade]}
             onNavigate={onTeacherNavigate}
           />
         ) : showAboutPage ? (
@@ -1358,6 +1362,23 @@ function AppPage({
               ))}
             </div>
 
+            <button
+              type="button"
+              className="diagnostic-featured-card"
+              onClick={() => {
+                setActiveTab('diagnostico')
+                setSearchOpen(false)
+                setSearchSubmitted(false)
+              }}
+            >
+              <span className="diagnostic-featured-icon" aria-hidden="true">🎯</span>
+              <span>
+                <strong>Mi Test Diagnóstico de Arte</strong>
+                <small>Responde preguntas sobre lo que has aprendido en arte.</small>
+              </span>
+              <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+            </button>
+
             <div className="menu-prompt">
               <i className="fa-solid fa-hand-pointer" aria-hidden="true" />
               <span>{pageCopy.menuPrompt}</span>
@@ -1380,6 +1401,14 @@ function AppPage({
               <h1 className={`section-heading-${activeTab}`}>{sectionLabels[activeTab]}</h1>
             </div>
           </div>
+        )}
+
+        {activeTab === 'diagnostico' && (
+          <DiagnosticTest
+            key={currentGrade}
+            grade={currentGrade}
+            studentName={profileUser?.displayName ?? profileUser?.name ?? session?.name ?? 'artista'}
+          />
         )}
 
         <section className={`content-section reading-section ${activeTab === 'textos' ? '' : 'hidden'}`}>
@@ -1945,7 +1974,7 @@ function LoginScreen({ onSubmit }) {
   )
 }
 
-function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
+function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate }) {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   const [activityGrade, setActivityGrade] = useState(grade)
@@ -2048,16 +2077,27 @@ function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
                   className="teacher-diagnostics-button"
                   onClick={() => setShowDiagnostics((visible) => !visible)}
                 >
-                  {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : 'RESULTADOS DEL DIAGNÓSTICO'}
+                  {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : '📊 DIAGNÓSTICO DE GRUPO'}
                 </button>
               </div>
-              <div className="teacher-panel-content">
+              <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''}`}>
                 {showDiagnostics ? (
-                  <div className="teacher-diagnostics-empty">
-                    <i className="fa-solid fa-chart-column" aria-hidden="true" />
-                    <h2>Resultados del diagnóstico</h2>
-                    <p>Los resultados de {grade}° grado aparecerán aquí cuando estén disponibles.</p>
-                  </div>
+                  <DiagnosticGroupReport
+                    key={grade}
+                    grade={grade}
+                    resources={{
+                      readings: gradeResources.textos,
+                      videos: gradeResources.videos,
+                    }}
+                    onCreateActivity={(activity) => {
+                      setActivityGrade(grade)
+                      setActivityTitle(activity.title)
+                      setActivityContent(activity.content)
+                      setFormError('')
+                      setShowDiagnostics(false)
+                      onNavigate('activity', grade)
+                    }}
+                  />
                 ) : latestActivity ? (
                   <article className="teacher-latest-activity">
                     <span className="teacher-activity-status">{latestActivity.status}</span>
