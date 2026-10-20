@@ -338,12 +338,14 @@ function App() {
     if (studentMatch) {
       user = {
         name: studentMatch[1],
+        displayName: studentMatch[1],
         role: 'student',
         grade: Number(studentMatch[2]),
       }
     } else if (teacherMatch && password.trim().toLowerCase() === teacherMatch[1]) {
       user = {
         name: teacherMatch[1],
+        displayName: teacherMatch[1],
         role: 'teacher',
         grade: null,
       }
@@ -363,6 +365,12 @@ function App() {
     navigate('/login', { replace: true })
   }
 
+  const updateSession = (changes) => {
+    const updatedUser = { ...session, ...changes }
+    localStorage.setItem(USER_SESSION_KEY, JSON.stringify(updatedUser))
+    setSession(updatedUser)
+  }
+
   return (
     <Routes>
       <Route
@@ -371,8 +379,8 @@ function App() {
           ? <Navigate to={getUserHomePath(session)} replace />
           : <AppPage pageView="login" onLogin={signIn} />}
       />
-      <Route path="/estudiante/:grade/*" element={<StudentRoute session={session} onLogout={signOut} />} />
-      <Route path="/docente/*" element={<TeacherRoute session={session} onLogout={signOut} />} />
+      <Route path="/estudiante/:grade/*" element={<StudentRoute session={session} onLogout={signOut} onUpdateSession={updateSession} />} />
+      <Route path="/docente/*" element={<TeacherRoute session={session} onLogout={signOut} onUpdateSession={updateSession} />} />
       <Route
         path="*"
         element={<Navigate to={session ? getUserHomePath(session) : '/login'} replace />}
@@ -381,7 +389,7 @@ function App() {
   )
 }
 
-function StudentRoute({ session, onLogout }) {
+function StudentRoute({ session, onLogout, onUpdateSession }) {
   const { grade: routeGrade } = useParams()
   const grade = Number(routeGrade)
   const navigate = useNavigate()
@@ -398,39 +406,69 @@ function StudentRoute({ session, onLogout }) {
       grade={grade}
       pageView="student"
       onLogout={onLogout}
+      onUpdateSession={onUpdateSession}
       onGoHome={() => navigate(getUserHomePath(session))}
     />
   )
 }
 
-function TeacherRoute({ session, onLogout }) {
+function TeacherRoute({ session, onLogout, onUpdateSession }) {
   const location = useLocation()
   const navigate = useNavigate()
 
   if (!session) return <Navigate to="/login" replace />
   if (session.role !== 'teacher') return <Navigate to={getUserHomePath(session)} replace />
 
-  const pageView = location.pathname.endsWith('/actividad') ? 'activity' : 'recent'
+  const match = location.pathname.match(/^\/docente(?:\/grado\/([123])(?:\/(actividad))?)?\/?$/)
+  if (!match) return <Navigate to="/docente" replace />
+
+  const grade = match[1] ? Number(match[1]) : null
+  const pageView = !grade ? 'grades' : match[2] ? 'activity' : 'recent'
 
   return (
     <AppPage
       session={session}
+      grade={grade ?? 1}
       pageView={pageView}
+      teacherGrade={grade}
       onLogout={onLogout}
+      onUpdateSession={onUpdateSession}
       onGoHome={() => navigate('/docente')}
-      onTeacherNavigate={(view) => navigate(view === 'activity' ? '/docente/actividad' : '/docente')}
+      onGradeSelect={(selectedGrade) => navigate(`/docente/grado/${selectedGrade}`)}
+      onTeacherNavigate={(view, selectedGrade) => navigate(
+        view === 'activity'
+          ? `/docente/grado/${selectedGrade}/actividad`
+          : `/docente/grado/${selectedGrade}`,
+      )}
     />
   )
 }
 
-function AppPage({ session = null, grade = 1, pageView, onLogin, onLogout, onGoHome, onTeacherNavigate }) {
+function AppPage({
+  session = null,
+  grade = 1,
+  pageView,
+  teacherGrade,
+  onLogin,
+  onLogout,
+  onUpdateSession,
+  onGoHome,
+  onGradeSelect,
+  onTeacherNavigate,
+}) {
+  const [profileOpen, setProfileOpen] = useState(false)
+  const [profileEditing, setProfileEditing] = useState(false)
+  const [profileNameDraft, setProfileNameDraft] = useState(session?.displayName ?? session?.name ?? '')
+  const [profileColorDraft, setProfileColorDraft] = useState(session?.avatarColor ?? '#03658c')
+  const profileUser = session
+  const profileBoxRef = useRef(null)
   const [currentGrade, setCurrentGrade] = useState(grade)
   const hasEnteredSite = session?.role === 'student'
   const [showAboutPage, setShowAboutPage] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
-  const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[1][0].id)
+  const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[grade][0].id)
   const [drawingUploads, setDrawingUploads] = useState({})
   const [digitalCompletions, setDigitalCompletions] = useState({})
   const [uploadError, setUploadError] = useState('')
@@ -453,6 +491,22 @@ function AppPage({ session = null, grade = 1, pageView, onLogin, onLogout, onGoH
   const isDrawingRef = useRef(false)
   const shapeStartRef = useRef(null)
   const shapeSnapshotRef = useRef(null)
+
+  useEffect(() => {
+    const closeProfileMenu = (event) => {
+      if (event.type === 'keydown' && event.key !== 'Escape') return
+      if (event.type === 'pointerdown' && profileBoxRef.current?.contains(event.target)) return
+      setProfileOpen(false)
+      setProfileEditing(false)
+    }
+
+    document.addEventListener('pointerdown', closeProfileMenu)
+    document.addEventListener('keydown', closeProfileMenu)
+    return () => {
+      document.removeEventListener('pointerdown', closeProfileMenu)
+      document.removeEventListener('keydown', closeProfileMenu)
+    }
+  }, [])
 
   const data = curriculumData[currentGrade]
   const currentToolSize = toolSizes[tool] ?? toolSizes.brush
@@ -1037,19 +1091,91 @@ function AppPage({ session = null, grade = 1, pageView, onLogin, onLogout, onGoH
             </div>
           </div>
 
-          <div className="profile-box">
+          <div className="profile-box" ref={profileBoxRef}>
             <span className="teacher-header-name">
-              {session?.name ?? 'Usuario'}
+              {profileUser?.displayName ?? profileUser?.name ?? 'Usuario'}
             </span>
             <button
               type="button"
               className="profile-avatar"
-              onClick={onLogout}
-              aria-label={session ? 'Cerrar sesión' : 'Usuario'}
-              title={session ? 'Cerrar sesión' : 'Usuario'}
+              style={profileUser?.avatarColor ? { backgroundColor: profileUser.avatarColor } : undefined}
+              onClick={() => session && setProfileOpen((open) => !open)}
+              aria-label={session ? 'Abrir menú de perfil' : 'Usuario'}
+              aria-haspopup={session ? 'menu' : undefined}
+              aria-expanded={session ? profileOpen : undefined}
+              title={session ? 'Abrir menú de perfil' : 'Usuario'}
             >
               <i className="fa-solid fa-user" aria-hidden="true" />
             </button>
+            {session && profileOpen && (
+              <div className="profile-menu" role="menu" aria-label="Menú de perfil">
+                {!profileEditing ? (
+                  <>
+                    <div className="profile-menu-heading">
+                      <strong>{profileUser?.displayName ?? profileUser?.name}</strong>
+                      <span>{profileUser?.role === 'teacher' ? 'Docente' : `Estudiante · ${profileUser?.grade}° grado`}</span>
+                    </div>
+                    <button
+                      type="button"
+                      className="profile-menu-action"
+                      role="menuitem"
+                      onClick={() => {
+                        setProfileNameDraft(profileUser?.displayName ?? profileUser?.name ?? '')
+                        setProfileColorDraft(profileUser?.avatarColor ?? '#03658c')
+                        setProfileEditing(true)
+                      }}
+                    >
+                      <i className="fa-solid fa-user-pen" aria-hidden="true" />
+                      Personalizar perfil
+                    </button>
+                    <button type="button" className="profile-menu-action is-logout" role="menuitem" onClick={onLogout}>
+                      <i className="fa-solid fa-arrow-right-from-bracket" aria-hidden="true" />
+                      Cerrar sesión
+                    </button>
+                  </>
+                ) : (
+                  <form
+                    className="profile-edit-form"
+                    onSubmit={(event) => {
+                      event.preventDefault()
+                      const displayName = profileNameDraft.trim()
+                      if (!displayName) return
+                      onUpdateSession({ displayName, avatarColor: profileColorDraft })
+                      setProfileEditing(false)
+                      setProfileOpen(false)
+                    }}
+                  >
+                    <strong>Personalizar perfil</strong>
+                    <label>
+                      Nombre visible
+                      <input
+                        type="text"
+                        value={profileNameDraft}
+                        onChange={(event) => setProfileNameDraft(event.target.value)}
+                        maxLength={40}
+                        required
+                      />
+                    </label>
+                    <label className="profile-color-field">
+                      Color del perfil
+                      <input
+                        type="color"
+                        value={profileColorDraft}
+                        onChange={(event) => setProfileColorDraft(event.target.value)}
+                      />
+                    </label>
+                    <button type="submit" className="profile-save-button">Guardar cambios</button>
+                    <button
+                      type="button"
+                      className="profile-cancel-button"
+                      onClick={() => setProfileEditing(false)}
+                    >
+                      Cancelar
+                    </button>
+                  </form>
+                )}
+              </div>
+            )}
             {session?.role === 'student' && (
               <button
                 type="button"
@@ -1068,10 +1194,13 @@ function AppPage({ session = null, grade = 1, pageView, onLogin, onLogout, onGoH
       <main className="main-shell">
         {pageView === 'login' ? (
           <LoginScreen onSubmit={onLogin} />
+        ) : session?.role === 'teacher' && pageView === 'grades' ? (
+          <TeacherGradeSelection onSelectGrade={onGradeSelect} />
         ) : session?.role === 'teacher' ? (
           <TeacherDashboard
             view={pageView}
-            teacherName={session.name}
+            teacherName={profileUser?.displayName ?? session.name}
+            grade={teacherGrade}
             onNavigate={onTeacherNavigate}
           />
         ) : showAboutPage ? (
@@ -1652,6 +1781,42 @@ function AppPage({ session = null, grade = 1, pageView, onLogin, onLogout, onGoH
 
 export default App
 
+function TeacherGradeSelection({ onSelectGrade }) {
+  return (
+    <section className="grade-lobby" aria-labelledby="grade-lobby-title">
+      <div className="grade-lobby-heading">
+        <h1 id="grade-lobby-title">¡BIENVENIDO!</h1>
+        <p>{gradeUiCopy[1].welcome}</p>
+      </div>
+      <div className="grade-card-grid">
+        {[1, 2, 3].map((grade) => (
+          <button
+            key={grade}
+            type="button"
+            className={`grade-card grade-card-${grade}`}
+            onClick={() => onSelectGrade(grade)}
+            aria-label={`Entrar a ${grade === 1 ? 'primero, serie A' : grade === 2 ? 'segundo, serie B' : 'tercero, serie C'}`}
+          >
+            <span className="grade-card-art" aria-hidden="true">
+              <span className="grade-card-digit">{grade}</span>
+              <span className="grade-card-eyes">
+                <span className="grade-card-eye"><span className="grade-card-pupil"><i /></span></span>
+                <span className="grade-card-eye"><span className="grade-card-pupil"><i /></span></span>
+              </span>
+              <span className="grade-card-stars" aria-hidden="true">
+                <i>✦</i><i>✧</i><i>✦</i><i>✧</i>
+              </span>
+            </span>
+            <span className="grade-card-caption">
+              <strong>{grade === 1 ? 'Primero' : grade === 2 ? 'Segundo' : 'Tercero'}</strong>
+            </span>
+          </button>
+        ))}
+      </div>
+    </section>
+  )
+}
+
 function LoginScreen({ onSubmit }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -1707,9 +1872,8 @@ function LoginScreen({ onSubmit }) {
   )
 }
 
-function TeacherDashboard({ view, teacherName, onNavigate }) {
+function TeacherDashboard({ view, teacherName, grade, onNavigate }) {
   const [sidebarExpanded, setSidebarExpanded] = useState(false)
-  const [selectedGrade, setSelectedGrade] = useState(1)
   const [showDiagnostics, setShowDiagnostics] = useState(false)
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
@@ -1742,7 +1906,7 @@ function TeacherDashboard({ view, teacherName, onNavigate }) {
     setActivityContent('')
     setActivityDate('')
     setActivityImage(null)
-    onNavigate('recent')
+    onNavigate('recent', grade)
   }
 
   return (
@@ -1757,21 +1921,20 @@ function TeacherDashboard({ view, teacherName, onNavigate }) {
         >
           <i className="fa-solid fa-bars" aria-hidden="true" />
         </button>
-        {[1, 2, 3].map((grade) => (
+        {[1, 2, 3].map((gradeOption) => (
           <button
-            key={grade}
+              key={gradeOption}
             type="button"
-            className={`teacher-grade-button teacher-grade-${grade} ${selectedGrade === grade && view === 'recent' ? 'is-selected' : ''}`}
-            onClick={() => {
-              setSelectedGrade(grade)
-              setShowDiagnostics(false)
-              onNavigate('recent')
-            }}
-            aria-label={`Ver panel de ${grade}° grado`}
-            title={`${grade}° grado`}
+              className={`teacher-grade-button teacher-grade-${gradeOption} ${gradeOption === grade && view === 'recent' ? 'is-selected' : ''}`}
+              onClick={() => {
+                setShowDiagnostics(false)
+                onNavigate('recent', gradeOption)
+              }}
+              aria-label={`Ver panel de ${gradeOption}° grado`}
+              title={`${gradeOption}° grado`}
           >
-            <span>{grade}</span>
-            {sidebarExpanded && <span className="teacher-sidebar-label">{grade}° grado</span>}
+              <span>{gradeOption}</span>
+              {sidebarExpanded && <span className="teacher-sidebar-label">{gradeOption}° grado</span>}
           </button>
         ))}
         <button
@@ -1779,7 +1942,7 @@ function TeacherDashboard({ view, teacherName, onNavigate }) {
           className={`teacher-chat-button ${view === 'activity' ? 'is-selected' : ''}`}
           onClick={() => {
             setFormError('')
-            onNavigate('activity')
+            onNavigate('activity', grade)
           }}
           aria-label="Crear nueva actividad"
           title="Nueva actividad"
@@ -1797,7 +1960,7 @@ function TeacherDashboard({ view, teacherName, onNavigate }) {
           {view === 'recent' ? (
             <>
               <div className="teacher-panel-toolbar">
-                <span className="teacher-grade-caption">{selectedGrade}° grado</span>
+                <span className="teacher-grade-caption">{grade}° grado</span>
                 <span className="teacher-name-caption">Docente {teacherName}</span>
                 <button
                   type="button"
@@ -1812,7 +1975,7 @@ function TeacherDashboard({ view, teacherName, onNavigate }) {
                   <div className="teacher-diagnostics-empty">
                     <i className="fa-solid fa-chart-column" aria-hidden="true" />
                     <h2>Resultados del diagnóstico</h2>
-                    <p>Los resultados de {selectedGrade}° grado aparecerán aquí cuando estén disponibles.</p>
+                    <p>Los resultados de {grade}° grado aparecerán aquí cuando estén disponibles.</p>
                   </div>
                 ) : latestActivity ? (
                   <article className="teacher-latest-activity">

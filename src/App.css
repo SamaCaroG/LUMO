@@ -2985,6 +2985,133 @@ button {
   font-size: 1.35rem;
 }
 
+.profile-box {
+  position: relative;
+}
+
+.profile-avatar:hover,
+.profile-avatar:focus-visible,
+.profile-avatar[aria-expanded="true"] {
+  background-color: rgba(255, 255, 255, 0.18);
+}
+
+.profile-menu {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  z-index: 120;
+  width: min(18rem, calc(100vw - 1.5rem));
+  padding: 0.65rem;
+  border: 1px solid #d9e7eb;
+  border-radius: 1rem;
+  background: #fff;
+  box-shadow: 0 14px 36px rgba(22, 66, 81, 0.2);
+  color: #334b54;
+}
+
+.profile-menu-heading {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.75rem 0.85rem;
+  border-bottom: 1px solid #e5eef1;
+}
+
+.profile-menu-heading strong,
+.profile-edit-form > strong {
+  color: #03658c;
+  font-family: var(--font-title);
+  font-size: 1.1rem;
+}
+
+.profile-menu-heading span {
+  color: #68828c;
+  font-size: 0.8rem;
+}
+
+.profile-menu-action {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  padding: 0.75rem;
+  border: 0;
+  border-radius: 0.65rem;
+  background: transparent;
+  color: #334b54;
+  text-align: left;
+}
+
+.profile-menu-action:hover,
+.profile-menu-action:focus-visible {
+  background: #edf8fb;
+}
+
+.profile-menu-action.is-logout {
+  color: #bd3049;
+}
+
+.profile-menu-action.is-logout:hover,
+.profile-menu-action.is-logout:focus-visible {
+  background: #fff0f2;
+}
+
+.profile-edit-form {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+  padding: 0.55rem;
+}
+
+.profile-edit-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #536f79;
+  font-size: 0.8rem;
+}
+
+.profile-edit-form label > input:not([type="color"]) {
+  width: 100%;
+  min-width: 0;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #b6d3df;
+  border-radius: 0.55rem;
+  color: #334b54;
+}
+
+.profile-color-field {
+  align-items: center;
+  flex-direction: row !important;
+  justify-content: space-between;
+}
+
+.profile-color-field input {
+  width: 2.6rem;
+  height: 2rem;
+  padding: 0.1rem;
+  border: 1px solid #b6d3df;
+  border-radius: 0.4rem;
+  background: #fff;
+}
+
+.profile-save-button,
+.profile-cancel-button {
+  min-height: 2.4rem;
+  border: 0;
+  border-radius: 0.6rem;
+}
+
+.profile-save-button {
+  background: #03658c;
+  color: #fff;
+}
+
+.profile-cancel-button {
+  background: #edf4f6;
+  color: #536f79;
+}
+
 .teacher-login-page {
   width: 100%;
   min-height: min(760px, calc(100vh - 9rem));
