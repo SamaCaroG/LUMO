@@ -2816,9 +2816,9 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h4>Objetivo General</h4>
                 <p>
                 LÜMØ representa una luz creativa en el entorno digital.
-                Los dos puntos sobre la Ü forman una diéresis y evocan curiosidad.
-                La Ø representa la conexión entre creatividad y tecnología.
-                El nombre reúne exploración artística, aprendizaje y expresión.
+                Los dos puntos sobre la Ü evocan curiosidad y alegria con la que un niño ve el mundo.
+                La Ø representa la conexión entre creatividad y tecnología usada por estetica y marca de programadores.
+                LÜMØ conecta tecnología y uso infantil. Es luz creativa en un entorno digital.
                 </p>
               </div>
 
@@ -2826,15 +2826,15 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
               <ul className="obj-list">
                 <li className="obj-item">
                   <span>🎨</span>
-                  <span>Diseñar e implementar actividades interactivas en el aplicativo web que promuevan la exploración de formas y colores.</span>
+                  <span>Diseñar e implementar actividades interactivas en el aplicativo web que promuevan la exploración de formas y colores mediante la expliracion audio-visual.</span>
                 </li>
                 <li className="obj-item">
                   <span>🖌️</span>
-                  <span>Construir y aplicar ejercicios didácticos a través del lienzo digital para mejorar las habilidades perceptivas.</span>
+                  <span>Construir y aplicar ejercicios didácticos a través del lienzo digital para mejorar las habilidades perceptivas evaluando proyectos de 1° a 3°.</span>
                 </li>
                 <li className="obj-item">
                   <span>📊</span>
-                  <span>Evaluar el desarrollo creativo e interactivad de los estudiantes mediante módulos didácticos adaptables.</span>
+                  <span>Evaluar el desarrollo creativo e interactivad de los estudiantes mediante módulos didácticos adaptables aplicando el arte diario.</span>
                 </li>
               </ul>
             </div>
