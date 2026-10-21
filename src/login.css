@@ -1,0 +1,225 @@
+/* ======================================================
+   ESTILOS PARA LA INTERFAZ DE INICIAR SESIÓN (LOGIN)
+   ====================================================== */
+.teacher-login-page {
+  width: 100%;
+  max-width: 1100px;
+  margin: 2rem auto;
+  min-height: min(580px, calc(100vh - 10rem));
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: center;
+  padding: 1rem;
+  background: transparent;
+  font-family: var(--font-body);
+}
+
+.teacher-login-art,
+.teacher-login-card {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border-radius: 2.2rem;
+  text-align: center;
+}
+
+/* Panel Izquierdo con Escudo e Ilustración */
+.teacher-login-art {
+  position: relative;
+  height: 100%;
+  min-height: 28rem;
+  overflow: hidden;
+  border: 4px solid #ffffff;
+  background: linear-gradient(135deg, #bdeaff 0%, #83d4f8 50%, #46bcec 100%);
+  box-shadow: 0 12px 28px rgba(3, 101, 140, 0.12);
+}
+
+.teacher-login-crest {
+  width: min(75%, 22rem);
+  max-height: min(60vh, 24rem);
+  object-fit: contain;
+  opacity: 1;
+  filter: drop-shadow(0 10px 18px rgba(0, 0, 0, 0.12));
+}
+
+/* Panel Derecho - Formulario */
+.teacher-login-card {
+  gap: 1.1rem;
+  padding: clamp(2rem, 4vw, 3rem) clamp(1.5rem, 3vw, 2.5rem);
+  border: 4px solid #ffffff;
+  background: #ffffff;
+  box-shadow: 0 14px 32px rgba(3, 101, 140, 0.08);
+  border-radius: 2.2rem;
+}
+
+.teacher-login-card h1 {
+  margin: 0;
+  font-family: var(--font-title);
+  font-size: clamp(2.4rem, 4vw, 3.4rem);
+  font-weight: 900;
+  background: linear-gradient(90deg, #0284c7, #8b5cf6, #ec4899, #f59e0b);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  letter-spacing: -0.02em;
+}
+
+.teacher-login-card > p {
+  margin: -0.4rem 0 0.2rem;
+  color: #03658c;
+  font-family: var(--font-title);
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+/* Línea Divisora con Estrella */
+.teacher-login-divider {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.8rem;
+  color: #f59e0b;
+  font-size: 1.1rem;
+  margin: 0.2rem 0;
+}
+
+.teacher-login-divider::before,
+.teacher-login-divider::after {
+  height: 2px;
+  flex: 1;
+  background: #bae6fd;
+  content: "";
+  border-radius: 999px;
+}
+
+/* Campos de entrada con icono flotante */
+.teacher-login-field {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  position: relative;
+}
+
+.teacher-login-field > i {
+  position: absolute;
+  left: 0.4rem;
+  width: 2.3rem;
+  height: 2.3rem;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #80d4ff;
+  color: #ffffff;
+  font-size: 0.95rem;
+  z-index: 2;
+  box-shadow: 0 2px 6px rgba(3, 101, 140, 0.15);
+}
+
+.teacher-login-field input {
+  width: 100%;
+  min-width: 0;
+  padding: 0.8rem 1rem 0.8rem 3.2rem;
+  border: 2px solid transparent;
+  border-radius: 999px;
+  outline: none;
+  background: #e0f2fe;
+  color: #03658c;
+  font-family: var(--font-title);
+  font-size: 0.95rem;
+  transition: all 180ms ease;
+}
+
+.teacher-login-field input::placeholder {
+  color: #7dd3fc;
+  font-family: var(--font-title);
+}
+
+.teacher-login-field input:focus {
+  background: #ffffff;
+  border-color: #38bdf8;
+  box-shadow: 0 0 0 4px rgba(56, 189, 248, 0.2);
+}
+
+/* Botón de Ingresar */
+.teacher-login-submit {
+  width: 82%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.6rem;
+  margin-top: 0.6rem;
+  padding: 0.85rem 1.5rem;
+  border: 0;
+  border-radius: 999px;
+  background: #a855f7;
+  color: #ffffff;
+  font-family: var(--font-title);
+  font-size: 1.2rem;
+  font-weight: 800;
+  cursor: pointer;
+  box-shadow: 0 6px 16px rgba(168, 85, 247, 0.3);
+  transition: transform 150ms ease, background-color 150ms ease, box-shadow 150ms ease;
+}
+
+.teacher-login-submit:hover,
+.teacher-login-submit:focus-visible {
+  background: #9333ea;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(168, 85, 247, 0.4);
+}
+
+/* Marca LUMO Inferior */
+.teacher-login-brand {
+  margin-top: 0.2rem;
+  color: #03658c;
+  font-family: var(--font-title);
+  font-size: 1.4rem;
+  font-weight: 900;
+  letter-spacing: 0.05em;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.teacher-login-brand::before,
+.teacher-login-brand::after {
+  content: "ヾ";
+  color: #f59e0b;
+  font-size: 1rem;
+}
+
+.teacher-login-brand::after {
+  content: "ﾉ";
+}
+
+.teacher-form-error {
+  margin: -0.2rem 0;
+  color: #d91b5c;
+  font-family: var(--font-title);
+  font-size: 0.85rem;
+  font-weight: 700;
+}
+
+/* Adaptación Móvil */
+@media (max-width: 768px) {
+  .teacher-login-page {
+    grid-template-columns: 1fr;
+    max-width: 25rem;
+    gap: 1.2rem;
+    margin: 1rem auto;
+  }
+
+  .teacher-login-art {
+    min-height: 16rem;
+    height: 16rem;
+  }
+
+  .teacher-login-card {
+    padding: 1.8rem 1.2rem;
+  }
+}
