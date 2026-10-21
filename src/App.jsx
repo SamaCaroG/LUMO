@@ -1,7 +1,7 @@
-import './Login.css'
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
 import './App.css'
+import './login.css'
 import lumoColorLogo from '../Lumo logo (1).png'
 import lumoLogoOnLight from '../fghneth.png'
 import colSamShield from '../escudo colsam png.png'
