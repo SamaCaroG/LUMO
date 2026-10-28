@@ -2807,38 +2807,43 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
               </div>
             </div>
 
-            {/* SECCIÓN: OBJETIVOS */}
-            <div className="objectives-section">
-              <div className="card-title" style={{ marginBottom: '20px' }}>
-                📌 SIGNIFICADO DE LÜMØ
-              </div>
-              
-              <div className="obj-general">
-                <h4>Objetivo General</h4>
-                <p>
-                LÜMØ representa una luz creativa en el entorno digital.
-                Los dos puntos sobre la Ü evocan curiosidad y alegria con la que un niño ve el mundo.
-                La Ø representa la conexión entre creatividad y tecnología usada por estetica y marca de programadores.
-                LÜMØ conecta tecnología y uso infantil. Es luz creativa en un entorno digital.
-                </p>
-              </div>
-
-              <div className="obj-specifics-title">Objetivos específicos:</div>
-              <ul className="obj-list">
-                <li className="obj-item">
-                  <span>🎨</span>
-                  <span>Diseñar e implementar actividades interactivas en el aplicativo web que promuevan la exploración de formas y colores mediante la expliracion audio-visual.</span>
-                </li>
-                <li className="obj-item">
-                  <span>🖌️</span>
-                  <span>Construir y aplicar ejercicios didácticos a través del lienzo digital para mejorar las habilidades perceptivas evaluando proyectos de 1° a 3°.</span>
-                </li>
-                <li className="obj-item">
-                  <span>📊</span>
-                  <span>Evaluar el desarrollo creativo e interactivad de los estudiantes mediante módulos didácticos adaptables aplicando el arte diario.</span>
-                </li>
-              </ul>
+          {/* SECCIÓN: OBJETIVOS */}
+          <div className="objectives-section">
+            <div className="card-title" style={{ marginBottom: '20px' }}>
+              📌 SIGNIFICADO DE LÜMØ
             </div>
+            
+            <div className="obj-general">
+              <h4>Significado de LÜMØ</h4>
+              <p>
+              LÜMØ representa una luz creativa en el entorno digital.
+              Los dos puntos sobre la Ü evocan curiosidad y alegria con la que un niño ve el mundo.
+              La Ø representa la conexión entre creatividad y tecnología usada por estetica y marca de programadores.
+              LÜMØ conecta tecnología y uso infantil. Es luz creativa en un entorno digital.
+              </p>
+
+              <h4 style={{ marginTop: '16px' }}>Objetivo General</h4>
+              <p>
+                Diseñar un aplicativo web para el uso y la practica de las artes plasticas de 1°-3° en la institucion educativa San Alberto Magno.
+              </p>
+            </div>
+
+            <div className="obj-specifics-title">Objetivos específicos:</div>
+            <ul className="obj-list">
+              <li className="obj-item">
+                <span>🎨</span>
+                <span>Diseñar e implementar actividades interactivas en el aplicativo web que promuevan la exploración de formas y colores mediante la expliracion audio-visual.</span>
+              </li>
+              <li className="obj-item">
+                <span>🖌️</span>
+                <span>Construir y aplicar ejercicios didácticos a través del lienzo digital para mejorar las habilidades perceptivas evaluando proyectos de 1° a 3°.</span>
+              </li>
+              <li className="obj-item">
+                <span>📊</span>
+                <span>Evaluar el desarrollo creativo e interactivad de los estudiantes mediante módulos didácticos adaptables aplicando el arte diario.</span>
+              </li>
+            </ul>
+          </div>
 
             {/* SECCIÓN: NUESTRO EQUIPO (ESTUDIANTES SOLICITADOS) */}
             <section className="team-section">
