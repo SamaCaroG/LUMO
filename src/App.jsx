@@ -1025,7 +1025,7 @@ function AppPage({
   }
 
   return (
-    <div className="lumo-app">
+    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''}`}>
       <header className={`main-header ${headerScrolled ? 'is-scrolled' : ''}`}>
         <div className="header-inner">
           <div
@@ -1269,7 +1269,7 @@ function AppPage({
         </div>
       </header>
 
-      <main className="main-shell">
+      <main className={`main-shell ${pageView === 'login' ? 'login-shell' : ''}`}>
         {pageView === 'login' ? (
           <LoginScreen onSubmit={onLogin} />
         ) : session?.role === 'teacher' && pageView === 'grades' ? (
@@ -1938,10 +1938,30 @@ function LoginScreen({ onSubmit }) {
   return (
     <section className="teacher-login-page" aria-labelledby="teacher-login-title">
       <div className="teacher-login-art" aria-hidden="true">
+        <div className="login-books">
+          <span />
+          <span />
+          <span />
+        </div>
+        <div className="login-pencils">
+          <span />
+          <span />
+          <span />
+        </div>
         <img className="teacher-login-crest" src={colSamShield} alt="" />
+        <span className="login-art-star login-art-star-one">★</span>
+        <span className="login-art-star login-art-star-two">★</span>
+        <span className="login-art-spark login-art-spark-one" />
+        <span className="login-art-spark login-art-spark-two" />
       </div>
       <form className="teacher-login-card" onSubmit={handleSubmit}>
-        <h1 id="teacher-login-title">¡BIENVENIDO!</h1>
+        <h1 id="teacher-login-title" aria-label="¡Bienvenido!">
+          {Array.from('¡Bienvenido!').map((letter, index) => (
+            <span className="welcome-letter" key={`${letter}-${index}`} aria-hidden="true">
+              {letter}
+            </span>
+          ))}
+        </h1>
         <p>Ingresa con tus credenciales institucionales</p>
         <div className="teacher-login-divider"><span>✦</span></div>
         <label className="teacher-login-field">
@@ -1970,10 +1990,14 @@ function LoginScreen({ onSubmit }) {
         </label>
         {error && <p className="teacher-form-error" role="alert">{error}</p>}
         <button className="teacher-login-submit" type="submit">
-          <i className="fa-solid fa-arrow-right-to-bracket" aria-hidden="true" />
+          <i className="fa-solid fa-arrow-right" aria-hidden="true" />
           Ingresar
         </button>
         <span className="teacher-login-brand">LÜMØ</span>
+        <div className="login-palette" aria-hidden="true">
+          <i className="fa-solid fa-palette" />
+          <i className="fa-solid fa-paintbrush" />
+        </div>
       </form>
     </section>
   )
