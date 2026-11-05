@@ -6,6 +6,7 @@ import lumoColorLogo from '../Lumo logo (1).png'
 import lumoLogoOnLight from '../fghneth.png'
 import colSamShield from '../escudo colsam png.png'
 import houseShield from '../escudo de la casa.png'
+import loginIllustration from './assets/login-illustration.png'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -1938,21 +1939,7 @@ function LoginScreen({ onSubmit }) {
   return (
     <section className="teacher-login-page" aria-labelledby="teacher-login-title">
       <div className="teacher-login-art" aria-hidden="true">
-        <div className="login-books">
-          <span />
-          <span />
-          <span />
-        </div>
-        <div className="login-pencils">
-          <span />
-          <span />
-          <span />
-        </div>
-        <img className="teacher-login-crest" src={colSamShield} alt="" />
-        <span className="login-art-star login-art-star-one">★</span>
-        <span className="login-art-star login-art-star-two">★</span>
-        <span className="login-art-spark login-art-spark-one" />
-        <span className="login-art-spark login-art-spark-two" />
+        <img className="teacher-login-art-image" src={loginIllustration} alt="" />
       </div>
       <form className="teacher-login-card" onSubmit={handleSubmit}>
         <h1 id="teacher-login-title" aria-label="¡Bienvenido!">
