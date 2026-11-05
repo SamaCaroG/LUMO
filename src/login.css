@@ -60,8 +60,9 @@ body:has(.lumo-app.is-login)::before {
   width: 100%;
   height: auto;
   min-height: 0;
-  aspect-ratio: 563 / 375;
+  aspect-ratio: 375 / 280;
   overflow: hidden;
+  border-radius: 1.2rem;
   border: 0;
   background: transparent;
   box-shadow: none;
@@ -377,7 +378,7 @@ body .lumo-app.is-login .teacher-login-page *:not(i) {
   .teacher-login-art {
     height: auto;
     min-height: 0;
-    aspect-ratio: 563 / 375;
+    aspect-ratio: 375 / 280;
   }
 
   .teacher-login-card {
