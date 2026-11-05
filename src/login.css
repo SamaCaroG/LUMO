@@ -78,6 +78,18 @@ body:has(.lumo-app.is-login)::before {
   object-position: left center;
 }
 
+.teacher-login-crest {
+  position: absolute;
+  z-index: 1;
+  inset: 3%;
+  width: 94%;
+  height: 94%;
+  object-fit: contain;
+  opacity: 1;
+  filter: drop-shadow(0 0.3rem 0.3rem rgba(19, 75, 96, 0.25));
+  pointer-events: none;
+}
+
 .teacher-login-card {
   position: relative;
   gap: 0.35rem;

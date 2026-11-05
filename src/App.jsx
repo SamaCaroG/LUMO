@@ -1940,6 +1940,7 @@ function LoginScreen({ onSubmit }) {
     <section className="teacher-login-page" aria-labelledby="teacher-login-title">
       <div className="teacher-login-art" aria-hidden="true">
         <img className="teacher-login-art-image" src={loginIllustration} alt="" />
+        <img className="teacher-login-crest" src={colSamShield} alt="" />
       </div>
       <form className="teacher-login-card" onSubmit={handleSubmit}>
         <h1 id="teacher-login-title" aria-label="¡Bienvenido!">
