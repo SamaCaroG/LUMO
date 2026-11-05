@@ -8,6 +8,10 @@ body:has(.lumo-app.is-login)::before {
   display: none;
 }
 
+.lumo-app.is-login .search-container {
+  visibility: hidden;
+}
+
 .lumo-app.is-login::before {
   position: fixed;
   z-index: -1;
@@ -296,26 +300,11 @@ body .lumo-app.is-login .teacher-login-page *:not(i) {
 
 .teacher-login-brand {
   position: relative;
+  display: block;
+  width: 7.5rem;
+  height: 2.7rem;
   margin-top: 1.85rem;
-  color: #12658d;
-  font-size: 2.25rem;
-  font-weight: 900;
-  letter-spacing: 0.06em;
-}
-
-.teacher-login-brand::before,
-.teacher-login-brand::after {
-  display: inline-block;
-  margin: 0 0.45rem;
-  color: #ffc63c;
-  content: "〃";
-  font-size: 1.55rem;
-  transform: rotate(-28deg);
-}
-
-.teacher-login-brand::after {
-  color: #ee56a4;
-  transform: rotate(28deg);
+  object-fit: contain;
 }
 
 .teacher-form-error {

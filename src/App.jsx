@@ -7,6 +7,7 @@ import lumoLogoOnLight from '../fghneth.png'
 import colSamShield from '../escudo colsam png.png'
 import houseShield from '../escudo de la casa.png'
 import loginIllustration from './assets/login-illustration.png'
+import lumoBlackLogo from './assets/lumo-black-logo.png'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -1981,7 +1982,7 @@ function LoginScreen({ onSubmit }) {
           <i className="fa-solid fa-arrow-right" aria-hidden="true" />
           Ingresar
         </button>
-        <span className="teacher-login-brand">LÜMØ</span>
+        <img className="teacher-login-brand" src={lumoBlackLogo} alt="LÜMØ" />
         <div className="login-palette" aria-hidden="true">
           <i className="fa-solid fa-palette" />
           <i className="fa-solid fa-paintbrush" />
