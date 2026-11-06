@@ -339,6 +339,10 @@ function getUserHomePath(user) {
   return user.role === 'teacher' ? '/docente' : `/estudiante/${user.grade}`
 }
 
+function formatPersonName(name) {
+  return name.replace(/(^|[\s._-])(\p{L})/gu, (_, separator, letter) => `${separator}${letter.toLocaleUpperCase('es')}`)
+}
+
 function App() {
   const [session, setSession] = useState(getStoredUser)
   const navigate = useNavigate()
@@ -352,14 +356,14 @@ function App() {
     if (studentMatch) {
       user = {
         name: studentMatch[1],
-        displayName: studentMatch[1],
+        displayName: formatPersonName(studentMatch[1]),
         role: 'student',
         grade: Number(studentMatch[2]),
       }
     } else if (teacherMatch && password.trim().toLowerCase() === teacherMatch[1]) {
       user = {
         name: teacherMatch[1],
-        displayName: teacherMatch[1],
+        displayName: formatPersonName(teacherMatch[1]),
         role: 'teacher',
         grade: null,
       }
@@ -571,6 +575,11 @@ function AppPage({
   const [profileImageDraft, setProfileImageDraft] = useState(session?.avatarImage ?? '')
   const [profileError, setProfileError] = useState('')
   const profileUser = session
+  const profileDisplayName = profileUser
+    ? profileUser.displayName === profileUser.name
+      ? formatPersonName(profileUser.name)
+      : profileUser.displayName ?? formatPersonName(profileUser.name)
+    : 'Usuario'
   const profileBoxRef = useRef(null)
   const [currentGrade, setCurrentGrade] = useState(grade)
   const hasEnteredSite = session?.role === 'student'
@@ -1204,7 +1213,7 @@ function AppPage({
 
           <div className="profile-box" ref={profileBoxRef}>
             <span className="teacher-header-name">
-              {profileUser?.displayName ?? profileUser?.name ?? 'Usuario'}
+              {profileDisplayName}
             </span>
             <button
               type="button"
@@ -1225,7 +1234,7 @@ function AppPage({
                 {!profileEditing ? (
                   <>
                     <div className="profile-menu-heading">
-                      <strong>{profileUser?.displayName ?? profileUser?.name}</strong>
+                      <strong>{profileDisplayName}</strong>
                       <span>{profileUser?.role === 'teacher' ? 'Docente' : `Estudiante · ${profileUser?.grade}° grado`}</span>
                     </div>
                     <button
@@ -1233,7 +1242,7 @@ function AppPage({
                       className="profile-menu-action"
                       role="menuitem"
                       onClick={() => {
-                        setProfileNameDraft(profileUser?.displayName ?? profileUser?.name ?? '')
+                        setProfileNameDraft(profileDisplayName)
                         setProfileColorDraft(profileUser?.avatarColor ?? '#03658c')
                         setProfileImageDraft(profileUser?.avatarImage ?? '')
                         setProfileError('')
