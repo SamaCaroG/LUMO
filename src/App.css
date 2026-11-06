@@ -5091,3 +5091,52 @@ button {
     font-size: 0.62rem;
   }
 }
+
+.lumo-app.is-student-lobby .nav-tab.nav-green,
+.lumo-app.is-student-lobby .nav-tab.nav-gold,
+.lumo-app.is-student-lobby .nav-tab.nav-crimson,
+.lumo-app.is-student-lobby .nav-tab.nav-purple {
+  min-height: 12rem;
+}
+
+.lumo-app.is-student-lobby .nav-card-title {
+  padding-top: 0.7rem;
+  padding-bottom: 0.55rem;
+  font-size: clamp(0.95rem, 2vw, 1.15rem);
+}
+
+.lumo-app.is-student-lobby .nav-card-content {
+  min-height: 7rem;
+}
+
+.lumo-app.is-student-lobby .nav-card-content .tab-icon-wrap.has-illustration {
+  height: 6.8rem;
+}
+
+.lumo-app.is-student-lobby .lobby-card-illustration {
+  width: min(100%, 11rem);
+  height: 6.8rem;
+}
+
+.lumo-app.is-student-lobby .nav-card-subtitle {
+  padding-bottom: 0.6rem;
+  font-size: clamp(0.65rem, 1.2vw, 0.75rem);
+}
+
+@media (max-width: 600px) {
+  .lumo-app.is-student-lobby .nav-tab.nav-green,
+  .lumo-app.is-student-lobby .nav-tab.nav-gold,
+  .lumo-app.is-student-lobby .nav-tab.nav-crimson,
+  .lumo-app.is-student-lobby .nav-tab.nav-purple {
+    min-height: 11rem;
+  }
+
+  .lumo-app.is-student-lobby .nav-card-content {
+    min-height: 6.2rem;
+  }
+
+  .lumo-app.is-student-lobby .nav-card-content .tab-icon-wrap.has-illustration,
+  .lumo-app.is-student-lobby .lobby-card-illustration {
+    height: 6rem;
+  }
+}
