@@ -37,7 +37,7 @@ const readingExampleLabels = [
 const gradeUiCopy = {
   1: {
     welcome: 'Elige tu curso y vamos a crear.',
-    navSubtitles: ['Cuentos para descubrir', 'Videos para mirar', 'Juegos y retos', 'Dibuja a tu manera'],
+    navSubtitles: ['Cuentos para descubrir', 'Inspirate y crea', 'Juegos y retos', 'Dibuja a tu manera'],
     menuPrompt: 'Elige qué quieres explorar.',
     readingIntro: 'Lee estas historias y encuentra ideas para tus dibujos.',
     videoIntro: 'Elige un video para mirar y descubrir algo nuevo.',

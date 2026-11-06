@@ -4769,7 +4769,6 @@ button {
   z-index: 1;
 }
 
-.lumo-app.is-student-lobby .teacher-header-name,
 .lumo-app.is-student-lobby .workspace-heading-art {
   display: none;
 }
