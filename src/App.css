@@ -871,6 +871,23 @@ button {
   font-size: clamp(2rem, 4vw, 3.2rem);
 }
 
+.workspace-title-primary {
+  color: #0c718f;
+}
+
+.workspace-title-rainbow span:nth-child(1),
+.workspace-title-rainbow span:nth-child(9) { color: #39ad70; }
+.workspace-title-rainbow span:nth-child(2),
+.workspace-title-rainbow span:nth-child(8),
+.workspace-title-rainbow span:nth-child(12) { color: #f3b936; }
+.workspace-title-rainbow span:nth-child(3),
+.workspace-title-rainbow span:nth-child(7),
+.workspace-title-rainbow span:nth-child(10) { color: #eb5a67; }
+.workspace-title-rainbow span:nth-child(4),
+.workspace-title-rainbow span:nth-child(11) { color: #e94d8c; }
+.workspace-title-rainbow span:nth-child(5) { color: #7854c8; }
+.workspace-title-rainbow span:nth-child(6) { color: #ed6980; }
+
 .workspace-heading-copy p {
   max-width: 44rem;
   margin: 0.55rem auto 0;
@@ -1007,6 +1024,16 @@ button {
 .nav-icon-gold { color: #d9ad16; }
 .nav-icon-crimson { color: #d93d59; }
 .nav-icon-purple { color: #8549ba; }
+
+.nav-art-icon {
+  display: block;
+  font-size: 3.35rem;
+  line-height: 1;
+  filter: drop-shadow(0 3px 2px rgba(31, 41, 55, 0.12));
+}
+
+.nav-icon-crimson:has(.nav-art-icon) { background: #ffe2e7; }
+.nav-icon-purple:has(.nav-art-icon) { background: #eee0fb; }
 
 .nav-card-subtitle {
   display: block;
@@ -4714,5 +4741,353 @@ button {
 @media (prefers-reduced-motion: reduce) {
   .about-page .badge {
     transition: none;
+  }
+}
+
+.lumo-app.is-student-lobby {
+  position: relative;
+  isolation: isolate;
+  background: #fffaf0;
+}
+
+.lumo-app.is-student-lobby::before {
+  position: fixed;
+  z-index: 0;
+  inset: 3.15rem 0 0;
+  background:
+    radial-gradient(circle 52px at 0 0, #ffda70 98%, transparent 100%),
+    radial-gradient(circle 31px at 100% 0, #c3a0e8 98%, transparent 100%),
+    radial-gradient(circle 20px at 96% 2.2rem, #acd98e 98%, transparent 100%),
+    radial-gradient(circle 57px at 0 100%, #acd39a 98%, transparent 100%);
+  content: "";
+  pointer-events: none;
+}
+
+.lumo-app.is-student-lobby .main-shell,
+.lumo-app.is-student-lobby .main-footer {
+  position: relative;
+  z-index: 1;
+}
+
+.lumo-app.is-student-lobby .teacher-header-name,
+.lumo-app.is-student-lobby .workspace-heading-art {
+  display: none;
+}
+
+.lumo-app.is-student-view.is-student-lobby .header-inner {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lumo-app.is-student-lobby .search-container {
+  display: none;
+}
+
+.lumo-app.is-student-view .header-inner {
+  min-height: 3.15rem;
+  grid-template-columns: minmax(110px, 1fr) minmax(200px, 1.3fr) auto;
+  gap: clamp(0.7rem, 2vw, 1.25rem);
+  padding: 0.18rem clamp(1rem, 3.2vw, 1.5rem);
+}
+
+.lumo-app.is-student-view .brand-logo {
+  width: 7rem;
+  height: 2.85rem;
+}
+
+.lumo-app.is-student-view .profile-box {
+  gap: 0.5rem;
+}
+
+.lumo-app.is-student-view .teacher-header-name {
+  font-size: 0.85rem;
+}
+
+.lumo-app.is-student-view .profile-avatar,
+.lumo-app.is-student-view .school-link-button {
+  width: 2.2rem;
+  height: 2.2rem;
+}
+
+.lumo-app.is-student-view .profile-avatar {
+  border-width: 2px;
+  font-size: 1rem;
+}
+
+.lumo-app.is-student-lobby .main-shell {
+  max-width: 1280px;
+  padding: 1.25rem clamp(1rem, 3.2vw, 1.5rem) 1rem;
+}
+
+.lumo-app.is-student-view .section-lobby {
+  gap: 0.9rem;
+  padding: 0.1rem 0 0.5rem;
+}
+
+.lumo-app.is-student-view .workspace-heading {
+  position: relative;
+  padding: 0 0.5rem;
+}
+
+.lumo-app.is-student-view .workspace-heading h1 {
+  margin: 0;
+  font-size: clamp(1.7rem, 4.8vw, 2.5rem);
+  line-height: 1.15;
+  letter-spacing: 0.015em;
+}
+
+.lumo-app.is-student-view .workspace-title-primary {
+  color: #0c6d8b;
+}
+
+.lumo-app.is-student-view .workspace-title-rainbow span {
+  display: inline-block;
+}
+
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(1) { color: #38b981; transform: rotate(-5deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(2) { color: #ffc43c; transform: rotate(4deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(3) { color: #39b690; transform: rotate(-3deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(4) { color: #8852c5; transform: rotate(3deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(5) { color: #e84d69; transform: rotate(-4deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(6) { color: #f5a932; transform: rotate(3deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(7) { color: #239bb9; transform: rotate(-2deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(8) { color: #49b878; transform: rotate(3deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(9) { color: #f2b830; transform: rotate(-3deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(10) { color: #8852c5; transform: rotate(3deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(11) { color: #e84d69; transform: rotate(-4deg); }
+.lumo-app.is-student-view .workspace-title-rainbow span:nth-child(12) { color: #ed9735; transform: rotate(5deg); }
+
+.lumo-app.is-student-view .workspace-heading-copy p {
+  max-width: 32rem;
+  margin-top: 0.2rem;
+  font-size: 0.68rem;
+  line-height: 1.35;
+}
+
+.workspace-heading-art {
+  position: absolute;
+  top: 0;
+  right: 0.1rem;
+  width: 3.75rem;
+  height: 3.75rem;
+  overflow: visible;
+}
+
+.workspace-heading-confetti {
+  position: absolute;
+  top: 1.25rem;
+  width: 1.55rem;
+  height: 1.8rem;
+}
+
+.workspace-heading-confetti-left { left: 0.9rem; }
+.workspace-heading-confetti-right { right: 0.9rem; }
+
+.workspace-heading-confetti::before,
+.workspace-heading-confetti::after {
+  position: absolute;
+  width: 0.55rem;
+  height: 0.2rem;
+  border-radius: 999px;
+  background: #f6b934;
+  content: "";
+}
+
+.workspace-heading-confetti::before {
+  top: 0.25rem;
+  left: 0.25rem;
+  transform: rotate(25deg);
+}
+
+.workspace-heading-confetti::after {
+  top: 0.9rem;
+  left: 0;
+  background: #e96586;
+  transform: rotate(-25deg);
+}
+
+.workspace-heading-confetti-right::before { background: #44bd86; }
+.workspace-heading-confetti-right::after { background: #a56bd0; }
+
+.lumo-app.is-student-view .nav-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.55rem;
+}
+
+.lumo-app.is-student-view .nav-tab.nav-green,
+.lumo-app.is-student-view .nav-tab.nav-gold,
+.lumo-app.is-student-view .nav-tab.nav-crimson,
+.lumo-app.is-student-view .nav-tab.nav-purple {
+  min-height: 9.7rem;
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-bottom: 4px solid var(--nav-accent);
+  border-radius: 1rem;
+  background: linear-gradient(155deg, #fff 5%, var(--nav-tint) 100%);
+  box-shadow: 0 6px 12px rgba(31, 41, 55, 0.08);
+}
+
+.lumo-app.is-student-view .nav-tab.nav-green { --nav-accent: #50c47b; --nav-tint: #f2fff5; }
+.lumo-app.is-student-view .nav-tab.nav-gold { --nav-accent: #f4ba28; --nav-tint: #fff9e6; }
+.lumo-app.is-student-view .nav-tab.nav-crimson { --nav-accent: #ef687b; --nav-tint: #fff3f4; }
+.lumo-app.is-student-view .nav-tab.nav-purple { --nav-accent: #9859c9; --nav-tint: #f8f2ff; }
+
+.lumo-app.is-student-view .nav-card-title {
+  border-radius: 0.8rem 0.8rem 0.65rem 0.65rem;
+  padding: 0.55rem 0.25rem 0.42rem;
+  font-size: clamp(0.8rem, 1.9vw, 1rem);
+  font-weight: 900;
+}
+
+.lumo-app.is-student-view .nav-card-title.nav-green { background: #c9ebd0; color: #087551; }
+.lumo-app.is-student-view .nav-card-title.nav-gold { background: #ffe6a0; color: #886000; }
+.lumo-app.is-student-view .nav-card-title.nav-crimson { background: #ffd2d8; color: #b52e49; }
+.lumo-app.is-student-view .nav-card-title.nav-purple { background: #e8d8f6; color: #6332a1; }
+
+.lumo-app.is-student-view .nav-card-content {
+  min-height: 5.55rem;
+  padding: 0.1rem 0.15rem 0;
+}
+
+.lumo-app.is-student-view .nav-card-content .tab-icon-wrap.has-illustration {
+  width: 100%;
+  height: 5.45rem;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.lobby-card-illustration {
+  display: block;
+  width: min(100%, 8.9rem);
+  height: 5.4rem;
+  overflow: visible;
+  object-fit: contain;
+}
+
+.lumo-app.is-student-view .nav-card-subtitle {
+  padding: 0 0.2rem 0.42rem;
+  color: #64748b;
+  font-size: clamp(0.55rem, 1.15vw, 0.68rem);
+  line-height: 1.2;
+}
+
+.lumo-app.is-student-view .diagnostic-featured-card {
+  position: relative;
+  min-height: 3.55rem;
+  overflow: hidden;
+  grid-template-columns: auto 1fr auto;
+  gap: 0.6rem;
+  border: 1.5px solid #a87ad0;
+  border-radius: 0.9rem;
+  padding: 0.35rem 0.85rem;
+  background: linear-gradient(110deg, #f8edff, #fffaff);
+  box-shadow: 0 5px 12px rgba(75, 49, 111, 0.1);
+}
+
+.lumo-app.is-student-view .diagnostic-featured-icon {
+  font-size: 1.6rem;
+}
+
+.lumo-app.is-student-view .diagnostic-featured-card strong {
+  font-size: 0.92rem;
+}
+
+.lumo-app.is-student-view .diagnostic-featured-card small {
+  margin-top: 0.05rem;
+  font-size: 0.62rem;
+}
+
+.lumo-app.is-student-view .diagnostic-featured-card > i {
+  position: relative;
+  z-index: 1;
+  font-size: 0.85rem;
+}
+
+.diagnostic-featured-art {
+  position: absolute;
+  right: 3.1rem;
+  bottom: -0.5rem;
+  font-size: 2.2rem;
+  transform: rotate(-18deg);
+}
+
+.lumo-app.is-student-view .menu-prompt {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .lumo-app.is-student-view .header-inner {
+    grid-template-columns: minmax(78px, 0.7fr) minmax(100px, 1fr) auto;
+    gap: 0.4rem;
+    padding-right: 0.6rem;
+    padding-left: 0.6rem;
+  }
+
+  .lumo-app.is-student-view .brand-logo {
+    width: 5.25rem;
+    height: 2.45rem;
+  }
+
+  .lumo-app.is-student-view .teacher-header-name {
+    max-width: 3.8rem;
+    overflow: hidden;
+    font-size: 0.68rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .lumo-app.is-student-view .profile-box {
+    gap: 0.3rem;
+  }
+
+  .lumo-app.is-student-view .profile-avatar,
+  .lumo-app.is-student-view .school-link-button {
+    width: 1.85rem;
+    height: 1.85rem;
+  }
+
+  .lumo-app.is-student-lobby .main-shell {
+    padding-right: 0.65rem;
+    padding-left: 0.65rem;
+  }
+
+  .lumo-app.is-student-view .workspace-heading {
+    padding: 0 2.2rem;
+  }
+
+  .lumo-app.is-student-view .workspace-heading h1 {
+    font-size: clamp(1.35rem, 5.3vw, 1.7rem);
+  }
+
+  .lumo-app.is-student-view .workspace-heading-copy p {
+    font-size: 0.62rem;
+  }
+
+  .workspace-heading-art {
+    width: 2.5rem;
+    height: 2.5rem;
+  }
+
+  .workspace-heading-confetti-left { left: 0; }
+  .workspace-heading-confetti-right { right: 0; }
+
+  .lumo-app.is-student-view .nav-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 0.5rem;
+  }
+
+  .lumo-app.is-student-view .nav-tab.nav-green,
+  .lumo-app.is-student-view .nav-tab.nav-gold,
+  .lumo-app.is-student-view .nav-tab.nav-crimson,
+  .lumo-app.is-student-view .nav-tab.nav-purple {
+    min-height: 9rem;
+  }
+
+  .lumo-app.is-student-view .nav-card-title {
+    font-size: 0.88rem;
+  }
+
+  .lumo-app.is-student-view .nav-card-subtitle {
+    font-size: 0.62rem;
   }
 }

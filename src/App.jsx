@@ -8,6 +8,8 @@ import colSamShield from '../escudo colsam png.png'
 import houseShield from '../escudo de la casa.png'
 import loginIllustration from './assets/login-illustration.png'
 import lumoBlackLogo from './assets/lumo-black-logo.png'
+import studentBookIcon from './assets/student-book-icon.png'
+import studentPaletteIcon from './assets/student-palette-icon.png'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -427,6 +429,94 @@ function StudentRoute({ session, onLogout, onUpdateSession }) {
       onUpdateSession={onUpdateSession}
       onGoHome={() => navigate(getUserHomePath(session))}
     />
+  )
+}
+
+function LobbyCardIllustration({ type }) {
+  if (type === 'book' || type === 'palette') {
+    return (
+      <img
+        src={type === 'book' ? studentBookIcon : studentPaletteIcon}
+        className="lobby-card-illustration"
+        alt=""
+      />
+    )
+  }
+
+  if (type === 'video') {
+    return (
+      <svg viewBox="0 0 160 100" className="lobby-card-illustration" aria-hidden="true">
+        <defs>
+          <linearGradient id="lobby-video-screen" x1="0" y1="0" x2="0.9" y2="1">
+            <stop stopColor="#28bfd0" />
+            <stop offset="1" stopColor="#0787aa" />
+          </linearGradient>
+          <filter id="lobby-video-shadow" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="4" floodColor="#8c6813" floodOpacity=".19" stdDeviation="3" />
+          </filter>
+        </defs>
+        <ellipse cx="80" cy="54" rx="47" ry="39" fill="#fff0bf" />
+        <path d="M25 42l-8-5m8 18H13m12 13-7 5m117-31 8-5m-8 18h12m-14 13 7 5" fill="none" stroke="#efa91f" strokeLinecap="round" strokeWidth="4" />
+        <g filter="url(#lobby-video-shadow)">
+          <rect x="43" y="28" width="74" height="49" rx="14" fill="url(#lobby-video-screen)" stroke="#08799e" strokeWidth="4" />
+          <path d="M53 37c10-4 20-4 30-2" fill="none" stroke="#fff" strokeLinecap="round" strokeOpacity=".36" strokeWidth="2.5" />
+          <path d="M74 41c-1.6-.9-3.5.2-3.5 2v18c0 1.8 1.9 2.9 3.5 2l16-9c1.7-.9 1.7-3.2 0-4.1z" fill="#fff" />
+        </g>
+        <path d="M66 83h28m-21 4h14" fill="none" stroke="#d8a31e" strokeLinecap="round" strokeWidth="3" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 160 100" className="lobby-card-illustration" aria-hidden="true">
+      <defs>
+        <linearGradient id="lobby-crayon-body" x1="0" y1="0" x2="1" y2="0">
+          <stop stopColor="#633aab" />
+          <stop offset=".28" stopColor="#a779e2" />
+          <stop offset=".53" stopColor="#8756ca" />
+          <stop offset=".78" stopColor="#6d43b1" />
+          <stop offset="1" stopColor="#51328f" />
+        </linearGradient>
+        <linearGradient id="lobby-crayon-tip" x1="0" y1="0" x2="1" y2="0">
+          <stop stopColor="#d8c3f1" />
+          <stop offset=".5" stopColor="#f4eaff" />
+          <stop offset="1" stopColor="#a787ce" />
+        </linearGradient>
+        <filter id="lobby-crayon-shadow" x="-20%" y="-20%" width="150%" height="160%">
+          <feDropShadow dx="0" dy="4" floodColor="#54358a" floodOpacity=".22" stdDeviation="3" />
+        </filter>
+      </defs>
+      <ellipse cx="80" cy="53" rx="46" ry="39" fill="#eee0fa" />
+      <path d="M27 42l-8-5m8 18H15m12 13-7 5m103-31 8-5m-8 18h12m-14 13 7 5" fill="none" stroke="#a875d6" strokeLinecap="round" strokeWidth="4" />
+      <g transform="rotate(43 81 51)" filter="url(#lobby-crayon-shadow)">
+        <path d="M69 24 81 8l12 16z" fill="url(#lobby-crayon-tip)" stroke="#56368f" strokeLinejoin="round" strokeWidth="2.5" />
+        <path d="M77 19l4-11 4 11z" fill="#49317c" />
+        <rect x="68.5" y="23" width="25" height="56" rx="7" fill="url(#lobby-crayon-body)" stroke="#56368f" strokeWidth="2.5" />
+        <path d="M73 28v42" stroke="#e9d8ff" strokeLinecap="round" strokeOpacity=".7" strokeWidth="3" />
+        <path d="M88 28v42" stroke="#4d3086" strokeLinecap="round" strokeOpacity=".65" strokeWidth="2" />
+        <path d="M69 34h24m-24 34h24" stroke="#e5d1fa" strokeWidth="3" />
+        <path d="M69 37h24m-24 28h24" stroke="#5d3c98" strokeOpacity=".55" strokeWidth="1.5" />
+        <path d="M75 41h12v18H75z" fill="#f5eaff" fillOpacity=".17" />
+        <path d="M72 77h18" stroke="#c6a9ec" strokeWidth="2" />
+      </g>
+    </svg>
+  )
+}
+
+function LobbyHeadingArt() {
+  return (
+    <svg viewBox="0 0 90 90" className="workspace-heading-art" aria-hidden="true">
+      <path d="M16 19l-7-5m9 18-9 1m58-13 7-6m-9 19 9 1" fill="none" stroke="#f5be32" strokeLinecap="round" strokeWidth="4" />
+      <path d="M31 38c0-12 9-21 22-21 8 0 13 4 16 10 5 10 0 20-8 24-5 3-10 2-15 2-4 0-6 2-5 5 1 4-2 7-6 7-9 0-16-8-16-17 0-5 1-8 4-12" fill="#ffd56c" stroke="#e3a72d" strokeWidth="2" />
+      <circle cx="34" cy="33" r="4" fill="#ef6876" /><circle cx="47" cy="27" r="4" fill="#36b885" />
+      <circle cx="60" cy="33" r="4" fill="#8355c4" /><circle cx="31" cy="46" r="4" fill="#21a7c3" />
+      <g transform="rotate(35 70 57)">
+        <path d="M67 31h9v42l-4.5 9L67 73z" fill="#168baa" stroke="#0d6885" strokeWidth="2" />
+        <path d="M67 39h9m-9 5h9" stroke="#f7d15c" strokeWidth="3" />
+        <path d="M67 31c0-5 9-5 9 0z" fill="#b55b38" />
+        <path d="M67 73h9" stroke="#d5e6db" strokeWidth="3" />
+      </g>
+    </svg>
   )
 }
 
@@ -1027,7 +1117,7 @@ function AppPage({
   }
 
   return (
-    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''}`}>
+    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
       <header className={`main-header ${headerScrolled ? 'is-scrolled' : ''}`}>
         <div className="header-inner">
           <div
@@ -1333,17 +1423,27 @@ function AppPage({
           <section className="section-lobby">
             <div className="workspace-heading">
               <div className="workspace-heading-copy">
-                <h1>¡MEJORA TUS HABILIDADES!</h1>
+                <h1 aria-label="¡MEJORA TUS HABILIDADES!">
+                  <span className="workspace-title-primary" aria-hidden="true">¡MEJORA TUS </span>
+                  <span className="workspace-title-rainbow" aria-hidden="true">
+                    {'HABILIDADES!'.split('').map((letter, index) => (
+                      <span key={`${letter}-${index}`}>{letter}</span>
+                    ))}
+                  </span>
+                </h1>
                 <p>{data.desc}</p>
               </div>
+              <span className="workspace-heading-confetti workspace-heading-confetti-left" aria-hidden="true" />
+              <span className="workspace-heading-confetti workspace-heading-confetti-right" aria-hidden="true" />
+              <LobbyHeadingArt />
             </div>
 
             <div className="nav-grid">
               {[
-                { id: 'textos', label: 'TEXTOS', subtitle: pageCopy.navSubtitles[0], color: 'green', icon: 'fa-book-open' },
-                { id: 'videos', label: 'VIDEOS', subtitle: pageCopy.navSubtitles[1], color: 'gold', icon: 'fa-play' },
-                { id: 'actividades', label: 'ACTIVIDADES', subtitle: pageCopy.navSubtitles[2], color: 'crimson', icon: 'fa-pencil' },
-                { id: 'dibujos', label: 'DIBUJOS', subtitle: pageCopy.navSubtitles[3], color: 'purple', icon: 'fa-paint-brush' },
+                { id: 'textos', label: 'TEXTOS', subtitle: pageCopy.navSubtitles[0], color: 'green', illustration: 'book' },
+                { id: 'videos', label: 'VIDEOS', subtitle: pageCopy.navSubtitles[1], color: 'gold', illustration: 'video' },
+                { id: 'actividades', label: 'ACTIVIDADES', subtitle: pageCopy.navSubtitles[2], color: 'crimson', illustration: 'palette' },
+                { id: 'dibujos', label: 'DIBUJOS', subtitle: pageCopy.navSubtitles[3], color: 'purple', illustration: 'crayon' },
               ].map((tab) => (
                 <button
                   key={tab.id}
@@ -1357,8 +1457,12 @@ function AppPage({
                 >
                   <span className={`nav-card-title nav-${tab.color}`}>{tab.label}</span>
                   <span className="nav-card-content">
-                    <span className={`tab-icon-wrap nav-icon-${tab.color}`}>
-                      <i className={`fa-solid ${tab.icon}`} aria-hidden="true" />
+                    <span className={`tab-icon-wrap nav-icon-${tab.color} ${tab.illustration ? 'has-illustration' : ''}`}>
+                      {tab.illustration ? (
+                        <LobbyCardIllustration type={tab.illustration} />
+                      ) : (
+                        <i className={`fa-solid ${tab.icon}`} aria-hidden="true" />
+                      )}
                     </span>
                   </span>
                   <span className="nav-card-subtitle">{tab.subtitle}</span>
@@ -1381,6 +1485,7 @@ function AppPage({
                 <small>Responde preguntas sobre lo que has aprendido en arte.</small>
               </span>
               <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+              <span className="diagnostic-featured-art" aria-hidden="true">🎨</span>
             </button>
 
             <div className="menu-prompt">
