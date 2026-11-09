@@ -15,9 +15,13 @@ The React Compiler is not enabled on this template because of its impact on dev 
 
 If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
 
-## Activar el envío de diagnósticos
+## Acceso de prueba y diagnósticos
 
-El inicio de sesión usa Firebase Authentication (correo y contraseña), y los resultados se guardan en Cloud Firestore.
+La pantalla de ingreso permite entrar con cualquier texto de correo que incluya `@` y una contraseña no vacía. Este acceso es únicamente de prueba: no verifica la contraseña ni crea una cuenta; abre una sesión local de estudiante y la guarda en el navegador actual. Los identificadores que incluyen `artesestudiante2` o `artesestudiante3` abren esos grados; los demás abren primero. No uses este modo para proteger información ni para cuentas reales.
+
+El acceso local no comparte cuentas o sesiones entre navegadores. Para que las cuentas y contraseñas de tus amigos se verifiquen y funcionen en distintos dispositivos, hay que desplegar la aplicación en una dirección pública y configurar Firebase Authentication con usuarios reales.
+
+Los resultados de diagnósticos usan Firebase Authentication y Cloud Firestore:
 
 1. En Firebase Console, abre el proyecto `lumo-educativo`.
 2. En **Authentication → Sign-in method**, activa **Correo electrónico/contraseña**.

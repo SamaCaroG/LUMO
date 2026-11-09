@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { onAuthStateChanged, signInWithEmailAndPassword, signOut as signOutFirebase } from 'firebase/auth'
+import { onAuthStateChanged, signOut as signOutFirebase } from 'firebase/auth'
 import './App.css'
 import './login.css'
 import lumoColorLogo from '../Lumo logo (1).png'
@@ -314,54 +314,22 @@ const normalizeSearchText = (value) => String(value ?? '')
   .toLowerCase()
 
 const USER_SESSION_KEY = 'lumo-user'
-const LOCAL_USERS_KEY = 'lumo-local-users'
 
-function readLocalUsers() {
-  try {
-    const rawUsers = localStorage.getItem(LOCAL_USERS_KEY)
-    const parsed = rawUsers ? JSON.parse(rawUsers) : {}
-    return parsed && typeof parsed === 'object' ? parsed : {}
-  } catch (error) {
-    localStorage.removeItem(LOCAL_USERS_KEY)
-    return {}
-  }
-}
+function createGuestSession(identifier) {
+  const normalizedIdentifier = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
+  const name = normalizedIdentifier.split('@')[0].replace(/[^a-z0-9._-]/g, '') || 'artista'
+  const grade = Number(normalizedIdentifier.match(/artesestudiante([123])/)?.[1] ?? 1)
 
-function writeLocalUsers(users) {
-  localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users))
-}
-
-function ensureDemoLocalUsers() {
-  const users = readLocalUsers()
-  const defaults = {
-    'luzdina@artesestudiante1.lumo.invalid': { password: 'LUMO123', displayName: 'Luzdina' },
-    'juan@artesestudiante1.lumo.invalid': { password: 'LUMO123', displayName: 'Juan' },
-    'samantha@artesestudiante2.lumo.invalid': { password: 'LUMO123', displayName: 'Samantha' },
-    'maria@artesplasticasdocente.lumo.invalid': { password: 'LUMO123', displayName: 'Maria' },
-  }
-
-  const nextUsers = { ...defaults, ...users }
-  writeLocalUsers(nextUsers)
-  return nextUsers
-}
-
-function getLocalSessionFromEmail(email, password) {
-  const users = ensureDemoLocalUsers()
-  const account = users[email]
-  if (!account || account.password !== password) return null
-
-  const identity = getSessionIdentity(email)
-  if (!identity) return null
-
-  const session = {
-    ...identity,
-    uid: email,
-    displayName: account.displayName || identity.displayName,
+  return {
+    name,
+    displayName: formatPersonName(name),
+    role: 'student',
+    grade,
+    uid: `guest-${email}`,
     avatarColor: '#03658c',
     avatarImage: '',
   }
-
-  return session
 }
 
 function getLoginEmail(identifier) {
@@ -454,49 +422,18 @@ function App() {
   }), [])
 
   const signIn = async (identifier, password) => {
-    const email = getLoginEmail(identifier)
-    if (!email) return 'Verifica el correo institucional.'
+    if (!identifier.trim() || !identifier.includes('@')) return 'Escribe tu correo electrónico.'
     if (!password) return 'Ingresa tu contraseña.'
 
-    const localSession = getLocalSessionFromEmail(email, password)
-    if (localSession) {
-      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(localSession))
-      setSession(localSession)
-      navigate(getUserHomePath(localSession), { replace: true })
-      return ''
-    }
-
     try {
-      await signInWithEmailAndPassword(auth, email, password)
+      const guestSession = createGuestSession(identifier)
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(guestSession))
+      setSession(guestSession)
+      navigate(getUserHomePath(guestSession), { replace: true })
       return ''
     } catch (error) {
-      const users = readLocalUsers()
-      if (!users[email]) {
-        users[email] = { password, displayName: getSessionIdentity(email)?.displayName || email.split('@')[0] }
-        writeLocalUsers(users)
-
-        const autoSession = {
-          ...getSessionIdentity(email),
-          uid: email,
-          displayName: users[email].displayName,
-          avatarColor: '#03658c',
-          avatarImage: '',
-        }
-
-        localStorage.setItem(USER_SESSION_KEY, JSON.stringify(autoSession))
-        setSession(autoSession)
-        navigate(getUserHomePath(autoSession), { replace: true })
-        return ''
-      }
-
-      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
-        return 'Correo o contraseña incorrectos.'
-      }
-      if (error.code === 'auth/operation-not-allowed') {
-        return 'El inicio de sesión por correo y contraseña aún no está activado en Firebase. Puedes seguir con la sesión local creada en este navegador.'
-      }
-      console.error('No se pudo iniciar sesión con Firebase.', error)
-      return 'No se pudo iniciar sesión. Revisa la conexión e inténtalo de nuevo.'
+      console.error('No se pudo guardar la sesión en este navegador.', error)
+      return 'No se pudo guardar la sesión. Revisa que el navegador permita almacenamiento local.'
     }
   }
 
@@ -2181,8 +2118,11 @@ function LoginScreen({ onSubmit }) {
   const handleSubmit = async (event) => {
     event.preventDefault()
     setIsSubmitting(true)
-    setError(await onSubmit(email, password))
-    setIsSubmitting(false)
+    try {
+      setError(await onSubmit(email, password))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -2199,7 +2139,7 @@ function LoginScreen({ onSubmit }) {
             </span>
           ))}
         </h1>
-        <p>Ingresa con tus credenciales institucionales</p>
+        <p>Ingresa tu correo y contraseña para entrar</p>
         <div className="teacher-login-divider"><span>✦</span></div>
         <label className="teacher-login-field">
           <i className="fa-regular fa-envelope" aria-hidden="true" />
@@ -2208,7 +2148,7 @@ function LoginScreen({ onSubmit }) {
             inputMode="email"
             autoComplete="username"
             placeholder="Correo"
-            aria-label="Correo institucional"
+            aria-label="Correo electrónico"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
