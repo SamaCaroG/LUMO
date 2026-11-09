@@ -319,13 +319,14 @@ function createGuestSession(identifier) {
   const normalizedIdentifier = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
   const name = normalizedIdentifier.split('@')[0].replace(/[^a-z0-9._-]/g, '') || 'artista'
+  const identity = getSessionIdentity(email)
   const grade = Number(normalizedIdentifier.match(/artesestudiante([123])/)?.[1] ?? 1)
 
   return {
     name,
     displayName: formatPersonName(name),
-    role: 'student',
-    grade,
+    role: identity?.role ?? 'student',
+    grade: identity?.role === 'teacher' ? null : identity?.grade ?? grade,
     uid: `guest-${email}`,
     avatarColor: '#03658c',
     avatarImage: '',
