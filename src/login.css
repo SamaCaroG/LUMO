@@ -4,16 +4,6 @@
   background: #fffaf1;
 }
 
-.lumo-app.is-login .header-inner {
-  min-height: 3.15rem;
-  padding: 0.18rem clamp(1rem, 3.2vw, 1.5rem);
-}
-
-.lumo-app.is-login .brand-logo {
-  width: 7rem;
-  height: 2.85rem;
-}
-
 body:has(.lumo-app.is-login)::before {
   display: none;
 }
@@ -25,7 +15,7 @@ body:has(.lumo-app.is-login)::before {
 .lumo-app.is-login::before {
   position: fixed;
   z-index: -1;
-  inset: 3.15rem 0 0;
+  inset: 6.4rem 0 0;
   background:
     radial-gradient(ellipse 10rem 8rem at 1% 0%, #ffd66e 0 68%, transparent 69%),
     radial-gradient(ellipse 8rem 11rem at 0% 57%, #a8d58e 0 67%, transparent 68%),
