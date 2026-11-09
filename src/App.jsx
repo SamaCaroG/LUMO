@@ -145,11 +145,200 @@ const gradeUiCopy = {
   },
 }
 
+const pdfStory = (tag, title, summary, fullText) => ({
+  tag,
+  color: '#4BD166',
+  title,
+  summary,
+  fullText,
+})
+
+const sharedProcessStories = [
+  pdfStory(
+    'Unidad 1',
+    'Cuento: "La hojita y el mundo de las formas"',
+    '¡Hola! Soy una hojita suave que cayó de un árbol grande.',
+    `¡Hola! Soy una hojita suave que cayó de un árbol grande. Si me pasas tu dedito, sentirás mis caminitos y cómo me doy forma.
+
+En la naturaleza nada es totalmente plano. Las piedritas, las flores y los tronquitos tienen volumen y ocupan un lugar real para que los puedas tocar. Si usas una hojita o una ramita para pintar, ¡estás creando arte con la naturaleza!
+
+Además, cuando suena la música alegre del vallenato, nuestras manos bailan al ritmo del acordeón.
+
+¿Qué tesoro de la naturaleza vas a tocar hoy para inspirarte?`,
+  ),
+  pdfStory(
+    'Unidad 2',
+    'Cuento: "El lápiz que quería bailar"',
+    '¡Hola! Soy tu lápiz amigo y me encanta bailar suelto sobre la hoja.',
+    `¡Hola! Soy tu lápiz amigo y me encanta bailar suelto sobre la hoja. Cuando dibujo sin usar regla, creo perritos, carritos y paisajes que parecen cobrar vida.
+
+Si dibujo un árbol grande y cerquita, está al frente; si lo hago chiquitico al fondo, se ve muy lejos. Así jugamos a dar profundidad a cada dibujo.
+
+Al ritmo de la cumbia y el mapalé, mis trazos bailan felices en la hoja.
+
+¿Te animas a hacer bailar a tu lápiz para dibujar un bailarín?`,
+  ),
+  pdfStory(
+    'Unidad 3',
+    'Cuento: "El baile de las mezclas"',
+    '¡Hola! Somos los colores y nos encanta jugar a los abrazos.',
+    `¡Hola! Somos los colores y nos encanta jugar a los abrazos. Cuando el Amarillo abraza al Azul, ¡nace el Verde! Y cuando el Rojo le da la mano al Amarillo, ¡aparece el Naranja!
+
+Así creamos el círculo cromático, que parece una rueda mágica llena de tonos secundarios. Con tus lápices de colores puedes pintar suave o fuerte para darle sombrita a tus dibujos.
+
+Nuestros artesanos usan todos estos colores para tejer mochilas hermosas.
+
+¿Qué color mágico vas a inventar hoy mezclando tus pinturas?`,
+  ),
+  pdfStory(
+    'Unidad 4',
+    'Cuento: "Los amiguitos de la precisión"',
+    '¡Hola! Somos la Regla, la Escuadra y el Compás.',
+    `¡Hola! Somos la Regla, la Escuadra y el Compás. Nos gusta ayudarte para que tus líneas y círculos queden súper limpios y parejitos.
+
+El Compás se para en un piecito y da vueltas redonditas sin cansarse. La Regla y la Escuadra te ayudan a hacer líneas bien derechitas para dibujar cajas, juguetes o casitas desde varios lados.
+
+Somos tus mejores ayudantes de dibujo.
+
+¿Estás listo para hacer rodar el compás y crear mundos maravillosos?`,
+  ),
+]
+
+const pdfStoriesByGrade = {
+  1: [
+    pdfStory(
+      'Unidad 2',
+      'Cuento: "Soy un punto"',
+      '¡Hola! Soy un punto. Parezco pequeñito, pero puedo ser el comienzo de un dibujo enorme.',
+      `¡Hola! Soy un punto. Parezco pequeñito, pero puedo ser el comienzo de un dibujo enorme. Cuando me quedo quieto, soy una marquita; cuando salgo a pasear por el papel, dejo un caminito detrás de mí.
+
+Si camino derechito, mi camino es una línea recta. Si me muevo despacito y me mezo, puedo formar curvas, olas o zigzags. A ese camino lo llamamos línea. ¿Qué crees que pasaría si mi línea da una vuelta entera y regresa a donde empezó?
+
+Otros puntos amiguitos pueden jugar conmigo. Algunos se juntan mucho y otros se quedan separados. Si muchos puntitos de colores se dan la mano, pueden llenar un dibujo de magias y texturas. Esa forma bonita de pintar se llama puntillismo.
+
+Un punto puede ser una semillita, una estrella brillante, una pelota o los ojitos de un personaje. ¿Ves a tu alrededor? Seguro hay puntos y líneas jugando a las escondidas en tu salón.
+
+¿Qué podrías dibujar tú empezando con un pequeño punto?`,
+    ),
+    pdfStory(
+      'Unidad 3',
+      'Cuento: "El secreto de las figuras"',
+      '¡Hola! Somos las figuras geométricas y nos encanta jugar a las escondidas contigo.',
+      `¡Hola! Somos las figuras geométricas y nos encanta jugar a las escondidas contigo. Si miras la ventana, verás un rectángulo; si miras las ruedas de tu juguete, verás un círculo bien redondito.
+
+Cuando un triángulo se pone encima de un cuadrado, ¡mira, formamos una casita! Si juegas a juntarnos en tu papel o haces moldes con cartón, puedes inventar todo lo que imagines.
+
+¿Te gustaría dibujar tu juguete favorito usando solo círculos, cuadrados y triángulos? ¡Abre bien los ojos y a crear!`,
+    ),
+    pdfStory(
+      'Unidad 4',
+      'Cuento: "La fiesta de los tres colores"',
+      '¡Hola! Somos tres amiguitos mágicos: el Amarillo, el Azul y el Rojo.',
+      `¡Hola! Somos tres amiguitos mágicos: el Amarillo, el Azul y el Rojo. Nos llaman colores primarios porque somos únicos y nadie nos puede crear mezclando otros tonos.
+
+El Amarillo llega contento y brilla como un sol de mañana. El Azul es tranquilo como el agua del mar y el cielo. El Rojo es súper alegre, nos avisa cuando hay que tener cuidado y llena de amor cada dibujo.
+
+Juntos hacemos que tus hojas se llenen de alegría, así como las pinturas de Keith Haring.
+
+¿Qué color vas a usar primero hoy en tu dibujo?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "La carroza sonriente"',
+      '¡Hola! Soy una carroza gigante hecha de papel y muchos colores en la ciudad de Pasto.',
+      `¡Hola! Soy una carroza gigante hecha de papel y muchos colores en la ciudad de Pasto. Cada año salgo a las calles a ver a los niños jugar en el Carnaval de Negros y Blancos.
+
+Todos se pintan la carita con polvitos de colores y harina para recordar que todos somos amigos e iguales. Los artesanos trabajan con amor para crear máscaras divertidas.
+
+¿De qué color te gustaría pintarte la carita hoy para jugar en el carnaval?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El tiple cantarín"',
+      '¡Hola! Soy el tiple, una guitarrita de madera que vive en las montañas verdes.',
+      `¡Hola! Soy el tiple, una guitarrita de madera que vive en las montañas verdes. Cuando mis cuerdas suenan, la gente baila el torbellino con mucha alegría.
+
+Las faldas de las campesinas giran como mariposas de colores mientras tocamos música del campo. Cada nota musical es como una sonrisa dibujada en el aire.
+
+¿Te imaginas dar vueltitas escuchando la música del tiple?`,
+    ),
+  ],
+  2: [
+    ...sharedProcessStories,
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El castillo de piedra junto al mar"',
+      '¡Hola! Soy una piedra muy antigua de las murallas de Cartagena.',
+      `¡Hola! Soy una piedra muy antigua de las murallas de Cartagena. Llevo muchos años frente al mar grande, cuidando la historia de nuestra hermosa ciudad.
+
+Desde arriba parezco un gran juego de cubos de piedra con formas gigantes. A los pintores les encanta sentarse a pintar el sol brillante cuando se esconde en las olas.
+
+¿Qué color le pondrías al agua del mar cuando se va el sol?`,
+    ),
+  ],
+  3: [
+    ...sharedProcessStories,
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "La montaña que toca las nubes"',
+      '¡Hola! Soy un pequeño frailejón que vive muy arriba en la montaña, donde hay nieve blanca, mirando hacia las playas azules del Parque Tayrona.',
+      `¡Hola! Soy un pequeño frailejón que vive muy arriba en la montaña, donde hay nieve blanca, mirando hacia las playas azules del Parque Tayrona.
+
+Este lugar es mágico porque cuida a muchos pajaritos, monitos y árboles. Las familias indígenas nos enseñan a amar la tierra y respetarla siempre.
+
+La naturaleza es la artista más linda de todas.
+
+¿Qué animalito te gustaría dibujar hoy?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El acordeón de los cuentos"',
+      '¡Hola! Soy el acordeón alegre de Valledupar.',
+      `¡Hola! Soy el acordeón alegre de Valledupar. En el Festival Vallenato abro y cierro mis pliegues para cantar historias sobre ríos, flores y amigos.
+
+Cada canción vallenata es como un dibujo hecho con palabras y música. Cuando suena la caja y la guacharaca, dan ganas de pintar y bailar al mismo tiempo.
+
+¿Qué cuento bonito te gustaría cantar hoy con el acordeón?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El tambor de la alegría"',
+      '¡Hola! Soy el tamborcito de la costa.',
+      `¡Hola! Soy el tamborcito de la costa. Cuando me tocan despacito, suena la cumbia suave; y cuando me golpean con energía, ¡el mapalé pone a todos a saltar!
+
+Nuestros ritmos nos enseñan a mover el cuerpo con alegría y a querer mucho nuestras raíces. El sonido del tambor nos hace sentir el corazón contento.
+
+¿Puedes aplaudir al ritmo de mi tambor mientras dibujas?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "Manitas tejedoras"',
+      '¡Hola! Somos el barro suavecito y los hilos de colores.',
+      `¡Hola! Somos el barro suavecito y los hilos de colores. En las manos amorosas de los artesanos de Colombia, nos convertimos en vasijas, sombreritos y mochilas de colores.
+
+Cada cosita hecha a mano es especial y única porque se hace con paciencia y mucho cariño. Ninguna pieza es igual a otra.
+
+Si tuvieras un poquito de plastilina o barro, ¿qué figura linda amasarías hoy con tus manos?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El puente de madera y hierro"',
+      '¡Hola! Soy el Puente de Occidente, un puente muy largo que pasa sobre un río grande en Santa Fe de Antioquia.',
+      `¡Hola! Soy el Puente de Occidente, un puente muy largo que pasa sobre un río grande en Santa Fe de Antioquia.
+
+Mis cables y maderas se cruzaron con mucho cuidado usando líneas rectas para sostener a las personas que me cruzan. A los niños les encanta mirarme y dibujar mis líneas sobre su papel.
+
+¿Te animas a usar tu regla para dibujar las líneas de un puente fuerte y bonito?`,
+    ),
+  ],
+}
+
 const curriculumData = {
   1: {
     title: '¡Manos, puntos, formas y colores!',
     desc: 'Actividades de arte para explorar materiales, dibujo, figuras y patrimonio cultural en primer grado.',
     textos: [
+      ...pdfStoriesByGrade[1],
       {
         tag: 'Unidad 1',
         color: '#4BD166',
@@ -200,6 +389,7 @@ const curriculumData = {
     title: '¡Líneas, formas, volumen y color!',
     desc: 'Talleres para experimentar con elementos del dibujo, técnicas pictóricas y patrimonio cultural en segundo grado.',
     textos: [
+      ...pdfStoriesByGrade[2],
       {
         tag: 'Unidad 1',
         color: '#4BD166',
@@ -250,6 +440,7 @@ const curriculumData = {
     title: '¡Espacio, color y técnicas!',
     desc: 'Explora la naturaleza, las relaciones espaciales, las mezclas de color y el dibujo con instrumentos en tercer grado.',
     textos: [
+      ...pdfStoriesByGrade[3],
       {
         tag: 'Unidad 1',
         color: '#4BD166',
