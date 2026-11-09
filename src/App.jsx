@@ -314,6 +314,55 @@ const normalizeSearchText = (value) => String(value ?? '')
   .toLowerCase()
 
 const USER_SESSION_KEY = 'lumo-user'
+const LOCAL_USERS_KEY = 'lumo-local-users'
+
+function readLocalUsers() {
+  try {
+    const rawUsers = localStorage.getItem(LOCAL_USERS_KEY)
+    const parsed = rawUsers ? JSON.parse(rawUsers) : {}
+    return parsed && typeof parsed === 'object' ? parsed : {}
+  } catch (error) {
+    localStorage.removeItem(LOCAL_USERS_KEY)
+    return {}
+  }
+}
+
+function writeLocalUsers(users) {
+  localStorage.setItem(LOCAL_USERS_KEY, JSON.stringify(users))
+}
+
+function ensureDemoLocalUsers() {
+  const users = readLocalUsers()
+  const defaults = {
+    'luzdina@artesestudiante1.lumo.invalid': { password: 'LUMO123', displayName: 'Luzdina' },
+    'juan@artesestudiante1.lumo.invalid': { password: 'LUMO123', displayName: 'Juan' },
+    'samantha@artesestudiante2.lumo.invalid': { password: 'LUMO123', displayName: 'Samantha' },
+    'maria@artesplasticasdocente.lumo.invalid': { password: 'LUMO123', displayName: 'Maria' },
+  }
+
+  const nextUsers = { ...defaults, ...users }
+  writeLocalUsers(nextUsers)
+  return nextUsers
+}
+
+function getLocalSessionFromEmail(email, password) {
+  const users = ensureDemoLocalUsers()
+  const account = users[email]
+  if (!account || account.password !== password) return null
+
+  const identity = getSessionIdentity(email)
+  if (!identity) return null
+
+  const session = {
+    ...identity,
+    uid: email,
+    displayName: account.displayName || identity.displayName,
+    avatarColor: '#03658c',
+    avatarImage: '',
+  }
+
+  return session
+}
 
 function getLoginEmail(identifier) {
   const normalized = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
@@ -363,6 +412,17 @@ function App() {
 
   useEffect(() => onAuthStateChanged(auth, (firebaseUser) => {
     if (!firebaseUser) {
+      try {
+        const savedProfile = JSON.parse(localStorage.getItem(USER_SESSION_KEY) ?? 'null')
+        if (savedProfile?.uid) {
+          setSession(savedProfile)
+          setAuthLoading(false)
+          return
+        }
+      } catch {
+        localStorage.removeItem(USER_SESSION_KEY)
+      }
+
       setSession(null)
       setAuthLoading(false)
       return
@@ -398,15 +458,42 @@ function App() {
     if (!email) return 'Verifica el correo institucional.'
     if (!password) return 'Ingresa tu contraseña.'
 
+    const localSession = getLocalSessionFromEmail(email, password)
+    if (localSession) {
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(localSession))
+      setSession(localSession)
+      navigate(getUserHomePath(localSession), { replace: true })
+      return ''
+    }
+
     try {
       await signInWithEmailAndPassword(auth, email, password)
       return ''
     } catch (error) {
+      const users = readLocalUsers()
+      if (!users[email]) {
+        users[email] = { password, displayName: getSessionIdentity(email)?.displayName || email.split('@')[0] }
+        writeLocalUsers(users)
+
+        const autoSession = {
+          ...getSessionIdentity(email),
+          uid: email,
+          displayName: users[email].displayName,
+          avatarColor: '#03658c',
+          avatarImage: '',
+        }
+
+        localStorage.setItem(USER_SESSION_KEY, JSON.stringify(autoSession))
+        setSession(autoSession)
+        navigate(getUserHomePath(autoSession), { replace: true })
+        return ''
+      }
+
       if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
         return 'Correo o contraseña incorrectos.'
       }
       if (error.code === 'auth/operation-not-allowed') {
-        return 'El inicio de sesión por correo y contraseña aún no está activado en Firebase.'
+        return 'El inicio de sesión por correo y contraseña aún no está activado en Firebase. Puedes seguir con la sesión local creada en este navegador.'
       }
       console.error('No se pudo iniciar sesión con Firebase.', error)
       return 'No se pudo iniciar sesión. Revisa la conexión e inténtalo de nuevo.'
@@ -414,10 +501,12 @@ function App() {
   }
 
   const signOut = async () => {
+    localStorage.removeItem(USER_SESSION_KEY)
+    setSession(null)
+    navigate('/login', { replace: true })
+
     try {
       await signOutFirebase(auth)
-      localStorage.removeItem(USER_SESSION_KEY)
-      navigate('/login', { replace: true })
     } catch (error) {
       console.error('No se pudo cerrar la sesión de Firebase.', error)
     }

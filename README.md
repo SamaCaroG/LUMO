@@ -29,4 +29,6 @@ El inicio de sesión usa Firebase Authentication (correo y contraseña), y los r
 4. En **Firestore Database → Rules**, publica las reglas de `firestore.rules`. También puedes desplegarlas con Firebase CLI usando `firebase deploy --only firestore:rules`.
 5. Inicia sesión con una cuenta de estudiante, envía el diagnóstico y, desde la cuenta docente, abre el grado y pulsa **Diagnóstico de grupo**.
 
+> Nota de desarrollo: mientras no existan usuarios reales en Firebase, la app incluye un acceso temporal de prueba con estas cuentas demo y contraseña `LUMO123`: `luzdina@artesestudiante1`, `juan@artesestudiante1`, `samantha@artesestudiante2`, `maria@artesplasticasdocente`.
+
 Las cuentas se crean en Firebase; la aplicación no permite que una persona se registre como docente. Las reglas permiten a estudiantes autenticados crear diagnósticos únicamente para el grado de su cuenta y a docentes autenticados leerlos. No habilites lectura o escritura pública.
