@@ -320,16 +320,31 @@ function createGuestSession(identifier) {
   const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
   const name = normalizedIdentifier.split('@')[0].replace(/[^a-z0-9._-]/g, '') || 'artista'
   const identity = getSessionIdentity(email)
-  const grade = Number(normalizedIdentifier.match(/artesestudiante([123])/)?.[1] ?? 1)
+  if (!identity) return null
 
   return {
+    ...identity,
     name,
-    displayName: formatPersonName(name),
-    role: identity?.role ?? 'student',
-    grade: identity?.role === 'teacher' ? null : identity?.grade ?? grade,
+    displayName: identity.displayName || formatPersonName(name),
     uid: `guest-${email}`,
     avatarColor: '#03658c',
     avatarImage: '',
+  }
+}
+
+function getSavedGuestSession(savedProfile) {
+  if (typeof savedProfile?.uid !== 'string' || !savedProfile.uid.startsWith('guest-')) return null
+
+  const email = savedProfile.uid.slice('guest-'.length)
+  const identity = getSessionIdentity(email)
+  if (!identity) return null
+
+  return {
+    ...savedProfile,
+    ...identity,
+    name: email.split('@')[0],
+    displayName: savedProfile.displayName || identity.displayName,
+    uid: savedProfile.uid,
   }
 }
 
@@ -380,18 +395,22 @@ function App() {
   const navigate = useNavigate()
 
   useEffect(() => onAuthStateChanged(auth, (firebaseUser) => {
-    if (!firebaseUser) {
-      try {
-        const savedProfile = JSON.parse(localStorage.getItem(USER_SESSION_KEY) ?? 'null')
-        if (savedProfile?.uid) {
-          setSession(savedProfile)
-          setAuthLoading(false)
-          return
-        }
-      } catch {
-        localStorage.removeItem(USER_SESSION_KEY)
-      }
+    let savedProfile = null
+    try {
+      savedProfile = JSON.parse(localStorage.getItem(USER_SESSION_KEY) ?? 'null')
+    } catch {
+      localStorage.removeItem(USER_SESSION_KEY)
+    }
 
+    const savedGuestSession = getSavedGuestSession(savedProfile)
+    if (savedGuestSession) {
+      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(savedGuestSession))
+      setSession(savedGuestSession)
+      setAuthLoading(false)
+      return
+    }
+
+    if (!firebaseUser) {
       setSession(null)
       setAuthLoading(false)
       return
@@ -428,6 +447,10 @@ function App() {
 
     try {
       const guestSession = createGuestSession(identifier)
+      if (!guestSession) {
+        return 'Usa el correo institucional del estudiante con su grado o el correo institucional del docente.'
+      }
+
       localStorage.setItem(USER_SESSION_KEY, JSON.stringify(guestSession))
       setSession(guestSession)
       navigate(getUserHomePath(guestSession), { replace: true })

@@ -17,7 +17,7 @@ If you are developing a production application, we recommend using TypeScript wi
 
 ## Acceso de prueba y diagnósticos
 
-La pantalla de ingreso permite entrar con cualquier texto de correo que incluya `@` y una contraseña no vacía. Este acceso es únicamente de prueba: no verifica la contraseña ni crea una cuenta; abre una sesión local de estudiante y la guarda en el navegador actual. Los identificadores que incluyen `artesestudiante2` o `artesestudiante3` abren esos grados; los demás abren primero. No uses este modo para proteger información ni para cuentas reales.
+La pantalla de ingreso admite los identificadores institucionales de estudiante (`nombre@artesestudiante1`, `nombre@artesestudiante2` o `nombre@artesestudiante3`) y docente (`nombre@artesplasticasdocente`). El tipo de identificador determina el apartado: estudiantes entran únicamente a su grado y docentes al panel con la selección de los tres cursos. Este acceso local es solo de prueba: no verifica la contraseña y guarda la sesión en el navegador actual. No lo uses para proteger información ni para cuentas reales.
 
 El acceso local no comparte cuentas o sesiones entre navegadores. Para que las cuentas y contraseñas de tus amigos se verifiquen y funcionen en distintos dispositivos, hay que desplegar la aplicación en una dirección pública y configurar Firebase Authentication con usuarios reales.
 
@@ -32,7 +32,5 @@ Los resultados de diagnósticos usan Firebase Authentication y Cloud Firestore:
    - Los nombres de usuario solo pueden tener letras sin tildes; `ñ` se escribe `n`.
 4. En **Firestore Database → Rules**, publica las reglas de `firestore.rules`. También puedes desplegarlas con Firebase CLI usando `firebase deploy --only firestore:rules`.
 5. Inicia sesión con una cuenta de estudiante, envía el diagnóstico y, desde la cuenta docente, abre el grado y pulsa **Diagnóstico de grupo**.
-
-> Nota de desarrollo: mientras no existan usuarios reales en Firebase, la app incluye un acceso temporal de prueba con estas cuentas demo y contraseña `LUMO123`: `luzdina@artesestudiante1`, `juan@artesestudiante1`, `samantha@artesestudiante2`, `maria@artesplasticasdocente`.
 
 Las cuentas se crean en Firebase; la aplicación no permite que una persona se registre como docente. Las reglas permiten a estudiantes autenticados crear diagnósticos únicamente para el grado de su cuenta y a docentes autenticados leerlos. No habilites lectura o escritura pública.
