@@ -1503,7 +1503,7 @@ function AppPage({
             </div>
           </section>
         ) : (
-          <div className="content-page-heading">
+          <div className={`content-page-heading ${activeTab === 'diagnostico' ? 'diagnostic-page-heading' : ''}`}>
             <button
               type="button"
               className="change-grade-button"

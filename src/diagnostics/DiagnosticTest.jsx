@@ -81,19 +81,25 @@ export default function DiagnosticTest({ grade, studentName }) {
   return (
     <form className="diagnostic-card diagnostic-test" onSubmit={submitDiagnostic}>
       <div className="diagnostic-intro">
-        <span className="diagnostic-eyebrow">Grado {grade}° · 8 preguntas</span>
-        <h2>Descubre lo que ya sabes de arte</h2>
-        <p>
-          El test elige dos preguntas al azar de cada área: elementos y geometría, color,
-          espacio y técnicas, y patrimonio cultural colombiano.
-        </p>
+        <span className="diagnostic-intro-icon" aria-hidden="true">🎨</span>
+        <div className="diagnostic-intro-copy">
+          <span className="diagnostic-eyebrow">Diagnóstico artístico</span>
+          <h2>Descubre lo que ya sabes de arte</h2>
+          <p>
+            Responde 8 preguntas sobre expresión artística, dibujo, color, forma y patrimonio
+            cultural colombiano. Tu docente recibirá tus respuestas.
+          </p>
+        </div>
+        <span className="diagnostic-grade-badge">
+          <i className="fa-solid fa-graduation-cap" aria-hidden="true" /> Grado {grade}°
+        </span>
       </div>
 
       <div className="diagnostic-question-list">
         {questions.map((item, index) => {
           const category = DIAGNOSTIC_CATEGORIES.find((area) => area.id === item.categoryId)
           return (
-            <fieldset key={item.id} className="diagnostic-question">
+            <fieldset key={item.id} className={`diagnostic-question diagnostic-question-${index % 4}`}>
               <legend>
                 <span className="diagnostic-question-number">{index + 1}</span>
                 <span>
