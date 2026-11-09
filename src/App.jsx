@@ -338,7 +338,6 @@ const curriculumData = {
     title: '¡Manos, puntos, formas y colores!',
     desc: 'Actividades de arte para explorar materiales, dibujo, figuras y patrimonio cultural en primer grado.',
     textos: [
-      ...pdfStoriesByGrade[1],
       {
         tag: 'Unidad 1',
         color: '#4BD166',
@@ -366,6 +365,11 @@ const curriculumData = {
         fullText:
           'En la ciudad de Pasto, en el departamento de Nariño, se celebra cada año el Carnaval de Negros y Blancos. Durante la fiesta, las calles se llenan de música, bailes, disfraces y encuentros entre personas de distintos lugares.\n\nUno de sus momentos más llamativos son las carrozas. Artistas y comunidades preparan figuras grandes y coloridas que avanzan por las calles. Para imaginarlas, observan formas, crean personajes y trabajan con materiales como papel, cartón y otros elementos de construcción.\n\nEl carnaval también es una celebración de la identidad y de las tradiciones de la región. Los colores, las máscaras y las comparsas cuentan historias y muestran el talento de quienes participan. Cada creación puede tener detalles que las personas descubren al mirarla con atención.\n\nLas fiestas tradicionales forman parte del patrimonio cultural de un lugar. Conocerlas nos ayuda a valorar las diferentes maneras de celebrar y a cuidar las expresiones que las comunidades comparten.',
       },
+      ...pdfStoriesByGrade[1].filter(({ title }) => ![
+        'Cuento: "Soy un punto"',
+        'Cuento: "La fiesta de los tres colores"',
+        'Cuento: "La carroza sonriente"',
+      ].includes(title)),
     ],
     videos: [
       {
