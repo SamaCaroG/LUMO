@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut as signOutFirebase } from 'firebase/auth'
 import './App.css'
 import './login.css'
 import lumoColorLogo from '../Lumo logo (1).png'
@@ -21,6 +22,7 @@ import {
 } from './curriculumActivities.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
+import { auth } from './firebase/config.js'
 
 const formatCompletionDate = (dateValue) => {
   const date = new Date(dateValue)
@@ -312,27 +314,38 @@ const normalizeSearchText = (value) => String(value ?? '')
   .toLowerCase()
 
 const USER_SESSION_KEY = 'lumo-user'
-const PROFILE_PHOTO_CLEANUP_KEY = 'lumo-profile-photo-cleanup-v1'
 
-function getStoredUser() {
-  const storedUser = localStorage.getItem(USER_SESSION_KEY)
-  if (!storedUser) return null
+function getLoginEmail(identifier) {
+  const normalized = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const studentMatch = normalized.match(/^([a-z]+)@artesestudiante([123])$/)
+  const teacherMatch = normalized.match(/^([a-z]+)@artesplasticasdocente$/)
+  if (studentMatch) return `${studentMatch[1]}@artesestudiante${studentMatch[2]}.lumo.invalid`
+  if (teacherMatch) return `${teacherMatch[1]}@artesplasticasdocente.lumo.invalid`
+  return null
+}
 
-  try {
-    const user = JSON.parse(storedUser)
-    if (localStorage.getItem(PROFILE_PHOTO_CLEANUP_KEY) !== 'done') {
-      delete user.avatarImage
-      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user))
-      localStorage.setItem(PROFILE_PHOTO_CLEANUP_KEY, 'done')
+function getSessionIdentity(email) {
+  const studentMatch = email?.match(/^([a-z]+)@artesestudiante([123])\.lumo\.invalid$/)
+  if (studentMatch) {
+    return {
+      name: studentMatch[1],
+      displayName: formatPersonName(studentMatch[1]),
+      role: 'student',
+      grade: Number(studentMatch[2]),
     }
-    const validName = typeof user.name === 'string' && user.name.length > 0
-    const validTeacher = user.role === 'teacher' && validName && user.grade === null
-    const validStudent = user.role === 'student' && validName && [1, 2, 3].includes(user.grade)
-    return validTeacher || validStudent ? user : null
-  } catch {
-    localStorage.removeItem(USER_SESSION_KEY)
-    return null
   }
+
+  const teacherMatch = email?.match(/^([a-z]+)@artesplasticasdocente\.lumo\.invalid$/)
+  if (teacherMatch) {
+    return {
+      name: teacherMatch[1],
+      displayName: formatPersonName(teacherMatch[1]),
+      role: 'teacher',
+      grade: null,
+    }
+  }
+
+  return null
 }
 
 function getUserHomePath(user) {
@@ -344,43 +357,70 @@ function formatPersonName(name) {
 }
 
 function App() {
-  const [session, setSession] = useState(getStoredUser)
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const navigate = useNavigate()
 
-  const signIn = (email, password) => {
-    const normalizedEmail = email.trim().toLowerCase()
-    const studentMatch = normalizedEmail.match(/^([a-záéíóúüñ]+)@artesestudiante([123])$/u)
-    const teacherMatch = normalizedEmail.match(/^([a-záéíóúüñ]+)@artesplasticasdocente$/u)
-    let user
-
-    if (studentMatch) {
-      user = {
-        name: studentMatch[1],
-        displayName: formatPersonName(studentMatch[1]),
-        role: 'student',
-        grade: Number(studentMatch[2]),
-      }
-    } else if (teacherMatch && password.trim().toLowerCase() === teacherMatch[1]) {
-      user = {
-        name: teacherMatch[1],
-        displayName: formatPersonName(teacherMatch[1]),
-        role: 'teacher',
-        grade: null,
-      }
-    } else {
-      return 'Verifica el correo institucional y la contraseña.'
+  useEffect(() => onAuthStateChanged(auth, (firebaseUser) => {
+    if (!firebaseUser) {
+      setSession(null)
+      setAuthLoading(false)
+      return
     }
 
-    localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user))
-    setSession(user)
-    navigate(getUserHomePath(user), { replace: true })
-    return ''
+    const identity = getSessionIdentity(firebaseUser.email)
+    if (!identity) {
+      setSession(null)
+      setAuthLoading(false)
+      return
+    }
+
+    let profile = {}
+    try {
+      const savedProfile = JSON.parse(localStorage.getItem(USER_SESSION_KEY) ?? 'null')
+      if (savedProfile?.uid === firebaseUser.uid) {
+        profile = {
+          displayName: savedProfile.displayName,
+          avatarColor: savedProfile.avatarColor,
+          avatarImage: savedProfile.avatarImage,
+        }
+      }
+    } catch {
+      localStorage.removeItem(USER_SESSION_KEY)
+    }
+
+    setSession({ ...identity, ...profile, uid: firebaseUser.uid })
+    setAuthLoading(false)
+  }), [])
+
+  const signIn = async (identifier, password) => {
+    const email = getLoginEmail(identifier)
+    if (!email) return 'Verifica el correo institucional.'
+    if (!password) return 'Ingresa tu contraseña.'
+
+    try {
+      await signInWithEmailAndPassword(auth, email, password)
+      return ''
+    } catch (error) {
+      if (error.code === 'auth/invalid-credential' || error.code === 'auth/user-not-found' || error.code === 'auth/wrong-password') {
+        return 'Correo o contraseña incorrectos.'
+      }
+      if (error.code === 'auth/operation-not-allowed') {
+        return 'El inicio de sesión por correo y contraseña aún no está activado en Firebase.'
+      }
+      console.error('No se pudo iniciar sesión con Firebase.', error)
+      return 'No se pudo iniciar sesión. Revisa la conexión e inténtalo de nuevo.'
+    }
   }
 
-  const signOut = () => {
-    localStorage.removeItem(USER_SESSION_KEY)
-    setSession(null)
-    navigate('/login', { replace: true })
+  const signOut = async () => {
+    try {
+      await signOutFirebase(auth)
+      localStorage.removeItem(USER_SESSION_KEY)
+      navigate('/login', { replace: true })
+    } catch (error) {
+      console.error('No se pudo cerrar la sesión de Firebase.', error)
+    }
   }
 
   const updateSession = (changes) => {
@@ -399,7 +439,9 @@ function App() {
     <Routes>
       <Route
         path="/login"
-        element={session
+        element={authLoading
+          ? <div role="status">Verificando sesión…</div>
+          : session
           ? <Navigate to={getUserHomePath(session)} replace />
           : <AppPage pageView="login" onLogin={signIn} />}
       />
@@ -2045,10 +2087,13 @@ function LoginScreen({ onSubmit }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    setError(onSubmit(email, password))
+    setIsSubmitting(true)
+    setError(await onSubmit(email, password))
+    setIsSubmitting(false)
   }
 
   return (
@@ -2086,15 +2131,16 @@ function LoginScreen({ onSubmit }) {
             type="password"
             autoComplete="current-password"
             placeholder="Contraseña"
-            aria-label="Contraseña (solo docentes)"
+            aria-label="Contraseña"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            required
           />
         </label>
         {error && <p className="teacher-form-error" role="alert">{error}</p>}
-        <button className="teacher-login-submit" type="submit">
+        <button className="teacher-login-submit" type="submit" disabled={isSubmitting}>
           <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-          Ingresar
+          {isSubmitting ? 'Ingresando…' : 'Ingresar'}
         </button>
         <img className="teacher-login-brand" src={lumoBlackLogo} alt="LÜMØ" />
         <div className="login-palette" aria-hidden="true">
