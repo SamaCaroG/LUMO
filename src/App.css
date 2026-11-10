@@ -5668,35 +5668,6 @@ button {
   background: #fffaf0;
 }
 
-.lumo-app.is-about-page .header-inner {
-  min-height: 3.625rem;
-  grid-template-columns: minmax(0, 1fr) minmax(200px, 24rem) minmax(0, 1fr);
-  gap: 1.25rem;
-  padding: 0.25rem clamp(1.25rem, 2.7vw, 1.9rem);
-}
-
-.lumo-app.is-about-page .brand-logo {
-  width: 10.5rem;
-  height: 3rem;
-}
-
-.lumo-app.is-about-page .profile-box {
-  justify-self: end;
-}
-
-.lumo-app.is-about-page .search-container {
-  max-width: 24rem;
-}
-
-.lumo-app.is-about-page .search-box {
-  padding: 0.55rem 2.7rem 0.55rem 0.9rem;
-}
-
-.lumo-app.is-about-page .search-container::after {
-  width: 2.1rem;
-  height: 2.1rem;
-}
-
 .lumo-app.is-about-page .main-shell {
   max-width: none;
   gap: 0;
@@ -5712,22 +5683,6 @@ button {
 }
 
 @media (max-width: 768px) {
-  .lumo-app.is-about-page .header-inner {
-    min-height: 5.8rem;
-    grid-template-columns: minmax(78px, 0.7fr) minmax(100px, 1fr) auto;
-    gap: 0.4rem;
-    padding: 0.45rem 0.75rem;
-  }
-
-  .lumo-app.is-about-page .brand-logo {
-    width: 5.25rem;
-    height: 2.45rem;
-  }
-
-  .lumo-app.is-about-page .search-container {
-    max-width: none;
-  }
-
   .lumo-app.is-about-page .main-shell {
     padding: 0.5rem 0 1.5rem;
   }
