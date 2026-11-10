@@ -328,7 +328,7 @@ Al ritmo de la cumbia y el mapalé, mis trazos bailan felices en la hoja.
 ¿Te animas a hacer bailar a tu lápiz para dibujar un bailarín?`,
   ),
   pdfStory(
-    'Unidad 3',
+    'Unidad 3',a
     'Cuento: "El baile de las mezclas"',
     '¡Hola! Somos los colores y nos encanta jugar a los abrazos.',
     `¡Hola! Somos los colores y nos encanta jugar a los abrazos. Cuando el Amarillo abraza al Azul, ¡nace el Verde! Y cuando el Rojo le da la mano al Amarillo, ¡aparece el Naranja!
