@@ -22,6 +22,7 @@ import {
 } from './curriculumActivities.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
+import childrenStories from './childrenStories.js'
 import { auth } from './firebase/config.js'
 
 const formatCompletionDate = (dateValue) => {
@@ -34,153 +35,6 @@ const formatCompletionDate = (dateValue) => {
 const readingExampleLabels = [
   'Espacio reservado para una imagen de ejemplo',
   'Espacio reservado para otra imagen de ejemplo',
-]
-
-const cuentoColeccion = [
-  {
-    key: 'unidad-1',
-    label: 'Unidad 1 · El mundo de las formas y los colores',
-    stories: [
-      {
-        id: 'u1-c1',
-        titulo: 'La hojita que dibujó un camino',
-        contenido: 'Una hojita cayó del árbol en un día soleado y aterrizó en la tierra. Allí vio piedras redondas, ramas largas y flores con pétalos de muchas formas. La hojita se sintió pequeña, pero pronto descubrió que hasta un pequeño detalle puede pintar todo un paisaje.\n\nCuando el viento la movió, la hojita se convirtió en un sendero imaginario para las hormigas, los insectos y los sueños más bonitos del jardín. Cada curva de su camino era una sorpresa para los colores del día.',
-        preguntaFinal: 'Si pudieras dibujar el recorrido de la hojita, ¿qué forma crearías primero?',
-      },
-      {
-        id: 'u1-c2',
-        titulo: 'El círculo que quiso ser sol',
-        contenido: 'En una mañana brillante, un pequeño círculo amarillo se sintió muy importante. Nadie más era tan redondo ni tan alegre. Se asomó a la ventana, miró el cielo y decidió convertirse en el sol del jardín.\n\nTodos los niños lo miraron con emoción y comenzaron a trazar líneas en el papel, como si fueran rayos de luz. El círculo sonreía porque sabía que, cuando se dibuja, la alegría también toma forma.',
-        preguntaFinal: '¿Qué otros objetos del mundo podrían empezar con un círculo perfecto?',
-      },
-      {
-        id: 'u1-c3',
-        titulo: 'El triángulo de la casita',
-        contenido: 'Un triángulo pequeño se sentó a mirar la tierra. No era un objeto común, pero tenía una gran idea: quería ser el techo de una casita. Juntó a sus amigos, un cuadrado y un rectángulo, y juntos construyeron una hermosa vivienda.\n\nEntonces apareció un árbol de líneas verdes, una ventana brillante y un camino de colores. La casita era pequeña, pero tenía una imaginación enorme.',
-        preguntaFinal: 'Si fueras arquitecto, ¿qué construirías con formas geométricas?',
-      },
-      {
-        id: 'u1-c4',
-        titulo: 'La montaña de los colores',
-        contenido: 'Una montaña pintada con varios tonos de verde, azul y morado escuchó a los niños hablar del cielo. Quería ser parte del juego y decidió cambiar de color cada vez que alguien sonreía.\n\nLa montaña se llenó de alegría y los pinos parecían bailar. Sus cumbres eran suaves, sus valles eran frescos y su sombra daba paz a todo el paisaje.',
-        preguntaFinal: '¿Qué color elegirías para pintar una montaña que siempre sonríe?',
-      },
-      {
-        id: 'u1-c5',
-        titulo: 'La nube que jugaba con líneas',
-        contenido: 'Una nube blanca flotaba por encima de un parque lleno de colores. Era muy curiosa y le gustaba jugar con las líneas del viento. A veces dibujaba ondas suaves; otras veces hacía espirales juguetonas.\n\nLos niños dibujaban en el suelo con tiza y la nube les regalaba nuevas ideas. Cada trazo parecía un camino que se abría por entre el cielo.',
-        preguntaFinal: '¿Qué forma dibujaría en el cielo si fueras la nube del día?',
-      },
-    ],
-  },
-  {
-    key: 'unidad-2',
-    label: 'Unidad 2 · Música, sonidos y ritmo',
-    stories: [
-      {
-        id: 'u2-c1',
-        titulo: 'El tambor de la luna',
-        contenido: 'La luna bajó a la tierra para escuchar a los niños tocar un tambor. El sonido era suave, luego fuerte, y luego latía como un corazón. Cada golpe dibujaba un ritmo en el aire y hacía que los árboles movieran sus ramas.\n\nLa luna sonrió al ver lo feliz que estaba la noche. Sabía que la música podía hacer bailar incluso a las estrellas.',
-        preguntaFinal: '¿Qué instrumento te gustaría usar para acompañar la luna en su baile?',
-      },
-      {
-        id: 'u2-c2',
-        titulo: 'La flauta del río',
-        contenido: 'Un río corría entre piedras y flores, y de pronto escuchó una melodía. Era una flauta escondida entre los musgos. El agua empezó a seguir el ritmo, moviéndose de un lado a otro como si danzara.\n\nLos peces abrían y cerraban sus aletas, y las mariposas volteaban a mirar el brillo del sol. El río entendió que la música también puede ser un camino.',
-        preguntaFinal: '¿Qué harías para dibujar la melodía del río en una hoja?',
-      },
-      {
-        id: 'u2-c3',
-        titulo: 'La caja de sonidos mágicos',
-        contenido: 'En una pequeña caja de madera había varios objetos: campanas, semillas, piedritas y un pequeño sonajero. Cada uno tenía un sonido distinto, como una historia especial. Cuando se abría la caja, el salón entero se llenaba de ritmos.\n\nLos niños aprendieron que el sonido no solo se escucha, también se siente en el cuerpo: en los pies, en las manos y en el corazón.',
-        preguntaFinal: 'Si tuvieras una caja de sonidos, ¿qué sonidos guardarías dentro?',
-      },
-      {
-        id: 'u2-c4',
-        titulo: 'El baile del reloj',
-        contenido: 'Un reloj antiguo tenía una pequeña manecilla que parecía estar inquieta. Cada segundo llamaba a la música con un tic-tac alegre. Los niños comenzaron a seguir el ritmo con sus dedos, luego con los pies y finalmente con todo el cuerpo.\n\nEl salón se convirtió en una pequeña pista de baile, donde cada paso era una nota y cada giro era una canción propia.',
-        preguntaFinal: '¿Qué movimiento corporal te gustaría inventar para acompañar una canción?',
-      },
-      {
-        id: 'u2-c5',
-        titulo: 'La guitarra que soñaba con estrellas',
-        contenido: 'Una guitarra de madera guardaba sueños de luces brillantes. Cada vez que las cuerdas eran rozadas, la noche se llenaba de melodías suaves que parecían llegar desde las estrellas.\n\nLos niños cerraron los ojos y escucharon el murmullo del aire, el latido de la tierra y la magia de cada nota. Así descubrieron que la música puede llevarte a lugares invisibles.',
-        preguntaFinal: '¿A qué lugar viajarías si una canción te guiara en un viaje imaginario?',
-      },
-    ],
-  },
-  {
-    key: 'unidad-3',
-    label: 'Unidad 3 · Expresión corporal y teatro',
-    stories: [
-      {
-        id: 'u3-c1',
-        titulo: 'El muñeco de papel que quería actuar',
-        contenido: 'Un muñeco de papel se sentía triste porque solo estaba guardado en una caja. Un día, un niño lo sacó y le enseñó a caminar, a gesticular y a sorprenderse con cada movimiento.\n\nEl muñeco aprendió que el cuerpo también habla, aunque no tenga voz. Con una sonrisa, un abrazo y un pequeño giro, pudo contar una historia completa.',
-        preguntaFinal: '¿Qué emoción le darías al muñeco para que su historia sea más interesante?',
-      },
-      {
-        id: 'u3-c2',
-        titulo: 'La marioneta del viento',
-        contenido: 'Una marioneta de hilo esperaba a que alguien la hiciera volar. El viento sopló suavemente y le enseñó a mover las manos, la cabeza y los brazos como si fuera una gran actriz.\n\nCuando la marioneta se movió, los niños entendieron que el cuerpo tiene su propio lenguaje: ¡una mirada, un gesto y un paso pueden contar muchísimo!',
-        preguntaFinal: 'Si la marioneta pudiera hablar, ¿qué historia te contaría?',
-      },
-      {
-        id: 'u3-c3',
-        titulo: 'El espejo del teatro',
-        contenido: 'En el rincón del teatro había un espejo viejo que reflejaba cada emoción del alumnado. Cuando alguien estaba contento, el espejo brillaba. Cuando alguien estaba enojado, se volvía oscuro con pequeñas líneas de sombra.\n\nAsí descubrieron que cada gesto cambia la historia. La gente puede enseñar con el cuerpo, sin decir una sola palabra.',
-        preguntaFinal: '¿Qué emoción te gustaría representar con tu rostro y tus manos?',
-      },
-      {
-        id: 'u3-c4',
-        titulo: 'La máscara que soñaba con bailar',
-        contenido: 'Una máscara de madera estaba guardada en un baúl de teatro. Quería ser vista y soñaba con historias llenas de brillo. Un día, alguien la colocó en su rostro y descubrió que el movimiento del cuerpo se volvía más grande y más vivo.\n\nLa máscara aprendió que el teatro no solo se hace con palabras: también se hace con juego, espacio y energía.',
-        preguntaFinal: '¿Qué personaje interpretarías con una máscara de colores?',
-      },
-      {
-        id: 'u3-c5',
-        titulo: 'La danza del jardín',
-        contenido: 'En un jardín secreto, las flores daban pequeños pasos al ritmo del viento. Las margaritas giraban, los girasoles levantaban la cabeza y las hojas aplaudían con un suave murmullo.\n\nLos niños comprendieron que el cuerpo puede expresar alegría, calma o sorpresa sin necesidad de hablar. El jardín entero parecía un gran escenario de fantasía.',
-        preguntaFinal: 'Si fueras una flor gigante, ¿cómo te moverías al escuchar música?',
-      },
-    ],
-  },
-  {
-    key: 'unidad-4',
-    label: 'Unidad 4 · Artesanías, patrimonio y tradición',
-    stories: [
-      {
-        id: 'u4-c1',
-        titulo: 'La mochila que guardaba historias',
-        contenido: 'Una mochila tejida con colores cálidos estaba llena de recuerdos de la familia. En cada puntada se veía la paciencia de una abuela, la creatividad de una tía y la alegría de un niño.\n\nCuando la mochila abrió su cierre, salieron historias de bodas, fiestas y mercados llenos de música. Todas esas historias estaban hechas a mano, con amor y tradición.',
-        preguntaFinal: '¿Qué objeto de tu familia te gustaría convertir en una pieza de arte?',
-      },
-      {
-        id: 'u4-c2',
-        titulo: 'La olla de la cocina del abuelo',
-        contenido: 'En la cocina de una casa antigua había una olla de barro que escuchaba historias desde hacía muchos años. Cuando se calentaba el fuego, la olla brillaba como si tuviera secretos guardados.\n\nCada receta pasaba de generación en generación y cada olor hacía viajar a los niños al corazón de la tradición. El barro era sencillo, pero era una memoria con mucho valor.',
-        preguntaFinal: '¿Qué receta familiar te gustaría dibujar en tu cuaderno de arte?',
-      },
-      {
-        id: 'u4-c3',
-        titulo: 'El tejido de la plaza',
-        contenido: 'En una plaza del pueblo, varias mujeres tejían sombreros, mantas y bolsos con colores vivos. Cada hilo contaba una historia de trabajo, cariño y orgullo por su tierra.\n\nLos niños miraban cómo los dedos se movían con precisión y cómo la paciencia hacía aparecer formas hermosas. El tejido parecía un río de colores que nunca se cansaba de crecer.',
-        preguntaFinal: 'Si crearas un tejido imaginario, ¿qué colores usarías y qué forma tendría?',
-      },
-      {
-        id: 'u4-c4',
-        titulo: 'La máscara del carnaval',
-        contenido: 'Cada año, la plaza se llenaba de máscaras de papel, madera y tela. Algunas eran rojas, otras doradas, y algunas tenían dibujos de estrellas, flores o animales.\n\nLos niños se transformaban en personajes imaginarios y saludaban a la gente con alegría. El carnaval recordó que la tradición también se celebra con color, música y creatividad.',
-        preguntaFinal: '¿Qué animal o personaje te gustaría representar en un carnaval artístico?',
-      },
-      {
-        id: 'u4-c5',
-        titulo: 'El mural del abuelo',
-        contenido: 'Un abuelo decidió pintar las paredes de la plaza con escenas de la historia del pueblo: fiestas, caminos, flores, montañas y música. Con cada trazo, volvía a contar una historia que los niños no querían perderse.\n\nEl mural se convirtió en un gran libro de colores que todos podían leer a la vista. Todos entendieron que el arte también conserva la memoria de una comunidad.',
-        preguntaFinal: 'Si hicieras un mural de tu comunidad, ¿qué historias dibujarías en las paredes?',
-      },
-    ],
-  },
 ]
 
 const gradeUiCopy = {
@@ -1038,7 +892,7 @@ function AppPage({
   const hasEnteredSite = session?.role === 'student'
   const [showAboutPage, setShowAboutPage] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
-  const [openStoryUnit, setOpenStoryUnit] = useState(cuentoColeccion[0].key)
+  const [openStoryUnit, setOpenStoryUnit] = useState(childrenStories[0].key)
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
   const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[grade][0].id)
@@ -2049,7 +1903,7 @@ function AppPage({
               <span className="story-collection-badge">4 unidades</span>
             </div>
 
-            {cuentoColeccion.map((unit) => {
+            {childrenStories.map((unit) => {
               const isOpen = openStoryUnit === unit.key
 
               return (
@@ -2070,7 +1924,7 @@ function AppPage({
                         {unit.stories.map((story) => (
                           <article key={story.id} className="story-card">
                             <div className="story-card-header">
-                              <span className="story-card-badge">{unit.label.split(' · ')[0]}</span>
+                              <span className="story-card-badge">{story.unidad}</span>
                               <span className="story-card-number">{story.id.slice(-2)}</span>
                             </div>
                             <h4>{story.titulo}</h4>
