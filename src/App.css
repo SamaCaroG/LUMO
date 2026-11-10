@@ -4969,9 +4969,13 @@ button {
 
 .lumo-app.is-student-view .header-inner {
   min-height: 7rem;
-  grid-template-columns: minmax(110px, 1fr) minmax(200px, 1.3fr) auto;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 500px) minmax(0, 1fr);
   gap: clamp(0.7rem, 2vw, 1.25rem);
   padding: 0.55rem clamp(1rem, 4vw, 3.5rem);
+}
+
+.lumo-app.is-student-view .profile-box {
+  justify-self: end;
 }
 
 @media (max-width: 768px) {

@@ -3144,15 +3144,6 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
         )}
       </main>
 
-      {/* PIE DE PÁGINA ESTILO LUMØ */}
-      <footer className="footer">
-        <div>
-          <span className="footer-logo">LÜMØ</span> — Arte Digital e Interactividad Educativa.
-        </div>
-        <div>
-          © 2026 LÜMØ Educativo. Arte, cultura y creatividad para aprender en comunidad.
-        </div>
-      </footer>
     </div>
   );
 }
