@@ -4644,8 +4644,33 @@ button {
 }
 
 .about-page {
+  position: relative;
   color: #1f2937;
   font-family: var(--font-body);
+}
+
+.about-page::before,
+.about-page::after {
+  position: absolute;
+  top: 0;
+  width: 3.8rem;
+  height: 4.1rem;
+  content: "";
+  pointer-events: none;
+  z-index: 0;
+}
+
+.about-page::before {
+  left: 0;
+  border-radius: 0 0 100% 0;
+  background: #bfe9dc;
+}
+
+.about-page::after {
+  right: 0;
+  height: 5.2rem;
+  border-radius: 0 0 0 82%;
+  background: #e6d3f5;
 }
 
 .about-page .navbar {
@@ -4659,16 +4684,21 @@ button {
 
 .about-page .main-container {
   width: 100%;
-  max-width: 1440px;
-  padding: clamp(1.75rem, 4vw, 3.5rem) clamp(1rem, 4vw, 3.5rem);
+  max-width: 980px;
+  position: relative;
+  z-index: 1;
+  padding: 0.6rem 0 2rem;
 }
 
 .about-back-button {
   display: inline-flex;
   align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 1.5rem;
-  padding: 0.4rem 0.8rem 0.4rem 0.45rem;
+  gap: 0.4rem;
+  position: absolute;
+  top: 0.65rem;
+  left: 0.7rem;
+  margin: 0;
+  padding: 0.38rem 0.8rem;
   border: 1px solid #c9e5ed;
   border-radius: 999px;
   background: rgba(255, 255, 255, 0.9);
@@ -4680,39 +4710,134 @@ button {
   transition: transform 160ms ease, box-shadow 160ms ease;
 }
 
+.about-back-button span:first-child {
+  font-size: 1.15rem;
+  line-height: 1;
+}
+
 .about-back-button:hover,
 .about-back-button:focus-visible {
   transform: translateY(-2px);
   box-shadow: 0 9px 20px rgba(3, 101, 140, 0.14);
 }
 
-.about-back-button img {
-  width: 2.8rem;
-  height: 2.2rem;
-  object-fit: contain;
+.about-page .page-header {
+  margin-bottom: 1.25rem;
 }
 
-.about-page .page-header {
-  margin-bottom: clamp(2rem, 4vw, 3rem);
+.about-page .about-page-header {
+  position: relative;
+  padding: 0.4rem 2rem 0;
+}
+
+.about-page .about-confetti {
+  position: absolute;
+  top: 0.3rem;
+  width: 2.8rem;
+  height: 2.8rem;
+  pointer-events: none;
+}
+
+.about-page .about-confetti-left {
+  left: 14%;
+}
+
+.about-page .about-confetti-right {
+  right: 7%;
+}
+
+.about-page .about-confetti i {
+  position: absolute;
+  width: 1.25rem;
+  height: 0.45rem;
+  border-radius: 999px;
+  background: #f6ba31;
+}
+
+.about-page .about-confetti i:nth-child(1) {
+  top: 0.4rem;
+  left: 0.15rem;
+  transform: rotate(28deg);
+}
+
+.about-page .about-confetti i:nth-child(2) {
+  top: 1.55rem;
+  left: 0;
+  background: #50bd89;
+  transform: rotate(-8deg);
+}
+
+.about-page .about-confetti i:nth-child(3) {
+  top: 2.35rem;
+  left: 0.3rem;
+  background: #88b9ec;
+  transform: rotate(-40deg);
+}
+
+.about-page .about-confetti-right i:nth-child(1) {
+  top: 0.45rem;
+  left: 1.25rem;
+  background: #62c47f;
+  transform: rotate(-28deg);
+}
+
+.about-page .about-confetti-right i:nth-child(2) {
+  top: 1.55rem;
+  left: 1.6rem;
+  background: #ec6c94;
+  transform: rotate(8deg);
+}
+
+.about-page .about-confetti-right i:nth-child(3) {
+  top: 2.35rem;
+  left: 1.3rem;
+  background: #b38add;
+  transform: rotate(40deg);
 }
 
 .about-page .page-title {
-  background: linear-gradient(90deg, #0788bc, #8e4ec0, #dc3d71, #f29c24);
-  background-clip: text;
-  color: transparent;
+  color: #0788bc;
   font-family: var(--font-title);
-  font-size: clamp(2.3rem, 5vw, 3.8rem);
-  line-height: 1.15;
+  font-size: clamp(2rem, 4.12vw, 3rem);
+  line-height: 1.1;
   text-shadow: none;
-  -webkit-background-clip: text;
+  transform: translateX(1.4rem);
+}
+
+.about-page .page-title span:nth-child(2) {
+  color: #874dbb;
+}
+
+.about-page .page-title span:nth-child(3) {
+  color: #f3ae20;
+}
+
+.about-page .page-title span:nth-child(4) {
+  color: #e84468;
+}
+
+.about-page .page-title span:nth-child(5) {
+  color: #f3ae20;
 }
 
 .about-page .page-subtitle,
 .about-page .section-subheading {
-  color: #667085;
+  color: #52779a;
   font-family: var(--font-body);
-  font-size: clamp(1rem, 1.5vw, 1.2rem);
-  line-height: 1.6;
+  font-size: clamp(0.9rem, 1.5vw, 1.02rem);
+  line-height: 1.45;
+}
+
+.about-page .page-subtitle {
+  transform: translateX(0.5rem);
+}
+
+.about-page .about-intro-grid {
+  width: 100%;
+  max-width: 850px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1.25rem;
+  margin: 0 auto 2rem;
 }
 
 .about-page .grid-two,
@@ -4738,12 +4863,61 @@ button {
   box-shadow: 0 16px 32px rgba(31, 41, 55, 0.12);
 }
 
+.about-page .card.mission-card,
+.about-page .card.project-card {
+  display: flex;
+  height: 18.125rem;
+  flex-direction: column;
+  gap: 0.55rem;
+  padding: 0.8rem 0.9rem 0.9rem;
+  border: 0;
+  border-radius: 1.4rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 10px 24px rgba(49, 63, 71, 0.12);
+}
+
+.about-page .mission-card:hover,
+.about-page .project-card:hover {
+  transform: translateY(-3px);
+}
+
 .about-page .card-title,
 .about-page .section-heading,
 .about-page .obj-specifics-title {
   color: #03658c;
   font-family: var(--font-title);
   font-size: clamp(1.45rem, 2.5vw, 1.9rem);
+}
+
+.about-page .mission-card-title,
+.about-page .project-card-title {
+  gap: 1rem;
+  min-height: 3.5rem;
+  margin: 0;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  font-size: clamp(1.45rem, 2.6vw, 1.8rem);
+}
+
+.about-page .project-card-title {
+  gap: 0.65rem;
+  font-size: clamp(1.2rem, 2.2vw, 1.5rem);
+}
+
+.about-page .mission-card-title {
+  background: linear-gradient(110deg, #e4f8ed, #eaf8f1);
+  color: #07875f;
+}
+
+.about-page .project-card-title {
+  background: linear-gradient(110deg, #f1eaff, #f8f0ff);
+  color: #7132bc;
+}
+
+.about-page .mission-card-title span,
+.about-page .project-card-title span {
+  flex: 0 0 auto;
+  font-size: 3rem;
 }
 
 .about-page .card-text,
@@ -4760,18 +4934,41 @@ button {
 
 .about-page .card-text,
 .about-page .obj-item {
-  color: #53636e;
-  font-size: 1rem;
+  color: #52779a;
+  font-size: 0.875rem;
 }
 
 .about-page .card-text {
-  line-height: 1.8;
+  line-height: 1.3;
+  padding: 0 0 0 1.1rem;
 }
 
 .about-page .illustration-box {
   border-radius: 1.2rem;
-  border-color: rgba(3, 101, 140, 0.2);
-  background: #effaff !important;
+  border: 0;
+  background: #effaff;
+}
+
+.about-page .mission-card .mission-illustration,
+.about-page .project-card .project-illustration {
+  height: 5.65rem;
+  min-height: 5.65rem;
+  flex-shrink: 0;
+  margin-top: auto;
+  padding: 0.35rem 0.7rem;
+  border-radius: 1.25rem;
+  overflow: hidden;
+  font-size: 4.5rem;
+  line-height: 1;
+  white-space: nowrap;
+}
+
+.about-page .mission-card .mission-illustration {
+  background: linear-gradient(110deg, #e3f5d9, #eef9e9);
+}
+
+.about-page .project-card .project-illustration {
+  background: linear-gradient(110deg, #f2eaff, #f8f1ff);
 }
 
 .about-page .obj-general {
@@ -4937,7 +5134,34 @@ button {
 
 @media (max-width: 768px) {
   .about-page .main-container {
-    padding: 1.25rem 1rem;
+    padding: 0.6rem 1rem 2rem;
+  }
+
+  .about-back-button {
+    position: static;
+    margin-bottom: 0.6rem;
+  }
+
+  .about-page .about-page-header {
+    padding: 0;
+  }
+
+  .about-page .page-title {
+    transform: none;
+  }
+
+  .about-page .page-subtitle {
+    transform: none;
+  }
+
+  .about-page .about-confetti {
+    display: none;
+  }
+
+  .about-page .about-intro-grid {
+    max-width: 32rem;
+    grid-template-columns: 1fr;
+    gap: 1rem;
   }
 
   .about-page .tech-resources-grid {
@@ -5437,5 +5661,74 @@ button {
 
   .lumo-app.is-student-lobby .diagnostic-featured-card small {
     font-size: 0.72rem;
+  }
+}
+
+.lumo-app.is-about-page {
+  background: #fffaf0;
+}
+
+.lumo-app.is-about-page .header-inner {
+  min-height: 3.625rem;
+  grid-template-columns: minmax(0, 1fr) minmax(200px, 24rem) minmax(0, 1fr);
+  gap: 1.25rem;
+  padding: 0.25rem clamp(1.25rem, 2.7vw, 1.9rem);
+}
+
+.lumo-app.is-about-page .brand-logo {
+  width: 10.5rem;
+  height: 3rem;
+}
+
+.lumo-app.is-about-page .profile-box {
+  justify-self: end;
+}
+
+.lumo-app.is-about-page .search-container {
+  max-width: 24rem;
+}
+
+.lumo-app.is-about-page .search-box {
+  padding: 0.55rem 2.7rem 0.55rem 0.9rem;
+}
+
+.lumo-app.is-about-page .search-container::after {
+  width: 2.1rem;
+  height: 2.1rem;
+}
+
+.lumo-app.is-about-page .main-shell {
+  max-width: none;
+  gap: 0;
+  padding: 0.5rem 0 1.5rem;
+}
+
+.lumo-app.is-about-page .about-page .main-container {
+  padding-top: 0;
+}
+
+.lumo-app.is-about-page .about-page .about-page-header {
+  padding-top: 0.9rem;
+}
+
+@media (max-width: 768px) {
+  .lumo-app.is-about-page .header-inner {
+    min-height: 5.8rem;
+    grid-template-columns: minmax(78px, 0.7fr) minmax(100px, 1fr) auto;
+    gap: 0.4rem;
+    padding: 0.45rem 0.75rem;
+  }
+
+  .lumo-app.is-about-page .brand-logo {
+    width: 5.25rem;
+    height: 2.45rem;
+  }
+
+  .lumo-app.is-about-page .search-container {
+    max-width: none;
+  }
+
+  .lumo-app.is-about-page .main-shell {
+    padding: 0.5rem 0 1.5rem;
   }
 }
