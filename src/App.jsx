@@ -495,6 +495,25 @@ const curriculumData = {
   },
 }
 
+const readingSectionsByGrade = [
+  {
+    grade: 1,
+    readings: [
+      ...pdfStoriesByGrade[1].slice(3),
+      curriculumData[1].textos.find(({ title }) => title === 'Los Colores Primarios'),
+    ],
+  },
+  { grade: 2, readings: pdfStoriesByGrade[2].slice(0, 3) },
+  {
+    grade: 3,
+    readings: pdfStoriesByGrade[3].filter(({ title }) => [
+      'Cuento: "Los amiguitos de la precisión"',
+      'Cuento: "Manitas tejedoras"',
+      'Cuento: "El puente de madera y hierro"',
+    ].includes(title)),
+  },
+]
+
 // Preguntas predefinidas para el buscador asistido
 const searchKnowledgeBase = {
   '¿Cuáles son los colores primarios?': 'Los colores primarios son el Amarillo, el Azul y el Rojo. Se llaman así porque son puros y no se pueden obtener mezclando otros colores.',
@@ -937,9 +956,15 @@ function AppPage({
   const normalizedSearchQuery = normalizeSearchText(searchQuery.trim())
   const matchesSearch = (...values) => !normalizedSearchQuery
     || normalizeSearchText(values.join(' ')).includes(normalizedSearchQuery)
-  const filteredReadings = data.textos.filter((reading) => matchesSearch(
-    reading.title, reading.tag, reading.summary, reading.fullText,
-  ))
+  const filteredReadings = readingSectionsByGrade
+    .filter(({ grade: readingGrade }) => readingGrade === currentGrade)
+    .flatMap(({ grade: readingGrade, readings }) => (
+      readings
+        .map((reading, index) => ({ ...reading, grade: readingGrade, index }))
+        .filter((reading) => matchesSearch(
+          reading.title, reading.tag, reading.summary, reading.fullText,
+        ))
+    ))
   const filteredVideos = data.videos.filter((video) => matchesSearch(video.title, video.desc))
   const filteredGames = visibleGames.filter((game) => matchesSearch(
     game.unit, game.title, game.goal, game.instructions, game.materials,
@@ -954,7 +979,10 @@ function AppPage({
     selectedDigitalPractice.instructions,
   )
   const sectionSearchOptions = activeTab === 'textos'
-    ? filteredReadings.map((item, index) => ({ title: item.title, id: `reading-result-${index}` }))
+    ? filteredReadings.map((item) => ({
+        title: `${item.grade}° grado · ${item.title}`,
+        id: `reading-result-${item.grade}-${item.index}`,
+      }))
     : activeTab === 'videos'
       ? filteredVideos.map((item, index) => ({ title: item.title, id: `video-result-${index}` }))
       : activeTab === 'actividades'
@@ -1822,24 +1850,47 @@ function AppPage({
               <h2 className="section-title green"><i className="fa-solid fa-book-open" /> Lecturas e Historias</h2>
               <p>{pageCopy.readingIntro}</p>
             </div>
-            <span className="section-badge green">Unidades de Grado {currentGrade}°</span>
+            <span className="section-badge green">Lecturas de grado {currentGrade}°</span>
           </div>
-          <div className="card-grid">
-            {filteredReadings.length ? filteredReadings.map((reading, index) => (
-              <article key={reading.title} id={`reading-result-${index}`} className="reading-card">
-                <div className="card-head">
-                  <span className="mini-tag">{reading.tag}</span>
-                  <span className="reading-card-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          {filteredReadings.length ? readingSectionsByGrade.map(({ grade: readingGrade }) => {
+            const gradeReadings = filteredReadings.filter((reading) => reading.grade === readingGrade)
+            if (!gradeReadings.length) return null
+
+            return (
+              <div className="reading-grade-section" key={readingGrade}>
+                <div className="reading-grade-heading">
+                  <h3>{readingGrade}° grado</h3>
+                  <span>{gradeReadings.length} {gradeReadings.length === 1 ? 'texto' : 'textos'}</span>
                 </div>
-                <h3>{reading.title}</h3>
-                <p>{reading.summary}</p>
-                <button type="button" className="primary-button" onClick={() => openReadingModal(reading.title, reading.fullText)}>
-                  <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
-                  <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                </button>
-              </article>
-            )) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
-          </div>
+                <div className="card-grid">
+                  {gradeReadings.map((reading) => (
+                    <article
+                      key={reading.title}
+                      id={`reading-result-${reading.grade}-${reading.index}`}
+                      className="reading-card"
+                    >
+                      <div className="card-head">
+                        <span className="mini-tag">{reading.tag}</span>
+                        <span className="reading-card-number" aria-hidden="true">
+                          {String(reading.index + 1).padStart(2, '0')}
+                        </span>
+                      </div>
+                      <h3>{reading.title}</h3>
+                      <p>{reading.summary}</p>
+                      <button
+                        type="button"
+                        className="primary-button"
+                        onClick={() => openReadingModal(reading.title, reading.fullText)}
+                      >
+                        <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
+                        <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                      </button>
+                    </article>
+                  ))}
+                </div>
+              </div>
+            )
+          }) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
         </section>
 
         <section className={`content-section video-section ${activeTab === 'videos' ? '' : 'hidden'}`}>
