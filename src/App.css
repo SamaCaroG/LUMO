@@ -4999,6 +4999,7 @@ button {
 }
 
 .about-page .team-grid {
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: clamp(1rem, 2vw, 1.5rem);
 }
 
@@ -5170,6 +5171,23 @@ button {
 
   .about-page .team-card {
     min-height: auto;
+  }
+
+  .about-page .team-grid {
+    min-width: 0;
+    grid-template-columns: repeat(5, minmax(8rem, 1fr));
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    padding-bottom: 0.5rem;
+  }
+
+  .about-page .team-card {
+    padding: 1rem 0.5rem;
+  }
+
+  .about-page .team-photo {
+    width: 6rem;
+    height: 6rem;
   }
 
   .footer-brand {
