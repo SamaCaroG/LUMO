@@ -2466,6 +2466,36 @@ button {
   box-shadow: 0 5px 14px rgba(34, 117, 52, 0.08);
 }
 
+.reading-grade-section {
+  margin-top: 2rem;
+}
+
+.reading-grade-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding-bottom: 0.7rem;
+  border-bottom: 1px solid rgba(75, 209, 102, 0.2);
+}
+
+.reading-grade-heading h3 {
+  margin: 0;
+  color: #218846;
+  font-family: var(--font-title);
+  font-size: 1.35rem;
+}
+
+.reading-grade-heading span {
+  border-radius: 999px;
+  padding: 0.35rem 0.75rem;
+  background: rgba(75, 209, 102, 0.12);
+  color: #278b3d;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
 .video-section .section-badge.gold { border-color: rgba(225, 184, 33, 0.25); background: rgba(255, 255, 255, 0.8); }
 .activities-section .activity-filter { border: 1px solid rgba(217, 61, 89, 0.16); border-radius: 1rem; padding: 0.6rem 0.8rem; background: rgba(255, 255, 255, 0.76); }
 .drawings-section .canvas-actions { padding: 0.4rem; border: 1px solid rgba(135, 82, 187, 0.14); border-radius: 1rem; background: rgba(255, 255, 255, 0.76); }
