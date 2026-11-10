@@ -1,13 +1,19 @@
 import { collection, doc, onSnapshot, query, serverTimestamp, setDoc, where } from 'firebase/firestore'
-import { db } from '../firebase/config.js'
+import { auth, db } from '../firebase/config.js'
 
 export function createDiagnosticId() {
   return doc(collection(db, 'diagnosticos')).id
 }
 
 export async function saveDiagnostic(id, diagnostic) {
+  const user = auth.currentUser
+  if (!user) {
+    throw new Error('Debes iniciar sesión para enviar el diagnóstico.')
+  }
+
   await setDoc(doc(db, 'diagnosticos', id), {
     ...diagnostic,
+    submittedBy: user.uid,
     createdAt: serverTimestamp(),
   })
 }
