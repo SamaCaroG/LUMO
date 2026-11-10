@@ -23,6 +23,7 @@ import {
 import { readingStoriesByGrade } from './readingStories.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
+import childrenStories from './childrenStories.js'
 import { auth } from './firebase/config.js'
 
 const formatCompletionDate = (dateValue) => {
@@ -876,6 +877,7 @@ function AppPage({
   const hasEnteredSite = session?.role === 'student'
   const [showAboutPage, setShowAboutPage] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
+  const [openStoryUnit, setOpenStoryUnit] = useState(childrenStories[0].key)
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
   const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[grade][0].id)
@@ -1426,7 +1428,7 @@ function AppPage({
   }
 
   return (
-    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
+    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${showAboutPage ? 'is-about-page' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
       <header className={`main-header ${headerScrolled ? 'is-scrolled' : ''}`}>
         <div className="header-inner">
           <div
@@ -1889,6 +1891,59 @@ function AppPage({
               </div>
             )
           }) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
+
+          <div className="story-collection">
+            <div className="story-collection-header">
+              <div>
+                <h3>Colección de cuentos infantiles</h3>
+                <p>20 historias organizadas por unidades para leer, conversar y dibujar.</p>
+              </div>
+              <span className="story-collection-badge">4 unidades</span>
+            </div>
+
+            {childrenStories.map((unit) => {
+              const isOpen = openStoryUnit === unit.key
+
+              return (
+                <div className="story-unit" key={unit.key}>
+                  <button
+                    type="button"
+                    className={`story-unit-trigger ${isOpen ? 'is-open' : ''}`}
+                    onClick={() => setOpenStoryUnit(isOpen ? '' : unit.key)}
+                    aria-expanded={isOpen}
+                  >
+                    <span>{unit.label}</span>
+                    <span className="story-unit-count">{unit.stories.length} cuentos</span>
+                  </button>
+
+                  {isOpen && (
+                    <div className="story-unit-panel">
+                      <div className="story-grid">
+                        {unit.stories.map((story) => (
+                          <article key={story.id} className="story-card">
+                            <div className="story-card-header">
+                              <span className="story-card-badge">{story.unidad}</span>
+                              <span className="story-card-number">{story.id.slice(-2)}</span>
+                            </div>
+                            <h4>{story.titulo}</h4>
+                            <div className="story-card-body">
+                              {story.contenido.split('\n\n').map((paragraph, index) => (
+                                <p key={`${story.id}-p-${index}`}>{paragraph}</p>
+                              ))}
+                            </div>
+                            <div className="story-question">
+                              <strong>Pregunta final</strong>
+                              <p>{story.preguntaFinal}</p>
+                            </div>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
         </section>
 
         <section className={`content-section video-section ${activeTab === 'videos' ? '' : 'hidden'}`}>
@@ -3238,40 +3293,43 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
             aria-label="Volver al contenido de LÜMØ"
             title="Volver al contenido"
           >
-            <img src={lumoColorLogo} alt="" />
+            <span aria-hidden="true">←</span>
             <span>Volver</span>
           </button>
         )}
         {activeTab === 'nosotros' ? (
           <div>
-            <div className="page-header">
-              <h1 className="page-title">¡CONOCE MÁS SOBRE NOSOTROS!</h1>
+            <div className="page-header about-page-header">
+              <span className="about-confetti about-confetti-left" aria-hidden="true"><i /><i /><i /></span>
+              <h1 className="page-title">
+                <span>¡CONOCE</span>{' '}
+                <span>MÁS</span>{' '}
+                <span>SOBRE</span>{' '}
+                <span>NOSOTROS</span>
+                <span>!</span>
+              </h1>
               <p className="page-subtitle">El proyecto detrás de la plataforma didáctica y artística LÜMØ</p>
+              <span className="about-confetti about-confetti-right" aria-hidden="true"><i /><i /><i /></span>
             </div>
 
             {/* SECCIÓN: MISIÓN Y PROYECTO */}
-            <div className="grid-two">
-              <div className="card">
-                <h3 className="card-title">🎯 Nuestra misión</h3>
+            <div className="grid-two about-intro-grid">
+              <div className="card mission-card">
+                <h3 className="card-title mission-card-title"><span aria-hidden="true">🎯</span> Nuestra misión</h3>
                 <p className="card-text">
-                  Fomentar curiosidad y habilidades artísticas.
-                  Evaluando proyectos de 1° a 3°.
-                  Mediante exploración visual y digital.
-                  Aplicando el arte a diario.
-                  Durante este ciclo escolar actual.
-
+                  Fomentar la curiosidad y habilidades artísticas en niños y niñas de 1° a 3° de primaria, mediante la exploración visual y digital. Aplicamos el arte de forma divertida, creativa y cercana a su realidad cotidiana.
                 </p>
-                <div className="illustration-box" style={{ background: '#fef3c7', borderColor: '#fde047' }}>
+                <div className="illustration-box mission-illustration" aria-hidden="true">
                   🎮 🎨 ✏️
                 </div>
               </div>
 
-              <div className="card">
-                <h3 className="card-title">🧩 ¿Por qué existe LÜMØ?</h3>
+              <div className="card project-card">
+                <h3 className="card-title project-card-title"><span aria-hidden="true">🧩</span> ¿Por qué existe LÜMØ?</h3>
                 <p className="card-text">
-                  Su núcleo pedagógico está alineado con los lineamientos curriculares de Educación Artística establecidos por el Ministerio de Educación Nacional de Colombia. El MEN estipula que la educación en estas edades no busca formar artistas técnicos, sino seres humanos integrales a través de tres dimensiones fundamentales.
+                  Porque está alineado con los lineamientos del Ministerio de Educación de Colombia en Educación Artística, y busca contribuir al desarrollo integral de los niños y niñas, fortaleciendo su expresión, creatividad, sensibilidad y pensamiento crítico.
                 </p>
-                <div className="illustration-box" style={{ background: '#e0f2fe', borderColor: '#bae6fd' }}>
+                <div className="illustration-box project-illustration" aria-hidden="true">
                   🧩 💡 🌟
                 </div>
               </div>
@@ -3388,15 +3446,6 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
         )}
       </main>
 
-      {/* PIE DE PÁGINA ESTILO LUMØ */}
-      <footer className="footer">
-        <div>
-          <span className="footer-logo">LÜMØ</span> — Arte Digital e Interactividad Educativa.
-        </div>
-        <div>
-          © 2026 LÜMØ Educativo. Arte, cultura y creatividad para aprender en comunidad.
-        </div>
-      </footer>
     </div>
   );
 }
