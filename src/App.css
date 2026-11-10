@@ -2470,6 +2470,19 @@ button {
   margin-top: 2rem;
 }
 
+.reading-unit-section {
+  margin-top: 1.5rem;
+}
+
+.reading-unit-section .reading-grade-heading {
+  margin-bottom: 0.85rem;
+  padding-bottom: 0.5rem;
+}
+
+.reading-unit-section .reading-grade-heading h3 {
+  font-size: 1.05rem;
+}
+
 .reading-grade-heading {
   display: flex;
   align-items: center;

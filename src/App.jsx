@@ -20,6 +20,7 @@ import {
   curriculumDigitalPractices,
   curriculumGames,
 } from './curriculumActivities.js'
+import { readingStoriesByGrade } from './readingStories.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
 import { auth } from './firebase/config.js'
@@ -495,24 +496,8 @@ const curriculumData = {
   },
 }
 
-const readingSectionsByGrade = [
-  {
-    grade: 1,
-    readings: [
-      ...pdfStoriesByGrade[1].slice(3),
-      curriculumData[1].textos.find(({ title }) => title === 'Los Colores Primarios'),
-    ],
-  },
-  { grade: 2, readings: pdfStoriesByGrade[2].slice(0, 3) },
-  {
-    grade: 3,
-    readings: pdfStoriesByGrade[3].filter(({ title }) => [
-      'Cuento: "Los amiguitos de la precisión"',
-      'Cuento: "Manitas tejedoras"',
-      'Cuento: "El puente de madera y hierro"',
-    ].includes(title)),
-  },
-]
+const readingSectionsByGrade = Object.entries(readingStoriesByGrade)
+  .map(([grade, readings]) => ({ grade: Number(grade), readings }))
 
 // Preguntas predefinidas para el buscador asistido
 const searchKnowledgeBase = {
@@ -1862,32 +1847,45 @@ function AppPage({
                   <h3>{readingGrade}° grado</h3>
                   <span>{gradeReadings.length} {gradeReadings.length === 1 ? 'texto' : 'textos'}</span>
                 </div>
-                <div className="card-grid">
-                  {gradeReadings.map((reading) => (
-                    <article
-                      key={reading.title}
-                      id={`reading-result-${reading.grade}-${reading.index}`}
-                      className="reading-card"
-                    >
-                      <div className="card-head">
-                        <span className="mini-tag">{reading.tag}</span>
-                        <span className="reading-card-number" aria-hidden="true">
-                          {String(reading.index + 1).padStart(2, '0')}
-                        </span>
+                {[1, 2, 3, 4].map((unit) => {
+                  const unitReadings = gradeReadings.filter((reading) => reading.tag === `Unidad ${unit}`)
+                  if (!unitReadings.length) return null
+
+                  return (
+                    <div className="reading-unit-section" key={unit}>
+                      <div className="reading-grade-heading">
+                        <h3>Unidad {unit}</h3>
+                        <span>{unitReadings.length} cuentos</span>
                       </div>
-                      <h3>{reading.title}</h3>
-                      <p>{reading.summary}</p>
-                      <button
-                        type="button"
-                        className="primary-button"
-                        onClick={() => openReadingModal(reading.title, reading.fullText)}
-                      >
-                        <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
-                        <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                      </button>
-                    </article>
-                  ))}
-                </div>
+                      <div className="card-grid">
+                        {unitReadings.map((reading) => (
+                          <article
+                            key={reading.title}
+                            id={`reading-result-${reading.grade}-${reading.index}`}
+                            className="reading-card"
+                          >
+                            <div className="card-head">
+                              <span className="mini-tag">{reading.tag}</span>
+                              <span className="reading-card-number" aria-hidden="true">
+                                {String(reading.index + 1).padStart(2, '0')}
+                              </span>
+                            </div>
+                            <h3>{reading.title}</h3>
+                            <p>{reading.summary}</p>
+                            <button
+                              type="button"
+                              className="primary-button"
+                              onClick={() => openReadingModal(reading.title, reading.fullText)}
+                            >
+                              <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
+                              <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
               </div>
             )
           }) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
