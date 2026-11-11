@@ -23,7 +23,6 @@ import {
 import { readingStoriesByGrade } from './readingStories.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
-import childrenStories from './childrenStories.js'
 import { auth } from './firebase/config.js'
 
 const formatCompletionDate = (dateValue) => {
@@ -877,7 +876,6 @@ function AppPage({
   const hasEnteredSite = session?.role === 'student'
   const [showAboutPage, setShowAboutPage] = useState(false)
   const [activeTab, setActiveTab] = useState(null)
-  const [openStoryUnit, setOpenStoryUnit] = useState(childrenStories[0].key)
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
   const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[grade][0].id)
@@ -1892,58 +1890,6 @@ function AppPage({
             )
           }) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
 
-          <div className="story-collection">
-            <div className="story-collection-header">
-              <div>
-                <h3>Colección de cuentos infantiles</h3>
-                <p>20 historias organizadas por unidades para leer, conversar y dibujar.</p>
-              </div>
-              <span className="story-collection-badge">4 unidades</span>
-            </div>
-
-            {childrenStories.map((unit) => {
-              const isOpen = openStoryUnit === unit.key
-
-              return (
-                <div className="story-unit" key={unit.key}>
-                  <button
-                    type="button"
-                    className={`story-unit-trigger ${isOpen ? 'is-open' : ''}`}
-                    onClick={() => setOpenStoryUnit(isOpen ? '' : unit.key)}
-                    aria-expanded={isOpen}
-                  >
-                    <span>{unit.label}</span>
-                    <span className="story-unit-count">{unit.stories.length} cuentos</span>
-                  </button>
-
-                  {isOpen && (
-                    <div className="story-unit-panel">
-                      <div className="story-grid">
-                        {unit.stories.map((story) => (
-                          <article key={story.id} className="story-card">
-                            <div className="story-card-header">
-                              <span className="story-card-badge">{story.unidad}</span>
-                              <span className="story-card-number">{story.id.slice(-2)}</span>
-                            </div>
-                            <h4>{story.titulo}</h4>
-                            <div className="story-card-body">
-                              {story.contenido.split('\n\n').map((paragraph, index) => (
-                                <p key={`${story.id}-p-${index}`}>{paragraph}</p>
-                              ))}
-                            </div>
-                            <div className="story-question">
-                              <strong>Pregunta final</strong>
-                              <p>{story.preguntaFinal}</p>
-                            </div>
-                          </article>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              )
-            })}
-          </div>
         </section>
 
         <section className={`content-section video-section ${activeTab === 'videos' ? '' : 'hidden'}`}>
