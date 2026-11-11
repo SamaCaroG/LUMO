@@ -1426,7 +1426,7 @@ function AppPage({
   }
 
   return (
-    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${showAboutPage ? 'is-about-page' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
+    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${session?.role === 'teacher' && pageView === 'grades' ? 'is-teacher-grade-selection' : ''} ${showAboutPage ? 'is-about-page' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
       <header className={`main-header ${headerScrolled ? 'is-scrolled' : ''}`}>
         <div className="header-inner">
           <div
@@ -2347,7 +2347,7 @@ function TeacherGradeSelection({ onSelectGrade }) {
     <section className="grade-lobby" aria-labelledby="grade-lobby-title">
       <div className="grade-lobby-heading">
         <h1 id="grade-lobby-title">¡BIENVENIDO!</h1>
-        <p>{gradeUiCopy[1].welcome}</p>
+        <p>Elige tu curso.</p>
       </div>
       <div className="grade-card-grid">
         {[1, 2, 3].map((grade) => (

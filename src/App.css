@@ -5252,6 +5252,14 @@ button {
   display: none;
 }
 
+.lumo-app.is-teacher-grade-selection .header-inner {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lumo-app.is-teacher-grade-selection .search-container {
+  display: none;
+}
+
 .lumo-app.is-student-view .header-inner {
   min-height: 7rem;
   grid-template-columns: minmax(0, 1fr) minmax(200px, 500px) minmax(0, 1fr);
