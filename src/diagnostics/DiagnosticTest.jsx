@@ -35,7 +35,13 @@ export default function DiagnosticTest({ grade, studentName }) {
       setResult(scoredResult)
     } catch (saveError) {
       console.error('No se pudo guardar el diagnóstico en Firestore.', saveError)
-      setError('No pudimos guardar tu resultado. Revisa tu conexión e inténtalo de nuevo.')
+      if (saveError.code === 'permission-denied') {
+        setError('No se pudo enviar el diagnóstico. Verifica los permisos de Firestore e inténtalo de nuevo.')
+      } else if (saveError.code === 'unauthenticated' || saveError.message === 'Debes iniciar sesión para enviar el diagnóstico.') {
+        setError('Tu cuenta no está conectada a Firebase. Inicia sesión con tu cuenta institucional y vuelve a intentarlo.')
+      } else {
+        setError('No pudimos guardar tu resultado. Revisa tu conexión e inténtalo de nuevo.')
+      }
     } finally {
       setIsSaving(false)
     }
