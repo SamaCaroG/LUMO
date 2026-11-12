@@ -4695,6 +4695,7 @@ button {
   align-items: center;
   gap: 0.4rem;
   position: absolute;
+  z-index: 2;
   top: 0.65rem;
   left: 0.7rem;
   margin: 0;
@@ -5690,6 +5691,14 @@ button {
   max-width: none;
   gap: 0;
   padding: 0.5rem 0 1.5rem;
+}
+
+.lumo-app.is-about-page .header-inner {
+  grid-template-columns: minmax(0, 1fr) auto;
+}
+
+.lumo-app.is-about-page .search-container {
+  display: none;
 }
 
 .lumo-app.is-about-page .about-page .main-container {

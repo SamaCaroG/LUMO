@@ -1699,7 +1699,14 @@ function AppPage({
             onNavigate={onTeacherNavigate}
           />
         ) : showAboutPage ? (
-          <NosotrosPage hideNavbar onBack={() => setShowAboutPage(false)} />
+          <NosotrosPage
+            hideNavbar
+            onBack={() => {
+              setShowAboutPage(false)
+              setSearchOpen(false)
+              setSearchSubmitted(false)
+            }}
+          />
         ) : !hasEnteredSite ? (
           <section className="grade-lobby" aria-labelledby="grade-lobby-title">
             <div className="grade-lobby-heading">
