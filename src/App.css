@@ -3806,8 +3806,37 @@ button {
 }
 
 .teacher-date-input {
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  border: 2px solid #c9e0e8;
+  border-radius: 0.8rem;
+  background: #fff;
+  color: #365d6b;
   font-family: var(--font-body);
   font-size: 1rem;
+}
+
+.teacher-date-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  color: #365d6b;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
+  font-weight: 700;
+}
+
+.teacher-date-confirmation {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.8rem 1rem;
+  border: 1px solid #b9dbea;
+  border-radius: 0.9rem;
+  background: #edf8fc;
+  color: #286980;
+  font-family: var(--font-body);
+  font-size: 0.9rem;
 }
 
 .teacher-upload-button,
@@ -3846,6 +3875,11 @@ button {
   border-color: #b9dbea;
   background: #edf8fc;
   color: #286980;
+}
+
+.teacher-schedule-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
 }
 
 .teacher-visually-hidden {

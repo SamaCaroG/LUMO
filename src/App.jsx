@@ -2472,7 +2472,6 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   const [activityGrade, setActivityGrade] = useState(grade)
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
-  const [activityDate, setActivityDate] = useState('')
   const [activityAttachment, setActivityAttachment] = useState(null)
   const [latestActivity, setLatestActivity] = useState(null)
   const [formError, setFormError] = useState('')
@@ -2481,20 +2480,44 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
     return date.toISOString().slice(0, 10)
   })
+  const [activityPublishedDate, setActivityPublishedDate] = useState(minScheduleDateValue)
+  const [activityDueDate, setActivityDueDate] = useState('')
+  const [activityDatesProgrammed, setActivityDatesProgrammed] = useState(false)
+
+  const programActivityDates = () => {
+    if (!activityPublishedDate || activityPublishedDate > minScheduleDateValue) {
+      setFormError('Elige una fecha de publicación válida.')
+      return
+    }
+    if (!activityDueDate) {
+      setFormError('Elige el plazo de entrega de la actividad.')
+      return
+    }
+    if (activityDueDate < activityPublishedDate) {
+      setFormError('El plazo de entrega debe ser igual o posterior a la fecha de publicación.')
+      return
+    }
+
+    setFormError('')
+    setActivityDatesProgrammed(true)
+  }
 
   const saveActivity = (event) => {
     event.preventDefault()
-    const action = event.nativeEvent.submitter?.value
     if (!activityTitle.trim() || !activityContent.trim()) {
       setFormError('Escribe el título y el contenido de la actividad.')
       return
     }
-    if (action === 'schedule' && !activityDate) {
-      setFormError('Elige una fecha para programar la actividad.')
+    if (!activityPublishedDate) {
+      setFormError('Elige la fecha de publicación de la actividad.')
       return
     }
-    if (action === 'schedule' && activityDate < minScheduleDateValue) {
-      setFormError('Elige hoy o una fecha futura para programar la actividad.')
+    if (activityPublishedDate > minScheduleDateValue) {
+      setFormError('La fecha de publicación no puede ser futura.')
+      return
+    }
+    if (activityDatesProgrammed && activityDueDate < activityPublishedDate) {
+      setFormError('El plazo de entrega debe ser igual o posterior a la fecha de publicación.')
       return
     }
 
@@ -2507,15 +2530,18 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
     setLatestActivity({
       title: activityTitle.trim(),
       content: activityContent.trim(),
-      date: action === 'schedule' ? activityDate : '',
+      publishedDate: activityPublishedDate,
+      dueDate: activityDatesProgrammed ? activityDueDate : '',
       attachment,
       grade: activityGrade,
-      status: action === 'schedule' ? 'Programada' : 'Publicada',
+      status: 'Publicada',
     })
     setFormError('')
     setActivityTitle('')
     setActivityContent('')
-    setActivityDate('')
+    setActivityPublishedDate(minScheduleDateValue)
+    setActivityDueDate('')
+    setActivityDatesProgrammed(false)
     setActivityAttachment(null)
     onNavigate('recent', activityGrade)
   }
@@ -2617,9 +2643,18 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                     <span className="teacher-activity-status">{latestActivity.status}</span>
                     <span className="teacher-activity-course">{latestActivity.grade}° grado</span>
                     <h2>{latestActivity.title}</h2>
-                    {latestActivity.date && (
-                      <time dateTime={latestActivity.date}>
-                        Programada para {new Date(`${latestActivity.date}T12:00:00`).toLocaleDateString('es-CO', {
+                    {latestActivity.publishedDate && (
+                      <time dateTime={latestActivity.publishedDate}>
+                        Publicada el {new Date(`${latestActivity.publishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </time>
+                    )}
+                    {latestActivity.dueDate && (
+                      <time dateTime={latestActivity.dueDate}>
+                        Plazo de entrega hasta {new Date(`${latestActivity.dueDate}T12:00:00`).toLocaleDateString('es-CO', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',
@@ -2687,20 +2722,66 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                       />
                     </label>
                     <div className="teacher-activity-actions">
-                      <label className="teacher-visually-hidden" htmlFor="teacher-activity-date">Programar fecha</label>
-                      <input
-                        id="teacher-activity-date"
-                        className="teacher-date-input"
-                        type="date"
-                        min={minScheduleDateValue}
-                        value={activityDate}
-                        onChange={(event) => setActivityDate(event.target.value)}
-                      />
+                      <label className="teacher-date-field" htmlFor="teacher-activity-published-date">
+                        Fecha de publicación
+                        <input
+                          id="teacher-activity-published-date"
+                          className="teacher-date-input"
+                          type="date"
+                          max={minScheduleDateValue}
+                          value={activityPublishedDate}
+                          onChange={(event) => {
+                            setActivityPublishedDate(event.target.value)
+                            setActivityDatesProgrammed(false)
+                            setFormError('')
+                          }}
+                          required
+                        />
+                      </label>
+                      <label className="teacher-date-field" htmlFor="teacher-activity-due-date">
+                        Plazo de entrega
+                        <input
+                          id="teacher-activity-due-date"
+                          className="teacher-date-input"
+                          type="date"
+                          min={activityPublishedDate || minScheduleDateValue}
+                          value={activityDueDate}
+                          onChange={(event) => {
+                            setActivityDueDate(event.target.value)
+                            setActivityDatesProgrammed(false)
+                            setFormError('')
+                          }}
+                        />
+                      </label>
+                      {activityDatesProgrammed && (
+                        <div className="teacher-date-confirmation" role="status">
+                          <strong>Fechas programadas</strong>
+                          <span>
+                            Fecha de publicación: {new Date(`${activityPublishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </span>
+                          <span>
+                            Plazo de entrega: {new Date(`${activityDueDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        className="teacher-schedule-button"
+                        type="button"
+                        onClick={programActivityDates}
+                        disabled={!activityPublishedDate || activityPublishedDate > minScheduleDateValue || !activityDueDate || activityDueDate < activityPublishedDate}
+                      >
+                        <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
+                      </button>
                       <button className="teacher-upload-button" type="submit" value="publish">
                         <i className="fa-solid fa-arrow-up" aria-hidden="true" /> SUBIR
-                      </button>
-                      <button className="teacher-schedule-button" type="submit" value="schedule">
-                        <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
                       </button>
                     </div>
                   </div>
