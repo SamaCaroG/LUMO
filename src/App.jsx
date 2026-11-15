@@ -11,6 +11,15 @@ import loginIllustration from './assets/login-illustration.png'
 import lumoBlackLogo from './assets/lumo-black-logo.png'
 import studentBookIcon from './assets/student-book-icon.png'
 import studentPaletteIcon from './assets/student-palette-icon.png'
+import vercelLogo from '../vercel-logo.jpg'
+import javascriptLogo from '../JavaScript-logo.png'
+import firebaseLogo from '../firebase.logo.png'
+import githubLogo from '../github-logo.png'
+import canvaLogo from '../canva-logo.jpg'
+import contenidoLogo from '../contenido-logo.png'
+import html5Logo from '../HTML5_log0.png'
+import css3Logo from '../CSS3_logo.webp'
+import reactLogo from '../React-logo.webp'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -3143,6 +3152,17 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
           gap: 6px;
         }
 
+        .badge-with-logo {
+          padding-right: 12px;
+        }
+
+        .badge-logo-image {
+          width: 18px;
+          height: 18px;
+          object-fit: contain;
+          display: block;
+        }
+
         /* FOOTER ESTILO LUMØ */
         .footer {
           background: #ffffff;
@@ -3351,12 +3371,24 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h3 className="card-title">💻 Tecnologías empleadas</h3>
                 <p className="card-text">Lenguajes y herramientas para la estructuración y dinamismo del sitio:</p>
                 <div className="badge-list">
-                  <span className="badge"><i className="fa-brands fa-html5" aria-hidden="true" /> HTML5</span>
-                  <span className="badge"><i className="fa-brands fa-css3-alt" aria-hidden="true" /> CSS3</span>
-                  <span className="badge"><i className="fa-brands fa-react" aria-hidden="true" /> React</span>
-                  <span className="badge"><i className="fa-brands fa-js" aria-hidden="true" /> JavaScript</span>
+                  <span className="badge badge-with-logo">
+                    <img src={html5Logo} alt="HTML5" className="badge-logo-image" />
+                    HTML5
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={css3Logo} alt="CSS3" className="badge-logo-image" />
+                    CSS3
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={reactLogo} alt="React" className="badge-logo-image" />
+                    React
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={javascriptLogo} alt="JavaScript" className="badge-logo-image" />
+                    JavaScript
+                  </span>
                   <span className="badge badge-firebase">
-                    <i className="fa-solid fa-fire-flame-curved" aria-hidden="true" />
+                    <img src={firebaseLogo} alt="Firebase" className="badge-logo-image" />
                     Firebase
                     <span className="badge-category">Backend como servicio</span>
                   </span>
@@ -3367,10 +3399,22 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h3 className="card-title">🛠️ Recursos usados</h3>
                 <p className="card-text">Plataformas e instrumentos de apoyo pedagógico y visual:</p>
                 <div className="badge-list">
-                  <span className="badge"><i className="fa-brands fa-github" aria-hidden="true" /> GitHub</span>
-                  <span className="badge"><i className="fa-solid fa-triangle" aria-hidden="true" /> Vercel</span>
-                  <span className="badge"><i className="fa-solid fa-palette" aria-hidden="true" /> Canva e ilustración</span>
-                  <span className="badge"><i className="fa-solid fa-book-open" aria-hidden="true" /> Contenido pedagógico</span>
+                  <span className="badge badge-with-logo">
+                    <img src={githubLogo} alt="GitHub" className="badge-logo-image" />
+                    GitHub
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={vercelLogo} alt="Vercel" className="badge-logo-image" />
+                    Vercel
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={canvaLogo} alt="Canva" className="badge-logo-image" />
+                    Canva e ilustración
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={contenidoLogo} alt="Contenido pedagógico" className="badge-logo-image" />
+                    Contenido pedagógico
+                  </span>
                 </div>
               </div>
             </div>
