@@ -3157,10 +3157,15 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
         }
 
         .badge-logo-image {
-          width: 18px;
-          height: 18px;
+          width: 30px;
+          height: 30px;
           object-fit: contain;
           display: block;
+        }
+
+        .badge-logo-content {
+          width: 48px;
+          height: 48px;
         }
 
         /* FOOTER ESTILO LUMØ */
@@ -3412,7 +3417,7 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                     Canva e ilustración
                   </span>
                   <span className="badge badge-with-logo">
-                    <img src={contenidoLogo} alt="Contenido pedagógico" className="badge-logo-image" />
+                    <img src={contenidoLogo} alt="Contenido pedagógico" className="badge-logo-image badge-logo-content" />
                     Contenido pedagógico
                   </span>
                 </div>
