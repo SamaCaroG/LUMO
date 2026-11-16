@@ -9,8 +9,9 @@ import colSamShield from '../escudo colsam png.png'
 import houseShield from '../escudo de la casa.png'
 import loginIllustration from './assets/login-illustration.png'
 import lumoBlackLogo from './assets/lumo-black-logo.png'
-import studentBookIcon from './assets/student-book-icon.png'
-import studentPaletteIcon from './assets/student-palette-icon.png'
+import selectedBookIcon from './assets/student-book-icon-selected.png'
+import selectedPaletteIcon from './assets/student-palette-icon-selected.png'
+import teacherEmptyIllustration from './assets/teacher-empty-illustration.png'
 import vercelLogo from '../vercel-logo.jpg'
 import javascriptLogo from '../JavaScript-logo.png'
 import firebaseLogo from '../firebase.logo.png'
@@ -737,13 +738,15 @@ function StudentRoute({ session, onLogout, onUpdateSession }) {
 }
 
 function LobbyCardIllustration({ type }) {
-  if (type === 'book' || type === 'palette') {
+  if (type === 'book') {
     return (
-      <img
-        src={type === 'book' ? studentBookIcon : studentPaletteIcon}
-        className="lobby-card-illustration"
-        alt=""
-      />
+      <img src={selectedBookIcon} className="lobby-card-illustration lobby-book-icon" alt="" />
+    )
+  }
+
+  if (type === 'palette') {
+    return (
+      <img src={selectedPaletteIcon} className="lobby-card-illustration lobby-palette-icon" alt="" />
     )
   }
 
@@ -2605,24 +2608,30 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
       </aside>
 
       <div className="teacher-main">
-        <h1 className="teacher-page-title">
-          {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
-        </h1>
-        <div className="teacher-panel-frame">
+        <div className="teacher-dashboard-heading">
+          <h1 className="teacher-page-title">
+            {view === 'recent' && <span className="teacher-title-confetti teacher-title-confetti-left" aria-hidden="true"><i /><i /><i /></span>}
+            {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
+            {view === 'recent' && <span className="teacher-title-confetti teacher-title-confetti-right" aria-hidden="true"><i /><i /><i /></span>}
+          </h1>
+          {view === 'recent' && (
+            <div className="teacher-panel-toolbar">
+              <span className="teacher-grade-caption">{grade}° grado</span>
+              <span className="teacher-name-caption">Docente {teacherName}</span>
+              <button
+                type="button"
+                className="teacher-diagnostics-button"
+                onClick={() => setShowDiagnostics((visible) => !visible)}
+              >
+                <i className="fa-solid fa-chart-column" aria-hidden="true" />
+                {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : 'DIAGNÓSTICO DE GRUPO'}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className={`teacher-panel-frame ${view === 'recent' ? 'is-recent' : ''}`}>
           {view === 'recent' ? (
-            <>
-              <div className="teacher-panel-toolbar">
-                <span className="teacher-grade-caption">{grade}° grado</span>
-                <span className="teacher-name-caption">Docente {teacherName}</span>
-                <button
-                  type="button"
-                  className="teacher-diagnostics-button"
-                  onClick={() => setShowDiagnostics((visible) => !visible)}
-                >
-                  {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : '📊 DIAGNÓSTICO DE GRUPO'}
-                </button>
-              </div>
-              <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''}`}>
+            <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''} ${!showDiagnostics && !latestActivity ? 'is-empty' : ''}`}>
                 {showDiagnostics ? (
                   <DiagnosticGroupReport
                     key={grade}
@@ -2675,10 +2684,13 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                     )}
                   </article>
                 ) : (
-                  <p className="teacher-empty-history">Texto o historial de lo último hecho por el docente</p>
+                  <div className="teacher-empty-state">
+                    <img className="teacher-empty-illustration" src={teacherEmptyIllustration} alt="" aria-hidden="true" />
+                    <h2>Aún no hay novedades</h2>
+                    <p>Aquí aparecerán las actividades recientes del grupo.</p>
+                  </div>
                 )}
               </div>
-            </>
           ) : (
             <>
               <form className="teacher-activity-form" onSubmit={saveActivity}>

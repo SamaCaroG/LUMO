@@ -3564,11 +3564,54 @@ button {
   padding: 1rem clamp(1rem, 2.5vw, 2.3rem) 2rem;
 }
 
+.teacher-dashboard-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.7rem;
+}
+
 .teacher-page-title {
-  margin: 0 0 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  flex-shrink: 0;
+  margin: 0;
   padding-left: 0.2rem;
+  font-size: clamp(1.45rem, 2.7vw, 2.1rem);
   text-transform: none;
 }
+
+.teacher-dashboard-heading .teacher-page-title {
+  background: none;
+  color: #0e7192;
+  font-size: clamp(1.6rem, 3.2vw, 2.25rem);
+}
+
+.teacher-title-confetti {
+  position: relative;
+  display: inline-flex;
+  width: 1rem;
+  height: 1.2rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.teacher-title-confetti i {
+  position: absolute;
+  width: 0.43rem;
+  height: 0.13rem;
+  border-radius: 999px;
+  background: #f27b9d;
+}
+
+.teacher-title-confetti i:nth-child(1) { transform: translate(-0.2rem, -0.3rem) rotate(25deg); }
+.teacher-title-confetti i:nth-child(2) { background: #65c792; transform: translate(0.13rem, 0) rotate(-14deg); }
+.teacher-title-confetti i:nth-child(3) { background: #ffc43f; transform: translate(-0.1rem, 0.3rem) rotate(32deg); }
+.teacher-title-confetti-right i:nth-child(1) { background: #ffc43f; }
+.teacher-title-confetti-right i:nth-child(2) { background: #65c792; }
+.teacher-title-confetti-right i:nth-child(3) { background: #f27b9d; }
 
 .teacher-panel-frame {
   min-height: min(720px, calc(100vh - 13rem));
@@ -3579,32 +3622,58 @@ button {
   box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
 }
 
+.teacher-panel-frame.is-recent {
+  min-height: 0;
+  border-width: 4px;
+  border-radius: 1.2rem;
+  border-color: #80e2e8;
+}
+
 .teacher-panel-toolbar {
-  min-height: 6rem;
   display: flex;
   align-items: center;
   justify-content: flex-end;
-  gap: 1rem;
-  padding: 1rem 5%;
-  border-bottom: 2px solid #dcecf0;
+  gap: 0.65rem;
+  padding: 0;
 }
 
 .teacher-grade-caption,
 .teacher-name-caption {
   color: #68828c;
   font-family: var(--font-body);
-  font-size: 1rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
+}
+
+.teacher-grade-caption {
+  padding: 0.5rem 0.8rem;
+  border-radius: 999px;
+  background: #e8f8f6;
+  color: #287c91;
+  font-weight: 700;
+}
+
+.teacher-name-caption {
+  padding-left: 0.7rem;
+  border-left: 1px solid #cfe7e9;
 }
 
 .teacher-diagnostics-button {
-  max-width: 16rem;
-  padding: 0.7rem 1.4rem;
-  border: 2px solid #3cae68;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  max-width: 14rem;
+  min-height: 2.45rem;
+  padding: 0.5rem 1rem;
+  border: 1px solid #78dda0;
   border-radius: 2rem;
   background: #e9f8ee;
   color: #27613a;
   font-family: var(--font-body);
-  font-size: 0.95rem;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.02em;
 }
 
 .teacher-panel-content {
@@ -3618,11 +3687,42 @@ button {
   background: rgba(255, 255, 255, 0.68);
 }
 
-.teacher-empty-history {
+.teacher-panel-content.is-empty {
+  min-height: 17rem;
+  margin: 1.1rem 1.1rem;
+  padding: 0.8rem;
+  border: 1px solid #c9eff6;
+  border-radius: 1rem;
+  background: linear-gradient(135deg, #f8fdff, #fff);
+}
+
+.teacher-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.teacher-empty-illustration {
+  display: block;
+  width: min(100%, 17rem);
+  height: auto;
+  margin-bottom: 0.55rem;
+}
+
+.teacher-empty-state h2 {
+  margin: 0.1rem 0 0.35rem;
+  color: #087eae;
+  font-family: var(--font-title);
+  font-size: clamp(1.35rem, 2.2vw, 1.7rem);
+}
+
+.teacher-empty-state p {
   margin: 0;
-  color: #68828c;
+  color: #4a86b5;
   font-family: var(--font-body);
-  font-size: clamp(1.1rem, 2vw, 1.6rem);
+  font-size: clamp(0.9rem, 1.6vw, 1.05rem);
+  font-weight: 700;
   text-align: center;
 }
 
@@ -3937,23 +4037,45 @@ button {
     padding: 0.8rem 0.65rem 1.5rem;
   }
 
+  .teacher-dashboard-heading {
+    align-items: stretch;
+    flex-direction: column;
+    gap: 0.65rem;
+  }
+
+  .teacher-page-title {
+    justify-content: center;
+  }
+
+  .teacher-dashboard-heading .teacher-panel-toolbar {
+    min-height: 0;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 0.45rem;
+    padding: 0;
+  }
+
   .teacher-panel-frame {
     min-height: 30rem;
     border-width: 7px;
     border-radius: 1.6rem;
   }
 
-  .teacher-panel-toolbar {
-    min-height: 5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 0.5rem;
-    padding: 0.7rem;
+  .teacher-panel-frame.is-recent {
+    min-height: 0;
+    border-width: 4px;
+    border-radius: 1.1rem;
   }
 
   .teacher-panel-content {
     min-height: 18rem;
     padding: 1rem;
+  }
+
+  .teacher-panel-content.is-empty {
+    min-height: 17rem;
+    margin: 0.7rem;
+    padding: 0.65rem;
   }
 
   .teacher-activity-form {
@@ -5494,6 +5616,15 @@ button {
   object-fit: contain;
 }
 
+.lobby-book-icon {
+  width: min(100%, 6.8rem);
+  height: 4.3rem;
+}
+
+.lobby-palette-icon {
+  mix-blend-mode: multiply;
+}
+
 .lumo-app.is-student-view .nav-card-subtitle {
   padding: 0 0.2rem 0.42rem;
   color: #64748b;
@@ -5669,6 +5800,16 @@ button {
   height: 8.8rem;
 }
 
+.lumo-app.is-student-lobby .lobby-book-icon {
+  width: min(100%, 9.5rem);
+  height: 6.5rem;
+}
+
+.lumo-app.is-student-lobby .lobby-palette-icon {
+  width: min(100%, 8.4rem);
+  height: 8.4rem;
+}
+
 .lumo-app.is-student-lobby .nav-card-subtitle {
   padding-bottom: 0.8rem;
   font-size: clamp(0.78rem, 1.25vw, 0.9rem);
@@ -5720,6 +5861,16 @@ button {
   .lumo-app.is-student-lobby .nav-card-content .tab-icon-wrap.has-illustration,
   .lumo-app.is-student-lobby .lobby-card-illustration {
     height: 7rem;
+  }
+
+  .lumo-app.is-student-lobby .lobby-book-icon {
+    width: min(100%, 7.5rem);
+    height: 5.4rem;
+  }
+
+  .lumo-app.is-student-lobby .lobby-palette-icon {
+    width: min(100%, 6.4rem);
+    height: 6.4rem;
   }
 
   .lumo-app.is-student-lobby .nav-card-title {
