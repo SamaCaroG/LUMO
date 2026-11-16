@@ -1455,70 +1455,72 @@ function AppPage({
           </div>
 
           {/* BUSCADOR ASISTIDO INTEGRADO */}
-          <div className="search-container">
-            <input
-              type="text"
-              className="search-box"
-              id="searchInput"
-              placeholder={activeTab ? `Buscar en ${sectionLabels[activeTab]}...` : 'Buscar...'}
-              value={searchQuery}
-              onClick={() => {
-                setSearchOpen(true)
-                setSearchSubmitted(true)
-              }}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setSearchSubmitted(false)
-                setSearchOpen(activeTab === null)
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  setSearchSubmitted(true)
+          {!showAboutPage && activeTab !== 'diagnostico' && (
+            <div className="search-container">
+              <input
+                type="text"
+                className="search-box"
+                id="searchInput"
+                placeholder={activeTab ? `Buscar en ${sectionLabels[activeTab]}...` : 'Buscar...'}
+                value={searchQuery}
+                onClick={() => {
                   setSearchOpen(true)
-                } else if (event.key === 'Escape') {
-                  setSearchOpen(false)
-                }
-              }}
-              aria-label={activeTab ? `Buscar en ${sectionLabels[activeTab]}` : 'Buscar'}
-              aria-expanded={searchOpen}
-              aria-controls="searchOptions"
-            />
-            <div className={`search-options ${searchOpen ? 'show' : ''}`} id="searchOptions">
-              {activeTab === null ? (
-                Object.keys(searchKnowledgeBase)
-                  .filter((question) => matchesSearch(question))
-                  .map((question) => (
+                  setSearchSubmitted(true)
+                }}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setSearchSubmitted(false)
+                  setSearchOpen(activeTab === null)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    setSearchSubmitted(true)
+                    setSearchOpen(true)
+                  } else if (event.key === 'Escape') {
+                    setSearchOpen(false)
+                  }
+                }}
+                aria-label={activeTab ? `Buscar en ${sectionLabels[activeTab]}` : 'Buscar'}
+                aria-expanded={searchOpen}
+                aria-controls="searchOptions"
+              />
+              <div className={`search-options ${searchOpen ? 'show' : ''}`} id="searchOptions">
+                {activeTab === null ? (
+                  Object.keys(searchKnowledgeBase)
+                    .filter((question) => matchesSearch(question))
+                    .map((question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        className="option-item"
+                        onClick={() => handleSelectQuestion(question)}
+                      >
+                        {question.includes('color') ? '🎨 ' : question.includes('puntillismo') ? '🖌️ ' : question.includes('figuras') ? '📐 ' : '🌈 '}
+                        {question}
+                      </button>
+                    ))
+                ) : searchSubmitted ? (
+                  sectionSearchOptions.length ? sectionSearchOptions.map((option) => (
                     <button
-                      key={question}
+                      key={option.id}
                       type="button"
                       className="option-item"
-                      onClick={() => handleSelectQuestion(question)}
+                      onClick={() => {
+                        setSearchOpen(false)
+                        document.getElementById(option.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }}
                     >
-                      {question.includes('color') ? '🎨 ' : question.includes('puntillismo') ? '🖌️ ' : question.includes('figuras') ? '📐 ' : '🌈 '}
-                      {question}
+                      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                      {option.title}
                     </button>
-                  ))
-              ) : searchSubmitted ? (
-                sectionSearchOptions.length ? sectionSearchOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className="option-item"
-                    onClick={() => {
-                      setSearchOpen(false)
-                      document.getElementById(option.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    }}
-                  >
-                    <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                    {option.title}
-                  </button>
-                )) : (
-                  <p className="search-options-empty">No se encontró contenido en {sectionLabels[activeTab]}.</p>
-                )
-              ) : null}
+                  )) : (
+                    <p className="search-options-empty">No se encontró contenido en {sectionLabels[activeTab]}.</p>
+                  )
+                ) : null}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="profile-box" ref={profileBoxRef}>
             <span className="teacher-header-name">
@@ -3312,11 +3314,6 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
       {!hideNavbar && <nav className="navbar">
         <div className="logo-container" onClick={() => setActiveTab('inicio')}>
           <div className="logo-text">LÜMØ<span className="logo-dot">•</span></div>
-        </div>
-
-        <div className="search-bar">
-          <input type="text" className="search-input" placeholder="Buscar en LÜMØ..." />
-          <div className="search-icon">🔍</div>
         </div>
 
         <div className="nav-actions">
