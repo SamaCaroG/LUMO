@@ -4244,6 +4244,39 @@ button {
   line-height: 1.65;
 }
 
+.diagnostic-date-field {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(10rem, 14rem);
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid #e4d9ef;
+  border-radius: 0.9rem;
+  background: #fbf8ff;
+}
+
+.diagnostic-date-field label {
+  color: #45315d;
+  font-weight: 700;
+}
+
+.diagnostic-date-field input {
+  width: 100%;
+  min-height: 2.7rem;
+  padding: 0.45rem 0.65rem;
+  border: 1px solid #cbb8df;
+  border-radius: 0.65rem;
+  background: #fff;
+  color: #384955;
+  font: inherit;
+}
+
+.diagnostic-date-field input:focus-visible {
+  outline: 3px solid rgba(133, 73, 186, 0.25);
+  outline-offset: 2px;
+}
+
 .diagnostic-question-list {
   display: grid;
   gap: 1rem;
@@ -4767,6 +4800,10 @@ button {
   .diagnostic-intro p {
     font-size: 0.8rem;
     line-height: 1.45;
+  }
+
+  .diagnostic-date-field {
+    grid-template-columns: 1fr;
   }
 
   .diagnostic-featured-card {

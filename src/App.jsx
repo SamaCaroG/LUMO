@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { onAuthStateChanged, signOut as signOutFirebase } from 'firebase/auth'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut as signOutFirebase } from 'firebase/auth'
 import './App.css'
 import './login.css'
 import lumoColorLogo from '../Lumo logo (1).png'
@@ -650,25 +650,29 @@ function App() {
     setAuthLoading(false)
   }), [])
 
-  const signIn = async (identifier, password) => {
-    if (!identifier.trim() || !identifier.includes('@')) return 'Escribe tu correo electrónico.'
+ const signIn = async (identifier, password) => {
+    if (!identifier.trim()) return 'Escribe tu usuario o correo.'
     if (!password) return 'Ingresa tu contraseña.'
 
     try {
-      const guestSession = createGuestSession(identifier)
-      if (!guestSession) {
-        return 'Usa el correo institucional del estudiante con su grado o el correo institucional del docente.'
-      }
+      const normalizedIdentifier = identifier.trim().toLowerCase()
+      const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
 
-      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(guestSession))
-      setSession(guestSession)
-      navigate(getUserHomePath(guestSession), { replace: true })
+      await signInWithEmailAndPassword(auth, email, password)
       return ''
     } catch (error) {
-      console.error('No se pudo guardar la sesión en este navegador.', error)
-      return 'No se pudo guardar la sesión. Revisa que el navegador permita almacenamiento local.'
+      console.error('Error al iniciar sesión:', error)
+      if (
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password'
+      ) {
+        return 'Correo o contraseña incorrectos.'
+      }
+      return 'No se pudo iniciar sesión. Verifica tus datos o conexión.'
     }
   }
+  
 
   const signOut = async () => {
     localStorage.removeItem(USER_SESSION_KEY)
@@ -1458,7 +1462,7 @@ function AppPage({
           </div>
 
           {/* BUSCADOR ASISTIDO INTEGRADO */}
-          {!showAboutPage && activeTab !== 'diagnostico' && (
+          {!showAboutPage && activeTab !== 'diagnostico' && activeTab !== 'dibujos' && (
             <div className="search-container">
               <input
                 type="text"
