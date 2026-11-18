@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
-import { onAuthStateChanged, signOut as signOutFirebase } from 'firebase/auth'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut as signOutFirebase } from 'firebase/auth'
 import './App.css'
 import './login.css'
 import lumoColorLogo from '../Lumo logo (1).png'
@@ -9,8 +9,18 @@ import colSamShield from '../escudo colsam png.png'
 import houseShield from '../escudo de la casa.png'
 import loginIllustration from './assets/login-illustration.png'
 import lumoBlackLogo from './assets/lumo-black-logo.png'
-import studentBookIcon from './assets/student-book-icon.png'
-import studentPaletteIcon from './assets/student-palette-icon.png'
+import selectedBookIcon from './assets/student-book-icon-selected.png'
+import selectedPaletteIcon from './assets/student-palette-icon-selected.png'
+import teacherEmptyIllustration from './assets/teacher-empty-illustration.png'
+import vercelLogo from '../vercel-logo.jpg'
+import javascriptLogo from '../JavaScript-logo.png'
+import firebaseLogo from '../firebase.logo.png'
+import githubLogo from '../github-logo.png'
+import canvaLogo from '../canva-logo.jpg'
+import contenidoLogo from '../contenido-logo.png'
+import html5Logo from '../HTML5_log0.png'
+import css3Logo from '../CSS3_logo.webp'
+import reactLogo from '../React-logo.webp'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -640,25 +650,29 @@ function App() {
     setAuthLoading(false)
   }), [])
 
-  const signIn = async (identifier, password) => {
-    if (!identifier.trim() || !identifier.includes('@')) return 'Escribe tu correo electrónico.'
+ const signIn = async (identifier, password) => {
+    if (!identifier.trim()) return 'Escribe tu usuario o correo.'
     if (!password) return 'Ingresa tu contraseña.'
 
     try {
-      const guestSession = createGuestSession(identifier)
-      if (!guestSession) {
-        return 'Usa el correo institucional del estudiante con su grado o el correo institucional del docente.'
-      }
+      const normalizedIdentifier = identifier.trim().toLowerCase()
+      const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
 
-      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(guestSession))
-      setSession(guestSession)
-      navigate(getUserHomePath(guestSession), { replace: true })
+      await signInWithEmailAndPassword(auth, email, password)
       return ''
     } catch (error) {
-      console.error('No se pudo guardar la sesión en este navegador.', error)
-      return 'No se pudo guardar la sesión. Revisa que el navegador permita almacenamiento local.'
+      console.error('Error al iniciar sesión:', error)
+      if (
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password'
+      ) {
+        return 'Correo o contraseña incorrectos.'
+      }
+      return 'No se pudo iniciar sesión. Verifica tus datos o conexión.'
     }
   }
+  
 
   const signOut = async () => {
     localStorage.removeItem(USER_SESSION_KEY)
@@ -728,13 +742,15 @@ function StudentRoute({ session, onLogout, onUpdateSession }) {
 }
 
 function LobbyCardIllustration({ type }) {
-  if (type === 'book' || type === 'palette') {
+  if (type === 'book') {
     return (
-      <img
-        src={type === 'book' ? studentBookIcon : studentPaletteIcon}
-        className="lobby-card-illustration"
-        alt=""
-      />
+      <img src={selectedBookIcon} className="lobby-card-illustration lobby-book-icon" alt="" />
+    )
+  }
+
+  if (type === 'palette') {
+    return (
+      <img src={selectedPaletteIcon} className="lobby-card-illustration lobby-palette-icon" alt="" />
     )
   }
 
@@ -1426,7 +1442,7 @@ function AppPage({
   }
 
   return (
-    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${showAboutPage ? 'is-about-page' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
+    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${session?.role === 'teacher' && pageView === 'grades' ? 'is-teacher-grade-selection' : ''} ${showAboutPage ? 'is-about-page' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
       <header className={`main-header ${headerScrolled ? 'is-scrolled' : ''}`}>
         <div className="header-inner">
           <div
@@ -1446,70 +1462,72 @@ function AppPage({
           </div>
 
           {/* BUSCADOR ASISTIDO INTEGRADO */}
-          <div className="search-container">
-            <input
-              type="text"
-              className="search-box"
-              id="searchInput"
-              placeholder={activeTab ? `Buscar en ${sectionLabels[activeTab]}...` : 'Buscar...'}
-              value={searchQuery}
-              onClick={() => {
-                setSearchOpen(true)
-                setSearchSubmitted(true)
-              }}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setSearchSubmitted(false)
-                setSearchOpen(activeTab === null)
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  setSearchSubmitted(true)
+          {!showAboutPage && activeTab !== 'diagnostico' && activeTab !== 'dibujos' && (
+            <div className="search-container">
+              <input
+                type="text"
+                className="search-box"
+                id="searchInput"
+                placeholder={activeTab ? `Buscar en ${sectionLabels[activeTab]}...` : 'Buscar...'}
+                value={searchQuery}
+                onClick={() => {
                   setSearchOpen(true)
-                } else if (event.key === 'Escape') {
-                  setSearchOpen(false)
-                }
-              }}
-              aria-label={activeTab ? `Buscar en ${sectionLabels[activeTab]}` : 'Buscar'}
-              aria-expanded={searchOpen}
-              aria-controls="searchOptions"
-            />
-            <div className={`search-options ${searchOpen ? 'show' : ''}`} id="searchOptions">
-              {activeTab === null ? (
-                Object.keys(searchKnowledgeBase)
-                  .filter((question) => matchesSearch(question))
-                  .map((question) => (
+                  setSearchSubmitted(true)
+                }}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setSearchSubmitted(false)
+                  setSearchOpen(activeTab === null)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    setSearchSubmitted(true)
+                    setSearchOpen(true)
+                  } else if (event.key === 'Escape') {
+                    setSearchOpen(false)
+                  }
+                }}
+                aria-label={activeTab ? `Buscar en ${sectionLabels[activeTab]}` : 'Buscar'}
+                aria-expanded={searchOpen}
+                aria-controls="searchOptions"
+              />
+              <div className={`search-options ${searchOpen ? 'show' : ''}`} id="searchOptions">
+                {activeTab === null ? (
+                  Object.keys(searchKnowledgeBase)
+                    .filter((question) => matchesSearch(question))
+                    .map((question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        className="option-item"
+                        onClick={() => handleSelectQuestion(question)}
+                      >
+                        {question.includes('color') ? '🎨 ' : question.includes('puntillismo') ? '🖌️ ' : question.includes('figuras') ? '📐 ' : '🌈 '}
+                        {question}
+                      </button>
+                    ))
+                ) : searchSubmitted ? (
+                  sectionSearchOptions.length ? sectionSearchOptions.map((option) => (
                     <button
-                      key={question}
+                      key={option.id}
                       type="button"
                       className="option-item"
-                      onClick={() => handleSelectQuestion(question)}
+                      onClick={() => {
+                        setSearchOpen(false)
+                        document.getElementById(option.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }}
                     >
-                      {question.includes('color') ? '🎨 ' : question.includes('puntillismo') ? '🖌️ ' : question.includes('figuras') ? '📐 ' : '🌈 '}
-                      {question}
+                      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                      {option.title}
                     </button>
-                  ))
-              ) : searchSubmitted ? (
-                sectionSearchOptions.length ? sectionSearchOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className="option-item"
-                    onClick={() => {
-                      setSearchOpen(false)
-                      document.getElementById(option.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    }}
-                  >
-                    <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                    {option.title}
-                  </button>
-                )) : (
-                  <p className="search-options-empty">No se encontró contenido en {sectionLabels[activeTab]}.</p>
-                )
-              ) : null}
+                  )) : (
+                    <p className="search-options-empty">No se encontró contenido en {sectionLabels[activeTab]}.</p>
+                  )
+                ) : null}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="profile-box" ref={profileBoxRef}>
             <span className="teacher-header-name">
@@ -1684,7 +1702,14 @@ function AppPage({
             onNavigate={onTeacherNavigate}
           />
         ) : showAboutPage ? (
-          <NosotrosPage hideNavbar onBack={() => setShowAboutPage(false)} />
+          <NosotrosPage
+            hideNavbar
+            onBack={() => {
+              setShowAboutPage(false)
+              setSearchOpen(false)
+              setSearchSubmitted(false)
+            }}
+          />
         ) : !hasEnteredSite ? (
           <section className="grade-lobby" aria-labelledby="grade-lobby-title">
             <div className="grade-lobby-heading">
@@ -2347,7 +2372,7 @@ function TeacherGradeSelection({ onSelectGrade }) {
     <section className="grade-lobby" aria-labelledby="grade-lobby-title">
       <div className="grade-lobby-heading">
         <h1 id="grade-lobby-title">¡BIENVENIDO!</h1>
-        <p>{gradeUiCopy[1].welcome}</p>
+        <p>Elige tu curso.</p>
       </div>
       <div className="grade-card-grid">
         {[1, 2, 3].map((grade) => (
@@ -2456,7 +2481,6 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   const [activityGrade, setActivityGrade] = useState(grade)
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
-  const [activityDate, setActivityDate] = useState('')
   const [activityAttachment, setActivityAttachment] = useState(null)
   const [latestActivity, setLatestActivity] = useState(null)
   const [formError, setFormError] = useState('')
@@ -2465,20 +2489,44 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
     return date.toISOString().slice(0, 10)
   })
+  const [activityPublishedDate, setActivityPublishedDate] = useState(minScheduleDateValue)
+  const [activityDueDate, setActivityDueDate] = useState('')
+  const [activityDatesProgrammed, setActivityDatesProgrammed] = useState(false)
+
+  const programActivityDates = () => {
+    if (!activityPublishedDate || activityPublishedDate > minScheduleDateValue) {
+      setFormError('Elige una fecha de publicación válida.')
+      return
+    }
+    if (!activityDueDate) {
+      setFormError('Elige el plazo de entrega de la actividad.')
+      return
+    }
+    if (activityDueDate < activityPublishedDate) {
+      setFormError('El plazo de entrega debe ser igual o posterior a la fecha de publicación.')
+      return
+    }
+
+    setFormError('')
+    setActivityDatesProgrammed(true)
+  }
 
   const saveActivity = (event) => {
     event.preventDefault()
-    const action = event.nativeEvent.submitter?.value
     if (!activityTitle.trim() || !activityContent.trim()) {
       setFormError('Escribe el título y el contenido de la actividad.')
       return
     }
-    if (action === 'schedule' && !activityDate) {
-      setFormError('Elige una fecha para programar la actividad.')
+    if (!activityPublishedDate) {
+      setFormError('Elige la fecha de publicación de la actividad.')
       return
     }
-    if (action === 'schedule' && activityDate < minScheduleDateValue) {
-      setFormError('Elige hoy o una fecha futura para programar la actividad.')
+    if (activityPublishedDate > minScheduleDateValue) {
+      setFormError('La fecha de publicación no puede ser futura.')
+      return
+    }
+    if (activityDatesProgrammed && activityDueDate < activityPublishedDate) {
+      setFormError('El plazo de entrega debe ser igual o posterior a la fecha de publicación.')
       return
     }
 
@@ -2491,15 +2539,18 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
     setLatestActivity({
       title: activityTitle.trim(),
       content: activityContent.trim(),
-      date: action === 'schedule' ? activityDate : '',
+      publishedDate: activityPublishedDate,
+      dueDate: activityDatesProgrammed ? activityDueDate : '',
       attachment,
       grade: activityGrade,
-      status: action === 'schedule' ? 'Programada' : 'Publicada',
+      status: 'Publicada',
     })
     setFormError('')
     setActivityTitle('')
     setActivityContent('')
-    setActivityDate('')
+    setActivityPublishedDate(minScheduleDateValue)
+    setActivityDueDate('')
+    setActivityDatesProgrammed(false)
     setActivityAttachment(null)
     onNavigate('recent', activityGrade)
   }
@@ -2561,24 +2612,30 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
       </aside>
 
       <div className="teacher-main">
-        <h1 className="teacher-page-title">
-          {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
-        </h1>
-        <div className="teacher-panel-frame">
+        <div className="teacher-dashboard-heading">
+          <h1 className="teacher-page-title">
+            {view === 'recent' && <span className="teacher-title-confetti teacher-title-confetti-left" aria-hidden="true"><i /><i /><i /></span>}
+            {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
+            {view === 'recent' && <span className="teacher-title-confetti teacher-title-confetti-right" aria-hidden="true"><i /><i /><i /></span>}
+          </h1>
+          {view === 'recent' && (
+            <div className="teacher-panel-toolbar">
+              <span className="teacher-grade-caption">{grade}° grado</span>
+              <span className="teacher-name-caption">Docente {teacherName}</span>
+              <button
+                type="button"
+                className="teacher-diagnostics-button"
+                onClick={() => setShowDiagnostics((visible) => !visible)}
+              >
+                <i className="fa-solid fa-chart-column" aria-hidden="true" />
+                {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : 'DIAGNÓSTICO DE GRUPO'}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className={`teacher-panel-frame ${view === 'recent' ? 'is-recent' : ''}`}>
           {view === 'recent' ? (
-            <>
-              <div className="teacher-panel-toolbar">
-                <span className="teacher-grade-caption">{grade}° grado</span>
-                <span className="teacher-name-caption">Docente {teacherName}</span>
-                <button
-                  type="button"
-                  className="teacher-diagnostics-button"
-                  onClick={() => setShowDiagnostics((visible) => !visible)}
-                >
-                  {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : '📊 DIAGNÓSTICO DE GRUPO'}
-                </button>
-              </div>
-              <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''}`}>
+            <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''} ${!showDiagnostics && !latestActivity ? 'is-empty' : ''}`}>
                 {showDiagnostics ? (
                   <DiagnosticGroupReport
                     key={grade}
@@ -2601,9 +2658,18 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                     <span className="teacher-activity-status">{latestActivity.status}</span>
                     <span className="teacher-activity-course">{latestActivity.grade}° grado</span>
                     <h2>{latestActivity.title}</h2>
-                    {latestActivity.date && (
-                      <time dateTime={latestActivity.date}>
-                        Programada para {new Date(`${latestActivity.date}T12:00:00`).toLocaleDateString('es-CO', {
+                    {latestActivity.publishedDate && (
+                      <time dateTime={latestActivity.publishedDate}>
+                        Publicada el {new Date(`${latestActivity.publishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                          day: 'numeric',
+                          month: 'long',
+                          year: 'numeric',
+                        })}
+                      </time>
+                    )}
+                    {latestActivity.dueDate && (
+                      <time dateTime={latestActivity.dueDate}>
+                        Plazo de entrega hasta {new Date(`${latestActivity.dueDate}T12:00:00`).toLocaleDateString('es-CO', {
                           day: 'numeric',
                           month: 'long',
                           year: 'numeric',
@@ -2622,10 +2688,13 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                     )}
                   </article>
                 ) : (
-                  <p className="teacher-empty-history">Texto o historial de lo último hecho por el docente</p>
+                  <div className="teacher-empty-state">
+                    <img className="teacher-empty-illustration" src={teacherEmptyIllustration} alt="" aria-hidden="true" />
+                    <h2>Aún no hay novedades</h2>
+                    <p>Aquí aparecerán las actividades recientes del grupo.</p>
+                  </div>
                 )}
               </div>
-            </>
           ) : (
             <>
               <form className="teacher-activity-form" onSubmit={saveActivity}>
@@ -2671,20 +2740,66 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                       />
                     </label>
                     <div className="teacher-activity-actions">
-                      <label className="teacher-visually-hidden" htmlFor="teacher-activity-date">Programar fecha</label>
-                      <input
-                        id="teacher-activity-date"
-                        className="teacher-date-input"
-                        type="date"
-                        min={minScheduleDateValue}
-                        value={activityDate}
-                        onChange={(event) => setActivityDate(event.target.value)}
-                      />
+                      <label className="teacher-date-field" htmlFor="teacher-activity-published-date">
+                        Fecha de publicación
+                        <input
+                          id="teacher-activity-published-date"
+                          className="teacher-date-input"
+                          type="date"
+                          max={minScheduleDateValue}
+                          value={activityPublishedDate}
+                          onChange={(event) => {
+                            setActivityPublishedDate(event.target.value)
+                            setActivityDatesProgrammed(false)
+                            setFormError('')
+                          }}
+                          required
+                        />
+                      </label>
+                      <label className="teacher-date-field" htmlFor="teacher-activity-due-date">
+                        Plazo de entrega
+                        <input
+                          id="teacher-activity-due-date"
+                          className="teacher-date-input"
+                          type="date"
+                          min={activityPublishedDate || minScheduleDateValue}
+                          value={activityDueDate}
+                          onChange={(event) => {
+                            setActivityDueDate(event.target.value)
+                            setActivityDatesProgrammed(false)
+                            setFormError('')
+                          }}
+                        />
+                      </label>
+                      {activityDatesProgrammed && (
+                        <div className="teacher-date-confirmation" role="status">
+                          <strong>Fechas programadas</strong>
+                          <span>
+                            Fecha de publicación: {new Date(`${activityPublishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </span>
+                          <span>
+                            Plazo de entrega: {new Date(`${activityDueDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        className="teacher-schedule-button"
+                        type="button"
+                        onClick={programActivityDates}
+                        disabled={!activityPublishedDate || activityPublishedDate > minScheduleDateValue || !activityDueDate || activityDueDate < activityPublishedDate}
+                      >
+                        <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
+                      </button>
                       <button className="teacher-upload-button" type="submit" value="publish">
                         <i className="fa-solid fa-arrow-up" aria-hidden="true" /> SUBIR
-                      </button>
-                      <button className="teacher-schedule-button" type="submit" value="schedule">
-                        <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
                       </button>
                     </div>
                   </div>
@@ -3136,6 +3251,22 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
           gap: 6px;
         }
 
+        .badge-with-logo {
+          padding-right: 12px;
+        }
+
+        .badge-logo-image {
+          width: 30px;
+          height: 30px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .badge-logo-content {
+          width: 48px;
+          height: 48px;
+        }
+
         /* FOOTER ESTILO LUMØ */
         .footer {
           background: #ffffff;
@@ -3199,11 +3330,6 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
       {!hideNavbar && <nav className="navbar">
         <div className="logo-container" onClick={() => setActiveTab('inicio')}>
           <div className="logo-text">LÜMØ<span className="logo-dot">•</span></div>
-        </div>
-
-        <div className="search-bar">
-          <input type="text" className="search-input" placeholder="Buscar en LÜMØ..." />
-          <div className="search-icon">🔍</div>
         </div>
 
         <div className="nav-actions">
@@ -3344,12 +3470,24 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h3 className="card-title">💻 Tecnologías empleadas</h3>
                 <p className="card-text">Lenguajes y herramientas para la estructuración y dinamismo del sitio:</p>
                 <div className="badge-list">
-                  <span className="badge"><i className="fa-brands fa-html5" aria-hidden="true" /> HTML5</span>
-                  <span className="badge"><i className="fa-brands fa-css3-alt" aria-hidden="true" /> CSS3</span>
-                  <span className="badge"><i className="fa-brands fa-react" aria-hidden="true" /> React</span>
-                  <span className="badge"><i className="fa-brands fa-js" aria-hidden="true" /> JavaScript</span>
+                  <span className="badge badge-with-logo">
+                    <img src={html5Logo} alt="HTML5" className="badge-logo-image" />
+                    HTML5
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={css3Logo} alt="CSS3" className="badge-logo-image" />
+                    CSS3
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={reactLogo} alt="React" className="badge-logo-image" />
+                    React
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={javascriptLogo} alt="JavaScript" className="badge-logo-image" />
+                    JavaScript
+                  </span>
                   <span className="badge badge-firebase">
-                    <i className="fa-solid fa-fire-flame-curved" aria-hidden="true" />
+                    <img src={firebaseLogo} alt="Firebase" className="badge-logo-image" />
                     Firebase
                     <span className="badge-category">Backend como servicio</span>
                   </span>
@@ -3360,10 +3498,22 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h3 className="card-title">🛠️ Recursos usados</h3>
                 <p className="card-text">Plataformas e instrumentos de apoyo pedagógico y visual:</p>
                 <div className="badge-list">
-                  <span className="badge"><i className="fa-brands fa-github" aria-hidden="true" /> GitHub</span>
-                  <span className="badge"><i className="fa-solid fa-triangle" aria-hidden="true" /> Vercel</span>
-                  <span className="badge"><i className="fa-solid fa-palette" aria-hidden="true" /> Canva e ilustración</span>
-                  <span className="badge"><i className="fa-solid fa-book-open" aria-hidden="true" /> Contenido pedagógico</span>
+                  <span className="badge badge-with-logo">
+                    <img src={githubLogo} alt="GitHub" className="badge-logo-image" />
+                    GitHub
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={vercelLogo} alt="Vercel" className="badge-logo-image" />
+                    Vercel
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={canvaLogo} alt="Canva" className="badge-logo-image" />
+                    Canva e ilustración
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={contenidoLogo} alt="Contenido pedagógico" className="badge-logo-image badge-logo-content" />
+                    Contenido pedagógico
+                  </span>
                 </div>
               </div>
             </div>

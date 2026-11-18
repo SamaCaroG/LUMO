@@ -19,6 +19,13 @@ function formatDiagnosticDate(value) {
     : 'Fecha no disponible'
 }
 
+function formatPerformedDate(value) {
+  const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '')
+  if (!dateParts) return 'Fecha no disponible'
+  return new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]))
+    .toLocaleDateString('es-CO', { dateStyle: 'medium' })
+}
+
 function getAreaScore(result, categoryId) {
   const area = result.areas?.[categoryId]
   if (Number.isFinite(area?.percentage)) return area.percentage
@@ -162,7 +169,11 @@ export default function DiagnosticGroupReport({
               <summary>
                 <span>
                   <strong>{submission.studentName || 'Estudiante'}</strong>
-                  <small>{formatDiagnosticDate(submission.createdAt)}</small>
+                  <small>
+                    {submission.performedOn
+                      ? `Realizado: ${formatPerformedDate(submission.performedOn)} · Enviado: ${formatDiagnosticDate(submission.createdAt)}`
+                      : formatDiagnosticDate(submission.createdAt)}
+                  </small>
                 </span>
                 <span className="diagnostic-submission-score">
                   {submission.totalCorrect}/{submission.totalQuestions} · {submission.scorePercentage}%

@@ -6,9 +6,16 @@ import {
 } from './diagnosticBank.js'
 import { createDiagnosticId, saveDiagnostic } from './diagnosticsStore.js'
 
+function getLocalDateInputValue() {
+  const date = new Date()
+  date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
+  return date.toISOString().slice(0, 10)
+}
+
 export default function DiagnosticTest({ grade, studentName }) {
   const [questions, setQuestions] = useState(() => createBalancedDiagnostic(grade))
   const [answers, setAnswers] = useState({})
+  const [performedOn, setPerformedOn] = useState(getLocalDateInputValue)
   const [submissionId, setSubmissionId] = useState(createDiagnosticId)
   const [result, setResult] = useState(null)
   const [isSaving, setIsSaving] = useState(false)
@@ -16,6 +23,11 @@ export default function DiagnosticTest({ grade, studentName }) {
 
   const submitDiagnostic = async (event) => {
     event.preventDefault()
+    if (!performedOn) {
+      setError('Selecciona la fecha en que realizaste tu diagnóstico.')
+      return
+    }
+
     if (questions.some((item) => answers[item.id] === undefined)) {
       setError('Responde todas las preguntas antes de enviar tu diagnóstico.')
       return
@@ -30,12 +42,19 @@ export default function DiagnosticTest({ grade, studentName }) {
         studentName: studentName.trim(),
         grade,
         gradeLabel: `${grade}°`,
+        performedOn,
         ...scoredResult,
       })
       setResult(scoredResult)
     } catch (saveError) {
       console.error('No se pudo guardar el diagnóstico en Firestore.', saveError)
-      setError('No pudimos guardar tu resultado. Revisa tu conexión e inténtalo de nuevo.')
+      if (saveError.code === 'permission-denied') {
+        setError('No se pudo enviar el diagnóstico. Verifica los permisos de Firestore e inténtalo de nuevo.')
+      } else if (saveError.code === 'unauthenticated' || saveError.message === 'Debes iniciar sesión para enviar el diagnóstico.') {
+        setError('Tu cuenta no está conectada a Firebase. Inicia sesión con tu cuenta institucional y vuelve a intentarlo.')
+      } else {
+        setError('No pudimos guardar tu resultado. Revisa tu conexión e inténtalo de nuevo.')
+      }
     } finally {
       setIsSaving(false)
     }
@@ -44,6 +63,7 @@ export default function DiagnosticTest({ grade, studentName }) {
   const restartDiagnostic = () => {
     setQuestions(createBalancedDiagnostic(grade))
     setAnswers({})
+    setPerformedOn(getLocalDateInputValue())
     setSubmissionId(createDiagnosticId())
     setResult(null)
     setError('')
@@ -93,6 +113,17 @@ export default function DiagnosticTest({ grade, studentName }) {
         <span className="diagnostic-grade-badge">
           <i className="fa-solid fa-graduation-cap" aria-hidden="true" /> Grado {grade}°
         </span>
+      </div>
+
+      <div className="diagnostic-date-field">
+        <label htmlFor="diagnostic-performed-on">Fecha de realización</label>
+        <input
+          id="diagnostic-performed-on"
+          type="date"
+          value={performedOn}
+          onChange={(event) => setPerformedOn(event.target.value)}
+          required
+        />
       </div>
 
       <div className="diagnostic-question-list">

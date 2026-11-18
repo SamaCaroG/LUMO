@@ -3,14 +3,14 @@ import { getAuth } from 'firebase/auth'
 import { getFirestore } from 'firebase/firestore'
 
 const firebaseConfig = {
-  apiKey: 'AIzaSyDG9zUyYoUQlkL7eGGFA5AO6_1CsBwSlQc',
-  authDomain: 'lumo-educativo.firebaseapp.com',
-  projectId: 'lumo-educativo',
-  storageBucket: 'lumo-educativo.firebasestorage.app',
-  messagingSenderId: '819232315420',
-  appId: '1:819232315420:web:05196940fbd462facf27d9',
-  measurementId: 'G-NDY1BDV7ZW',
-}
+  apiKey: "AIzaSyDaOHs4miNGgSXUmICzQne5gR1fDU3cJ4c",
+  authDomain: "lumo-educativo-e8c75.firebaseapp.com",
+  projectId: "lumo-educativo-e8c75",
+  storageBucket: "lumo-educativo-e8c75.firebasestorage.app",
+  messagingSenderId: "897039497075",
+  appId: "1:897039497075:web:809da8fcfaa8c6ccd7f706",
+  measurementId: "G-9MF4T43YS3"
+};
 
 const app = initializeApp(firebaseConfig)
 

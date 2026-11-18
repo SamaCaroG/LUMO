@@ -8,7 +8,9 @@ export function createDiagnosticId() {
 export async function saveDiagnostic(id, diagnostic) {
   const user = auth.currentUser
   if (!user) {
-    throw new Error('Debes iniciar sesión para enviar el diagnóstico.')
+    const error = new Error('Debes iniciar sesión para enviar el diagnóstico.')
+    error.code = 'unauthenticated'
+    throw error
   }
 
   await setDoc(doc(db, 'diagnosticos', id), {
