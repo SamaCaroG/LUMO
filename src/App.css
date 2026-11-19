@@ -2035,7 +2035,8 @@ button {
   position: absolute;
   z-index: 20;
   top: calc(100% + 0.55rem);
-  right: 0;
+  left: 0;
+  max-width: calc(100vw - 3rem);
   display: grid;
   justify-items: start;
   gap: 0.65rem;
@@ -2050,7 +2051,7 @@ button {
 .color-picker-popover::before {
   position: absolute;
   top: -0.4rem;
-  right: 0.65rem;
+  left: 0.5rem;
   width: 0.7rem;
   height: 0.7rem;
   border-top: 1px solid #ddd0eb;
