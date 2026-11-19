@@ -116,3 +116,15 @@ export function subscribeToGradeSubmissions(grade, onResults, onError) {
     onError,
   )
 }
+
+// Entregas del propio estudiante (la consulta debe incluir el where para cumplir las reglas).
+export function subscribeToMyActivitySubmissions(uid, onResults, onError) {
+  const submissionsQuery = query(collection(db, 'entregas'), where('submittedBy', '==', uid))
+  return onSnapshot(
+    submissionsQuery,
+    (snapshot) => {
+      onResults(snapshot.docs.map((item) => ({ id: item.id, ...item.data() })).sort(newestFirst))
+    },
+    onError,
+  )
+}

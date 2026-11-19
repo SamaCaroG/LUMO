@@ -175,7 +175,8 @@ service cloud.firestore {
 
     // Dibujos que entregan los estudiantes.
     match /entregas/{submissionId} {
-      allow read: if isTeacher();
+      allow read: if isTeacher()
+        || (request.auth != null && resource.data.submittedBy == request.auth.uid);
 
       allow create: if canSubmitForGrade(request.resource.data.grade)
         && request.resource.data.keys().hasOnly([

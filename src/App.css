@@ -6037,3 +6037,12 @@ button {
   color: #536f79;
   font-size: 0.85rem;
 }
+
+.selected-practice-image {
+  display: block;
+  max-width: 100%;
+  max-height: 180px;
+  margin: 8px 0;
+  border-radius: 12px;
+  object-fit: contain;
+}

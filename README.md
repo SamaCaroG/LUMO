@@ -36,4 +36,6 @@ La pantalla de ingreso admite identificadores institucionales de estudiante (`no
 - `actividades`: el docente publica actividades para un grado; los estudiantes de ese grado las ven en **Actividades**. El docente puede eliminarlas.
 - `entregas`: dibujos que entregan los estudiantes; el docente los ve en el panel de su grado. Las imágenes se comprimen (alrededor de 700 KB como máximo) y se guardan dentro del documento, sin usar Firebase Storage.
 
+En **Dibujos** el lienzo es libre (solo permite guardar la obra en el equipo). Para entregar un dibujo, el estudiante abre un reto o una actividad del docente; cada reto, actividad y el dibujo libre tienen su propio lienzo durante la sesión (al recargar la página se pierden los dibujos no entregados).
+
 Las cuentas se crean en Firebase; la aplicación no permite registrarse como docente. Las reglas limitan cada acción por rol y grado. No habilites lectura o escritura pública.

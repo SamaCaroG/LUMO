@@ -42,6 +42,7 @@ import {
   saveSubmission,
   subscribeToGradeActivities,
   subscribeToGradeSubmissions,
+  subscribeToMyActivitySubmissions,
 } from './activities/activitiesStore.js'
 
 const formatCompletionDate = (dateValue) => {
@@ -857,8 +858,12 @@ function AppPage({
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
   const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[grade][0].id)
+  // 'free' = dibujo libre (sin entrega), 'practice' = reto del currículo, 'teacher' = actividad del docente
+  const [drawingMode, setDrawingMode] = useState('free')
+  const [teacherDrawingId, setTeacherDrawingId] = useState(null)
   const [drawingUploads, setDrawingUploads] = useState({})
   const [digitalCompletions, setDigitalCompletions] = useState({})
+  const drawingUploadsRef = useRef({})
   const [uploadError, setUploadError] = useState('')
   const [savingSubmission, setSavingSubmission] = useState(false)
   const [teacherActivities, setTeacherActivities] = useState([])
@@ -879,6 +884,8 @@ function AppPage({
   const [headerScrolled, setHeaderScrolled] = useState(false)
 
   const canvasRef = useRef(null)
+  const canvasDraftsRef = useRef({})
+  const activeCanvasKeyRef = useRef(null)
   const isDrawingRef = useRef(false)
   const shapeStartRef = useRef(null)
   const shapeSnapshotRef = useRef(null)
@@ -914,13 +921,65 @@ function AppPage({
     )
   }, [session?.role, currentGrade])
 
+  useEffect(() => {
+    if (session?.role !== 'student' || !session.uid) return undefined
+    const stop = subscribeToMyActivitySubmissions(
+      session.uid,
+      (items) => {
+        // items viene de más reciente a más antigua: la primera de cada practiceKey es la última entrega.
+        const latest = new Map()
+        for (const item of items) {
+          if (item.practiceKey && !latest.has(item.practiceKey)) latest.set(item.practiceKey, item)
+        }
+        setDrawingUploads((uploads) => {
+          const next = { ...uploads }
+          for (const [key, item] of latest) {
+            // No pisar un adjunto nuevo que aún no se ha confirmado.
+            if (uploads[key] && !uploads[key].saved) continue
+            next[key] = { name: item.fileName, dataUrl: item.imageData, saved: true }
+          }
+          return next
+        })
+        setDigitalCompletions((completions) => {
+          const next = { ...completions }
+          for (const [key, item] of latest) {
+            const pending = drawingUploadsRef.current[key]
+            if (pending && !pending.saved) continue
+            next[key] = {
+              completedAt: (item.createdAt?.toDate?.() ?? new Date()).toISOString(),
+              fileName: item.fileName,
+            }
+          }
+          return next
+        })
+      },
+      (error) => console.error('No se pudieron cargar tus entregas.', error),
+    )
+    return () => {
+      stop()
+      setDrawingUploads({})
+      setDigitalCompletions({})
+    }
+  }, [session?.role, session?.uid])
+
+  drawingUploadsRef.current = drawingUploads
+
   const data = curriculumData[currentGrade]
   const currentToolSize = toolSizes[tool] ?? toolSizes.brush
   const pageCopy = gradeUiCopy[currentGrade]
   const games = curriculumGames[currentGrade]
   const digitalPractices = curriculumDigitalPractices[currentGrade]
   const selectedDigitalPractice = digitalPractices.find((item) => item.id === digitalPracticeId) ?? digitalPractices[0]
-  const selectedPracticeKey = `${currentGrade}-${selectedDigitalPractice.id}`
+  const selectedTeacherActivity = drawingMode === 'teacher'
+    ? teacherActivities.find((item) => item.id === teacherDrawingId)
+    : undefined
+  const effectiveDrawingMode = drawingMode === 'teacher' && !selectedTeacherActivity ? 'free' : drawingMode
+  const isFreeDrawing = effectiveDrawingMode === 'free'
+  const selectedPracticeKey = selectedTeacherActivity
+    ? `docente-${selectedTeacherActivity.id}`
+    : `${currentGrade}-${selectedDigitalPractice.id}`
+  const selectedPracticeTitle = selectedTeacherActivity ? selectedTeacherActivity.title : selectedDigitalPractice.title
+  const canvasKey = isFreeDrawing ? 'libre' : selectedPracticeKey
   const selectedUpload = drawingUploads[selectedPracticeKey]
   const selectedCompletion = digitalCompletions[selectedPracticeKey]
   const activityUnits = [...new Set([
@@ -1019,6 +1078,31 @@ function AppPage({
     window.addEventListener('resize', resizeCanvas)
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [activeTab, currentGrade])
+
+  // Cada actividad (y el dibujo libre) tiene su propio lienzo: al cambiar de contexto
+  // se guarda el dibujo actual en memoria, se limpia el lienzo y se restaura el que corresponda.
+  useEffect(() => {
+    if (activeTab !== 'dibujos') return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const previousKey = activeCanvasKeyRef.current
+    if (previousKey === canvasKey) return
+
+    if (previousKey !== null && canvas.width > 0 && canvas.height > 0) {
+      canvasDraftsRef.current[previousKey] = canvas.toDataURL('image/png')
+    }
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    activeCanvasKeyRef.current = canvasKey
+
+    const draft = canvasDraftsRef.current[canvasKey]
+    if (!draft) return
+    const image = new Image()
+    image.onload = () => {
+      if (activeCanvasKeyRef.current !== canvasKey) return
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+    }
+    image.src = draft
+  }, [activeTab, canvasKey])
 
   useEffect(() => {
     const updateHeaderState = () => setHeaderScrolled(window.scrollY > 32)
@@ -1218,7 +1302,15 @@ function AppPage({
     })
   }
 
+  const openTeacherActivity = (activity) => {
+    setDrawingMode('teacher')
+    setTeacherDrawingId(activity.id)
+    setUploadError('')
+    setActiveTab('dibujos')
+  }
+
   const chooseDigitalPractice = (practice) => {
+    setDrawingMode('practice')
     setDigitalPracticeId(practice.id)
     setActivityUnit(practice.unit)
     setUploadError('')
@@ -1291,7 +1383,7 @@ function AppPage({
     setDrawingUploads((uploads) => ({
       ...uploads,
       [selectedPracticeKey]: {
-        name: `LUMO_Grado${currentGrade}_${selectedDigitalPractice.title}.png`,
+        name: `LUMO_Grado${currentGrade}_${selectedPracticeTitle}.png`,
         dataUrl: image,
       },
     }))
@@ -1311,7 +1403,7 @@ function AppPage({
       const imageData = await compressImage(selectedUpload.dataUrl)
       await saveSubmission({
         practiceKey: selectedPracticeKey,
-        practiceTitle: selectedDigitalPractice.title,
+        practiceTitle: selectedPracticeTitle.slice(0, 200),
         grade: currentGrade,
         studentName: String(session?.displayName ?? session?.name ?? 'Estudiante').slice(0, 80),
         fileName: selectedUpload.name,
@@ -1324,6 +1416,11 @@ function AppPage({
           fileName: selectedUpload.name,
         },
       }))
+      setDrawingUploads((uploads) => (
+        uploads[selectedPracticeKey]
+          ? { ...uploads, [selectedPracticeKey]: { ...uploads[selectedPracticeKey], saved: true } }
+          : uploads
+      ))
     } catch (error) {
       console.error('No se pudo entregar el dibujo.', error)
       setUploadError('No se pudo enviar tu dibujo al docente. Revisa tu conexión e inténtalo de nuevo.')
@@ -1772,6 +1869,10 @@ function AppPage({
                   key={tab.id}
                   type="button"
                   onClick={() => {
+                    if (tab.id === 'dibujos') {
+                      setDrawingMode('free')
+                      setUploadError('')
+                    }
                     setActiveTab(tab.id)
                     setSearchOpen(false)
                     setSearchSubmitted(false)
@@ -1976,23 +2077,45 @@ function AppPage({
               <h3><i className="fa-solid fa-chalkboard-user" aria-hidden="true" /> Actividades de tu docente</h3>
               {activitiesError && <p className="drawing-upload-error" role="alert">{activitiesError}</p>}
               <div className="teacher-assigned-grid">
-                {teacherActivities.map((activity) => (
-                  <article key={activity.id} className="curriculum-game-card">
-                    <span className="activity-unit-tag">{activity.grade}° grado</span>
-                    <h4>{activity.title}</h4>
-                    {activity.dueDate && (
-                      <p><strong>Entrega hasta:</strong> {formatCompletionDate(`${activity.dueDate}T12:00:00`)}</p>
-                    )}
-                    <p className="curriculum-game-instructions">{activity.content}</p>
-                    {activity.attachmentData && (
-                      <img
-                        className="teacher-assigned-image"
-                        src={activity.attachmentData}
-                        alt={activity.attachmentName || 'Imagen de la actividad'}
-                      />
-                    )}
-                  </article>
-                ))}
+                {teacherActivities.map((activity) => {
+                  const activityKey = `docente-${activity.id}`
+                  const activityCompletion = digitalCompletions[activityKey]
+                  const activityUpload = drawingUploads[activityKey]
+                  return (
+                    <article key={activity.id} className="curriculum-game-card">
+                      <span className="activity-unit-tag">{activity.grade}° grado</span>
+                      <span className={`digital-practice-status ${activityCompletion ? 'is-complete' : ''}`}>
+                        <i className={`fa-solid ${activityCompletion ? 'fa-circle-check' : activityUpload ? 'fa-paperclip' : 'fa-clock'}`} aria-hidden="true" />
+                        {activityCompletion
+                          ? `Entrega confirmada · ${formatCompletionDate(activityCompletion.completedAt)}`
+                          : activityUpload
+                            ? 'Adjunto listo · falta confirmar'
+                            : 'Pendiente de entrega'}
+                      </span>
+                      <h4>{activity.title}</h4>
+                      {activity.dueDate && (
+                        <p><strong>Entrega hasta:</strong> {formatCompletionDate(`${activity.dueDate}T12:00:00`)}</p>
+                      )}
+                      <p className="curriculum-game-instructions">{activity.content}</p>
+                      {activity.attachmentData && (
+                        <img
+                          className="teacher-assigned-image"
+                          src={activity.attachmentData}
+                          alt={activity.attachmentName || 'Imagen de la actividad'}
+                        />
+                      )}
+                      <button
+                        type="button"
+                        className="practice-load-button"
+                        aria-pressed={effectiveDrawingMode === 'teacher' && selectedTeacherActivity?.id === activity.id}
+                        onClick={() => openTeacherActivity(activity)}
+                      >
+                        <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                        {activityCompletion ? pageCopy.viewSubmission : 'Abrir actividad'}
+                      </button>
+                    </article>
+                  )
+                })}
               </div>
             </div>
           )}
@@ -2057,7 +2180,7 @@ function AppPage({
                         <article
                           key={practice.id}
                           id={`practice-result-${searchResultIndex}`}
-                          className={`digital-practice-card ${selectedDigitalPractice.id === practice.id ? 'is-active' : ''}`}
+                          className={`digital-practice-card ${effectiveDrawingMode === 'practice' && selectedDigitalPractice.id === practice.id ? 'is-active' : ''}`}
                         >
                           <span className="activity-unit-tag">{practice.unit}</span>
                           <span className="digital-practice-topic">{practice.topic}</span>
@@ -2074,7 +2197,7 @@ function AppPage({
                           <button
                             type="button"
                             className="practice-load-button"
-                            aria-pressed={selectedDigitalPractice.id === practice.id}
+                            aria-pressed={effectiveDrawingMode === 'practice' && selectedDigitalPractice.id === practice.id}
                             onClick={() => chooseDigitalPractice(practice)}
                           >
                             <i className="fa-solid fa-arrow-right" aria-hidden="true" />
@@ -2096,7 +2219,7 @@ function AppPage({
           <div className="section-header drawings-header">
             <div>
               <h2 className="section-title purple"><i className="fa-solid fa-palette" /> {pageCopy.drawingTitle}</h2>
-              <p>{pageCopy.drawingIntro}</p>
+              <p>{isFreeDrawing ? 'Dibuja lo que quieras. Cuando termines, guarda tu obra.' : pageCopy.drawingIntro}</p>
             </div>
             <div className="canvas-actions">
               <button type="button" className="soft-button" onClick={clearCanvas}>
@@ -2109,11 +2232,20 @@ function AppPage({
           </div>
 
           <>
-          <div id="drawing-workspace" className="selected-practice-note">
-            <strong>{selectedDigitalPractice.title}</strong>
-            <span>{selectedDigitalPractice.instructions}</span>
-            <span>{pageCopy.canvasReady}</span>
-          </div>
+          {!isFreeDrawing && (
+            <div id="drawing-workspace" className="selected-practice-note">
+              <strong>{selectedPracticeTitle}</strong>
+              <span>{selectedTeacherActivity ? selectedTeacherActivity.content : selectedDigitalPractice.instructions}</span>
+              {selectedTeacherActivity?.attachmentData && (
+                <img
+                  className="selected-practice-image"
+                  src={selectedTeacherActivity.attachmentData}
+                  alt={selectedTeacherActivity.attachmentName || 'Imagen de la actividad'}
+                />
+              )}
+              <span>{pageCopy.canvasReady}</span>
+            </div>
+          )}
 
           <div className="toolbar">
             <div className="tool-group">
@@ -2259,7 +2391,7 @@ function AppPage({
             />
           </div>
 
-          <section className="drawing-submission" aria-labelledby="drawing-submission-title">
+          {!isFreeDrawing && <section className="drawing-submission" aria-labelledby="drawing-submission-title">
             <div>
               <h3 id="drawing-submission-title">{pageCopy.submissionTitle}</h3>
               <p>{pageCopy.submissionHelp}</p>
@@ -2294,21 +2426,23 @@ function AppPage({
                 <div>
                   <strong>{selectedUpload.name}</strong>
                   <span>{pageCopy.attachedLabel}</span>
-                  <button
-                    type="button"
-                    className="remove-upload-button"
-                    onClick={() => {
-                      setDrawingUploads((uploads) => {
-                        const nextUploads = { ...uploads }
-                        delete nextUploads[selectedPracticeKey]
-                        return nextUploads
-                      })
-                      clearPracticeCompletion(selectedPracticeKey)
-                      setUploadError('')
-                    }}
-                  >
-                    Quitar adjunto
-                  </button>
+                  {!selectedUpload.saved && (
+                    <button
+                      type="button"
+                      className="remove-upload-button"
+                      onClick={() => {
+                        setDrawingUploads((uploads) => {
+                          const nextUploads = { ...uploads }
+                          delete nextUploads[selectedPracticeKey]
+                          return nextUploads
+                        })
+                        clearPracticeCompletion(selectedPracticeKey)
+                        setUploadError('')
+                      }}
+                    >
+                      Quitar adjunto
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -2321,7 +2455,7 @@ function AppPage({
               <i className="fa-solid fa-circle-check" aria-hidden="true" />
               {selectedCompletion ? pageCopy.update : pageCopy.confirm}
             </button>
-          </section>
+          </section>}
             </>
         </section>
         </>
