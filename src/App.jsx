@@ -42,11 +42,6 @@ const formatCompletionDate = (dateValue) => {
     : date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-const readingExampleLabels = [
-  'Espacio reservado para una imagen de ejemplo',
-  'Espacio reservado para otra imagen de ejemplo',
-]
-
 const gradeUiCopy = {
   1: {
     welcome: 'Elige tu curso y vamos a crear.',
@@ -1063,8 +1058,8 @@ function AppPage({
     }
   }, [modalText])
 
-  const openReadingModal = (title, text) => {
-    setModalText({ title, text })
+  const openReadingModal = (title, text, image = null) => {
+    setModalText({ title, text, image })
   }
 
   const closeReadingModal = () => {
@@ -1892,7 +1887,15 @@ function AppPage({
                             <button
                               type="button"
                               className="primary-button"
-                              onClick={() => openReadingModal(reading.title, reading.fullText)}
+                              onClick={() => {
+                                const grade1StoryIndex = currentGrade === 1
+                                  ? readingStoriesByGrade[1].findIndex(({ title }) => title === reading.title)
+                                  : -1
+                                const image = currentGrade === 1 && grade1StoryIndex >= 0
+                                  ? `${import.meta.env.BASE_URL}reading-images/grade1-${String(grade1StoryIndex + 1).padStart(2, '0')}.png`
+                                  : null
+                                openReadingModal(reading.title, reading.fullText, image)
+                              }}
                             >
                               <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
                               <i className="fa-solid fa-arrow-right" aria-hidden="true" />
@@ -2332,13 +2335,19 @@ function AppPage({
                   <p key={`${index}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
                 ))}
               </div>
-              <aside className="reading-example-spaces" aria-label="Espacios para futuras imágenes de ejemplo">
-                {readingExampleLabels.map((label) => (
-                  <div key={label} className="reading-example-placeholder">
+              <aside className="reading-example-spaces" aria-label="Imagen ilustrativa del cuento">
+                {modalText.image ? (
+                  <img
+                    className="reading-example-image"
+                    src={modalText.image}
+                    alt={`Ilustración de ${modalText.title}`}
+                  />
+                ) : (
+                  <div className="reading-example-placeholder">
                     <i className="fa-regular fa-image" aria-hidden="true" />
-                    <span>{label}</span>
+                    <span>Espacio reservado para una imagen de ejemplo</span>
                   </div>
-                ))}
+                )}
               </aside>
             </div>
             <div className="modal-actions">

@@ -1718,7 +1718,7 @@ button {
   }
 
   .reading-example-spaces {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.25rem;
   }
 
@@ -2854,11 +2854,25 @@ button {
 
 .reading-example-spaces {
   display: grid;
+  width: 100%;
   gap: 1.25rem;
+  align-self: center;
+  justify-items: center;
+}
+
+.reading-example-image {
+  display: block;
+  width: 100%;
+  max-width: 28rem;
+  max-height: 24rem;
+  object-fit: contain;
+  border-radius: 1.25rem;
 }
 
 .reading-example-placeholder {
   display: flex;
+  width: min(100%, 28rem);
+  box-sizing: border-box;
   min-height: 16.25rem;
   flex-direction: column;
   align-items: center;
