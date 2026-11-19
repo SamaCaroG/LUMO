@@ -139,5 +139,68 @@ service cloud.firestore {
       // Impedir modificaciones o eliminaciones.
       allow update, delete: if false;
     }
+
+    // Actividades que publica el docente para un grado.
+    match /actividades/{activityId} {
+      allow read: if isTeacher() || canSubmitForGrade(resource.data.grade);
+
+      allow create: if isTeacher()
+        && request.resource.data.keys().hasOnly([
+          'title', 'content', 'grade', 'publishedDate', 'dueDate',
+          'attachmentName', 'attachmentData', 'createdBy', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'title', 'content', 'grade', 'publishedDate', 'dueDate',
+          'attachmentName', 'attachmentData', 'createdBy', 'createdAt'
+        ])
+        && request.resource.data.title is string
+        && request.resource.data.title.size() > 0
+        && request.resource.data.title.size() <= 120
+        && request.resource.data.content is string
+        && request.resource.data.content.size() > 0
+        && request.resource.data.content.size() <= 4000
+        && request.resource.data.grade in [1, 2, 3]
+        && request.resource.data.publishedDate is string
+        && request.resource.data.dueDate is string
+        && request.resource.data.attachmentName is string
+        && request.resource.data.attachmentName.size() <= 200
+        && request.resource.data.attachmentData is string
+        && request.resource.data.attachmentData.size() <= 800000
+        && request.resource.data.createdBy == request.auth.uid
+        && request.resource.data.createdAt is timestamp;
+
+      allow update: if false;
+      allow delete: if isTeacher();
+    }
+
+    // Dibujos que entregan los estudiantes.
+    match /entregas/{submissionId} {
+      allow read: if isTeacher()
+        || (request.auth != null && resource.data.submittedBy == request.auth.uid);
+
+      allow create: if canSubmitForGrade(request.resource.data.grade)
+        && request.resource.data.keys().hasOnly([
+          'practiceKey', 'practiceTitle', 'grade', 'studentName',
+          'fileName', 'imageData', 'submittedBy', 'createdAt'
+        ])
+        && request.resource.data.keys().hasAll([
+          'practiceKey', 'practiceTitle', 'grade', 'studentName',
+          'fileName', 'imageData', 'submittedBy', 'createdAt'
+        ])
+        && request.resource.data.submittedBy == request.auth.uid
+        && request.resource.data.studentName is string
+        && request.resource.data.studentName.size() <= 80
+        && request.resource.data.practiceKey is string
+        && request.resource.data.practiceTitle is string
+        && request.resource.data.practiceTitle.size() <= 200
+        && request.resource.data.fileName is string
+        && request.resource.data.fileName.size() <= 200
+        && request.resource.data.imageData is string
+        && request.resource.data.imageData.size() > 0
+        && request.resource.data.imageData.size() <= 800000
+        && request.resource.data.createdAt is timestamp;
+
+      allow update, delete: if false;
+    }
   }
 }
