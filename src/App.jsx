@@ -34,6 +34,15 @@ import { readingStoriesByGrade } from './readingStories.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
 import { auth } from './firebase/config.js'
+import {
+  compressImage,
+  fileToDataUrl,
+  publishActivity,
+  removeActivity,
+  saveSubmission,
+  subscribeToGradeActivities,
+  subscribeToGradeSubmissions,
+} from './activities/activitiesStore.js'
 
 const formatCompletionDate = (dateValue) => {
   const date = new Date(dateValue)
@@ -74,7 +83,7 @@ const gradeUiCopy = {
     clearCanvas: 'Borrar mi dibujo',
     saveCanvas: 'Guardar mi dibujo',
     submissionTitle: '¿Ya tienes tu dibujo?',
-    submissionHelp: 'Elige una imagen o adjunta tu dibujo del lienzo. Después, pulsa «Entregar mi dibujo». Tu trabajo se guarda en esta página y no se envía a tu docente.',
+    submissionHelp: 'Elige una imagen o adjunta tu dibujo del lienzo. Después, pulsa «Entregar mi dibujo». Tu docente podrá ver tu dibujo cuando lo entregues.',
     attachedLabel: 'Imagen lista en esta página',
     pending: 'Todavía no has adjuntado una imagen.',
     attached: 'Ya adjuntaste tu imagen. Pulsa «Entregar mi dibujo» para terminar.',
@@ -110,7 +119,7 @@ const gradeUiCopy = {
     clearCanvas: 'Limpiar mi dibujo',
     saveCanvas: 'Guardar mi obra',
     submissionTitle: 'Adjunta tu creación',
-    submissionHelp: 'Sube una imagen de tu trabajo o adjunta tu dibujo del lienzo. Cuando esté listo, confirma la entrega. El archivo se conserva mientras esta página esté abierta y no se envía a un docente.',
+    submissionHelp: 'Sube una imagen de tu trabajo o adjunta tu dibujo del lienzo. Cuando esté listo, confirma la entrega. Tu docente podrá ver el archivo cuando lo entregues.',
     attachedLabel: 'Archivo adjunto en esta sesión',
     pending: 'Aún no has adjuntado una imagen.',
     attached: 'Tu imagen está adjunta. Confirma la entrega cuando quieras finalizar.',
@@ -146,7 +155,7 @@ const gradeUiCopy = {
     clearCanvas: 'Limpiar el lienzo',
     saveCanvas: 'Descargar mi obra',
     submissionTitle: 'Presenta tu creación',
-    submissionHelp: 'Adjunta una imagen de tu obra o el dibujo del lienzo. Revísala y confirma la entrega para registrar la actividad. El archivo queda guardado solo mientras esta página esté abierta y no se envía a un docente.',
+    submissionHelp: 'Adjunta una imagen de tu obra o el dibujo del lienzo. Revísala y confirma la entrega para registrar la actividad. Tu docente podrá ver el archivo cuando lo entregues.',
     attachedLabel: 'Archivo adjunto temporalmente en esta página',
     pending: 'No hay una imagen adjunta; la actividad sigue pendiente.',
     attached: 'La imagen está adjunta, pero la entrega sigue pendiente hasta que la confirmes.',
@@ -524,39 +533,6 @@ const normalizeSearchText = (value) => String(value ?? '')
 
 const USER_SESSION_KEY = 'lumo-user'
 
-function createGuestSession(identifier) {
-  const normalizedIdentifier = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
-  const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
-  const name = normalizedIdentifier.split('@')[0].replace(/[^a-z0-9._-]/g, '') || 'artista'
-  const identity = getSessionIdentity(email)
-  if (!identity) return null
-
-  return {
-    ...identity,
-    name,
-    displayName: identity.displayName || formatPersonName(name),
-    uid: `guest-${email}`,
-    avatarColor: '#03658c',
-    avatarImage: '',
-  }
-}
-
-function getSavedGuestSession(savedProfile) {
-  if (typeof savedProfile?.uid !== 'string' || !savedProfile.uid.startsWith('guest-')) return null
-
-  const email = savedProfile.uid.slice('guest-'.length)
-  const identity = getSessionIdentity(email)
-  if (!identity) return null
-
-  return {
-    ...savedProfile,
-    ...identity,
-    name: email.split('@')[0],
-    displayName: savedProfile.displayName || identity.displayName,
-    uid: savedProfile.uid,
-  }
-}
-
 function getLoginEmail(identifier) {
   const normalized = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
   const studentMatch = normalized.match(/^([a-z]+)@artesestudiante([123])$/)
@@ -604,22 +580,8 @@ function App() {
   const navigate = useNavigate()
 
   useEffect(() => onAuthStateChanged(auth, (firebaseUser) => {
-    let savedProfile = null
-    try {
-      savedProfile = JSON.parse(localStorage.getItem(USER_SESSION_KEY) ?? 'null')
-    } catch {
-      localStorage.removeItem(USER_SESSION_KEY)
-    }
-
-    const savedGuestSession = getSavedGuestSession(savedProfile)
-    if (savedGuestSession) {
-      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(savedGuestSession))
-      setSession(savedGuestSession)
-      setAuthLoading(false)
-      return
-    }
-
     if (!firebaseUser) {
+      localStorage.removeItem(USER_SESSION_KEY)
       setSession(null)
       setAuthLoading(false)
       return
@@ -898,6 +860,9 @@ function AppPage({
   const [drawingUploads, setDrawingUploads] = useState({})
   const [digitalCompletions, setDigitalCompletions] = useState({})
   const [uploadError, setUploadError] = useState('')
+  const [savingSubmission, setSavingSubmission] = useState(false)
+  const [teacherActivities, setTeacherActivities] = useState([])
+  const [activitiesError, setActivitiesError] = useState('')
   const [tool, setTool] = useState('brush')
   const [shapeType, setShapeType] = useState('rectangle')
   const [toolSizes, setToolSizes] = useState({ brush: 8, pencil: 4, eraser: 18 })
@@ -933,6 +898,21 @@ function AppPage({
       document.removeEventListener('keydown', closeProfileMenu)
     }
   }, [])
+
+  useEffect(() => {
+    if (session?.role !== 'student') return undefined
+    return subscribeToGradeActivities(
+      currentGrade,
+      (items) => {
+        setTeacherActivities(items)
+        setActivitiesError('')
+      },
+      (error) => {
+        console.error('No se pudieron cargar las actividades del docente.', error)
+        setActivitiesError('No se pudieron cargar las actividades de tu docente.')
+      },
+    )
+  }, [session?.role, currentGrade])
 
   const data = curriculumData[currentGrade]
   const currentToolSize = toolSizes[tool] ?? toolSizes.brush
@@ -1319,20 +1299,37 @@ function AppPage({
     setUploadError('')
   }
 
-  const confirmDigitalPractice = () => {
+  const confirmDigitalPractice = async () => {
     if (!selectedUpload?.name || !selectedUpload.dataUrl) {
       setUploadError('Adjunta una imagen o el dibujo del lienzo antes de confirmar la actividad.')
       return
     }
 
-    setDigitalCompletions((completions) => ({
-      ...completions,
-      [selectedPracticeKey]: {
-        completedAt: new Date().toISOString(),
-        fileName: selectedUpload.name,
-      },
-    }))
+    setSavingSubmission(true)
     setUploadError('')
+    try {
+      const imageData = await compressImage(selectedUpload.dataUrl)
+      await saveSubmission({
+        practiceKey: selectedPracticeKey,
+        practiceTitle: selectedDigitalPractice.title,
+        grade: currentGrade,
+        studentName: String(session?.displayName ?? session?.name ?? 'Estudiante').slice(0, 80),
+        fileName: selectedUpload.name,
+        imageData,
+      })
+      setDigitalCompletions((completions) => ({
+        ...completions,
+        [selectedPracticeKey]: {
+          completedAt: new Date().toISOString(),
+          fileName: selectedUpload.name,
+        },
+      }))
+    } catch (error) {
+      console.error('No se pudo entregar el dibujo.', error)
+      setUploadError('No se pudo enviar tu dibujo al docente. Revisa tu conexión e inténtalo de nuevo.')
+    } finally {
+      setSavingSubmission(false)
+    }
   }
 
   const handleDrawingUpload = (event) => {
@@ -1974,6 +1971,32 @@ function AppPage({
             <p>{pageCopy.activityPrompt}</p>
           </div>
 
+          {(teacherActivities.length > 0 || activitiesError) && (
+            <div className="teacher-assigned-section">
+              <h3><i className="fa-solid fa-chalkboard-user" aria-hidden="true" /> Actividades de tu docente</h3>
+              {activitiesError && <p className="drawing-upload-error" role="alert">{activitiesError}</p>}
+              <div className="teacher-assigned-grid">
+                {teacherActivities.map((activity) => (
+                  <article key={activity.id} className="curriculum-game-card">
+                    <span className="activity-unit-tag">{activity.grade}° grado</span>
+                    <h4>{activity.title}</h4>
+                    {activity.dueDate && (
+                      <p><strong>Entrega hasta:</strong> {formatCompletionDate(`${activity.dueDate}T12:00:00`)}</p>
+                    )}
+                    <p className="curriculum-game-instructions">{activity.content}</p>
+                    {activity.attachmentData && (
+                      <img
+                        className="teacher-assigned-image"
+                        src={activity.attachmentData}
+                        alt={activity.attachmentName || 'Imagen de la actividad'}
+                      />
+                    )}
+                  </article>
+                ))}
+              </div>
+            </div>
+          )}
+
           {!filteredGames.length && !filteredDigitalPractices.length && (
             <p className="search-empty-message">No se encontró contenido en Actividades{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>
           )}
@@ -2293,7 +2316,7 @@ function AppPage({
               type="button"
               className="confirm-drawing-button"
               onClick={confirmDigitalPractice}
-              disabled={!selectedUpload}
+              disabled={!selectedUpload || savingSubmission}
             >
               <i className="fa-solid fa-circle-check" aria-hidden="true" />
               {selectedCompletion ? pageCopy.update : pageCopy.confirm}
@@ -2470,7 +2493,10 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
   const [activityAttachment, setActivityAttachment] = useState(null)
-  const [latestActivity, setLatestActivity] = useState(null)
+  const [activities, setActivities] = useState([])
+  const [submissions, setSubmissions] = useState([])
+  const [dataError, setDataError] = useState('')
+  const [savingActivity, setSavingActivity] = useState(false)
   const [formError, setFormError] = useState('')
   const [minScheduleDateValue] = useState(() => {
     const date = new Date()
@@ -2480,6 +2506,32 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   const [activityPublishedDate, setActivityPublishedDate] = useState(minScheduleDateValue)
   const [activityDueDate, setActivityDueDate] = useState('')
   const [activityDatesProgrammed, setActivityDatesProgrammed] = useState(false)
+
+  useEffect(() => {
+    const showError = (error) => {
+      console.error('No se pudieron cargar los datos del grado.', error)
+      setDataError('No se pudieron cargar las actividades o entregas. Revisa tu conexión y los permisos.')
+    }
+    const stopActivities = subscribeToGradeActivities(grade, (items) => {
+      setActivities(items)
+      setDataError('')
+    }, showError)
+    const stopSubmissions = subscribeToGradeSubmissions(grade, setSubmissions, showError)
+    return () => {
+      stopActivities()
+      stopSubmissions()
+    }
+  }, [grade])
+
+  const deleteActivity = async (id) => {
+    if (!window.confirm('¿Eliminar esta actividad para los estudiantes?')) return
+    try {
+      await removeActivity(id)
+    } catch (error) {
+      console.error('No se pudo eliminar la actividad.', error)
+      setDataError('No se pudo eliminar la actividad.')
+    }
+  }
 
   const programActivityDates = () => {
     if (!activityPublishedDate || activityPublishedDate > minScheduleDateValue) {
@@ -2499,7 +2551,7 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
     setActivityDatesProgrammed(true)
   }
 
-  const saveActivity = (event) => {
+  const saveActivity = async (event) => {
     event.preventDefault()
     if (!activityTitle.trim() || !activityContent.trim()) {
       setFormError('Escribe el título y el contenido de la actividad.')
@@ -2518,37 +2570,40 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
       return
     }
 
-    const attachment = activityAttachment
-      ? {
-          name: activityAttachment.name,
-          url: URL.createObjectURL(activityAttachment),
-        }
-      : null
-    setLatestActivity({
-      title: activityTitle.trim(),
-      content: activityContent.trim(),
-      publishedDate: activityPublishedDate,
-      dueDate: activityDatesProgrammed ? activityDueDate : '',
-      attachment,
-      grade: activityGrade,
-      status: 'Publicada',
-    })
-    setFormError('')
-    setActivityTitle('')
-    setActivityContent('')
-    setActivityPublishedDate(minScheduleDateValue)
-    setActivityDueDate('')
-    setActivityDatesProgrammed(false)
-    setActivityAttachment(null)
-    onNavigate('recent', activityGrade)
-  }
-
-  useEffect(() => {
-    const attachmentUrl = latestActivity?.attachment?.url
-    return () => {
-      if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
+    if (activityAttachment && !activityAttachment.type.startsWith('image/')) {
+      setFormError('Adjunta una imagen (PNG, JPG o WebP).')
+      return
     }
-  }, [latestActivity])
+
+    setSavingActivity(true)
+    try {
+      const attachmentData = activityAttachment
+        ? await compressImage(await fileToDataUrl(activityAttachment))
+        : ''
+      await publishActivity({
+        title: activityTitle.trim(),
+        content: activityContent.trim(),
+        grade: activityGrade,
+        publishedDate: activityPublishedDate,
+        dueDate: activityDatesProgrammed ? activityDueDate : '',
+        attachmentName: activityAttachment?.name ?? '',
+        attachmentData,
+      })
+      setFormError('')
+      setActivityTitle('')
+      setActivityContent('')
+      setActivityPublishedDate(minScheduleDateValue)
+      setActivityDueDate('')
+      setActivityDatesProgrammed(false)
+      setActivityAttachment(null)
+      onNavigate('recent', activityGrade)
+    } catch (error) {
+      console.error('No se pudo publicar la actividad.', error)
+      setFormError('No se pudo publicar la actividad. Revisa tu conexión e inténtalo de nuevo.')
+    } finally {
+      setSavingActivity(false)
+    }
+  }
 
   return (
     <section className="teacher-portal" aria-label="Panel docente">
@@ -2623,7 +2678,7 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
         </div>
         <div className={`teacher-panel-frame ${view === 'recent' ? 'is-recent' : ''}`}>
           {view === 'recent' ? (
-            <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''} ${!showDiagnostics && !latestActivity ? 'is-empty' : ''}`}>
+            <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''} ${!showDiagnostics && activities.length === 0 && submissions.length === 0 && !dataError ? 'is-empty' : ''}`}>
                 {showDiagnostics ? (
                   <DiagnosticGroupReport
                     key={grade}
@@ -2641,40 +2696,61 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                       onNavigate('activity', grade)
                     }}
                   />
-                ) : latestActivity ? (
-                  <article className="teacher-latest-activity">
-                    <span className="teacher-activity-status">{latestActivity.status}</span>
-                    <span className="teacher-activity-course">{latestActivity.grade}° grado</span>
-                    <h2>{latestActivity.title}</h2>
-                    {latestActivity.publishedDate && (
-                      <time dateTime={latestActivity.publishedDate}>
-                        Publicada el {new Date(`${latestActivity.publishedDate}T12:00:00`).toLocaleDateString('es-CO', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </time>
+                ) : (activities.length > 0 || submissions.length > 0 || dataError) ? (
+                  <div className="teacher-feed">
+                    {dataError && <p className="teacher-form-error" role="alert">{dataError}</p>}
+                    {activities.map((activity) => (
+                      <article key={activity.id} className="teacher-latest-activity">
+                        <span className="teacher-activity-status">Publicada</span>
+                        <span className="teacher-activity-course">{activity.grade}° grado</span>
+                        <h2>{activity.title}</h2>
+                        {activity.publishedDate && (
+                          <time dateTime={activity.publishedDate}>
+                            Publicada el {new Date(`${activity.publishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </time>
+                        )}
+                        {activity.dueDate && (
+                          <time dateTime={activity.dueDate}>
+                            Plazo de entrega hasta {new Date(`${activity.dueDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </time>
+                        )}
+                        <p>{activity.content}</p>
+                        {activity.attachmentData && (
+                          <img className="teacher-assigned-image" src={activity.attachmentData} alt={activity.attachmentName || 'Imagen adjunta'} />
+                        )}
+                        <button type="button" className="remove-upload-button" onClick={() => deleteActivity(activity.id)}>
+                          Eliminar actividad
+                        </button>
+                      </article>
+                    ))}
+                    {submissions.length > 0 && (
+                      <section className="teacher-submissions">
+                        <h2>Dibujos entregados ({submissions.length})</h2>
+                        <div className="teacher-submissions-grid">
+                          {submissions.map((submission) => (
+                            <figure key={submission.id} className="teacher-submission-card">
+                              <img src={submission.imageData} alt={`Dibujo de ${submission.studentName}`} />
+                              <figcaption>
+                                <strong>{submission.studentName}</strong>
+                                <span>{submission.practiceTitle}</span>
+                                {submission.createdAt?.toDate && (
+                                  <time>{submission.createdAt.toDate().toLocaleDateString('es-CO')}</time>
+                                )}
+                              </figcaption>
+                            </figure>
+                          ))}
+                        </div>
+                      </section>
                     )}
-                    {latestActivity.dueDate && (
-                      <time dateTime={latestActivity.dueDate}>
-                        Plazo de entrega hasta {new Date(`${latestActivity.dueDate}T12:00:00`).toLocaleDateString('es-CO', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </time>
-                    )}
-                    <p>{latestActivity.content}</p>
-                    {latestActivity.attachment && (
-                      <a
-                        className="teacher-attachment-name"
-                        href={latestActivity.attachment.url}
-                        download={latestActivity.attachment.name}
-                      >
-                        <i className="fa-solid fa-paperclip" aria-hidden="true" /> {latestActivity.attachment.name}
-                      </a>
-                    )}
-                  </article>
+                  </div>
                 ) : (
                   <div className="teacher-empty-state">
                     <img className="teacher-empty-illustration" src={teacherEmptyIllustration} alt="" aria-hidden="true" />
@@ -2721,9 +2797,10 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                   <div className="teacher-activity-options">
                     <label className="teacher-image-upload">
                       <i className="fa-solid fa-paperclip" aria-hidden="true" />
-                      <span>{activityAttachment ? activityAttachment.name : 'Adjuntar contenido'}</span>
+                      <span>{activityAttachment ? activityAttachment.name : 'Adjuntar imagen'}</span>
                       <input
                         type="file"
+                        accept="image/png,image/jpeg,image/webp"
                         onChange={(event) => setActivityAttachment(event.target.files?.[0] ?? null)}
                       />
                     </label>
@@ -2786,7 +2863,7 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                       >
                         <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
                       </button>
-                      <button className="teacher-upload-button" type="submit" value="publish">
+                      <button className="teacher-upload-button" type="submit" value="publish" disabled={savingActivity}>
                         <i className="fa-solid fa-arrow-up" aria-hidden="true" /> SUBIR
                       </button>
                     </div>
