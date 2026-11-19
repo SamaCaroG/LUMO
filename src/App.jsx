@@ -973,12 +973,6 @@ function AppPage({
   const filteredDigitalPractices = visibleDigitalPractices.filter((practice) => matchesSearch(
     practice.unit, practice.topic, practice.title, practice.instructions,
   ))
-  const drawingMatchesSearch = matchesSearch(
-    selectedDigitalPractice.unit,
-    selectedDigitalPractice.topic,
-    selectedDigitalPractice.title,
-    selectedDigitalPractice.instructions,
-  )
   const sectionSearchOptions = activeTab === 'textos'
     ? filteredReadings.map((item) => ({
         title: `${item.grade}° grado · ${item.title}`,
@@ -991,9 +985,7 @@ function AppPage({
             ...filteredGames.map((item, index) => ({ title: item.title, id: `game-result-${index}` })),
             ...filteredDigitalPractices.map((item, index) => ({ title: item.title, id: `practice-result-${index}` })),
           ]
-        : activeTab === 'dibujos'
-          ? drawingMatchesSearch ? [{ title: selectedDigitalPractice.title, id: 'drawing-workspace' }] : []
-          : []
+        : []
 
   const selectGrade = (grade) => {
     setCurrentGrade(grade)
@@ -2093,8 +2085,7 @@ function AppPage({
             </div>
           </div>
 
-          {drawingMatchesSearch ? (
-            <>
+          <>
           <div id="drawing-workspace" className="selected-practice-note">
             <strong>{selectedDigitalPractice.title}</strong>
             <span>{selectedDigitalPractice.instructions}</span>
@@ -2309,9 +2300,6 @@ function AppPage({
             </button>
           </section>
             </>
-          ) : (
-            <p className="search-empty-message">No se encontró contenido en Dibujos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>
-          )}
         </section>
         </>
         )}

@@ -1,56 +1,142 @@
+
 rules_version = '2';
+
 service cloud.firestore {
   match /databases/{database}/documents {
+
+    // Verificar si el usuario es un docente autorizado.
     function isTeacher() {
       return request.auth != null
         && request.auth.token.email is string
-        && request.auth.token.email.matches('^[a-z0-9]+@artesplasticasdocente\\.lumo\\.invalid$');
+        && request.auth.token.email.matches(
+          '^[a-z0-9]+@artesplasticasdocente\\.lumo\\.invalid$'
+        );
     }
 
+    // Verificar que el estudiante corresponda al grado.
     function canSubmitForGrade(grade) {
       return request.auth != null
         && request.auth.token.email is string
         && (
-          (grade == 1 && request.auth.token.email.matches('^[a-z0-9]+@artesestudiante1\\.lumo\\.invalid$'))
-          || (grade == 2 && request.auth.token.email.matches('^[a-z0-9]+@artesestudiante2\\.lumo\\.invalid$'))
-          || (grade == 3 && request.auth.token.email.matches('^[a-z0-9]+@artesestudiante3\\.lumo\\.invalid$'))
+          (
+            grade == 1
+            && request.auth.token.email.matches(
+              '^[a-z0-9]+@artesestudiante1\\.lumo\\.invalid$'
+            )
+          )
+          || (
+            grade == 2
+            && request.auth.token.email.matches(
+              '^[a-z0-9]+@artesestudiante2\\.lumo\\.invalid$'
+            )
+          )
+          || (
+            grade == 3
+            && request.auth.token.email.matches(
+              '^[a-z0-9]+@artesestudiante3\\.lumo\\.invalid$'
+            )
+          )
         );
     }
 
+    // Colección de diagnósticos de LUMO.
     match /diagnosticos/{diagnosticId} {
+
+      // Solamente los docentes pueden consultar resultados.
       allow read: if isTeacher();
-      allow create: if canSubmitForGrade(request.resource.data.grade)
+
+      // Los estudiantes autorizados pueden crear diagnósticos.
+      allow create: if
+        canSubmitForGrade(request.resource.data.grade)
+
+        // El UID debe corresponder al usuario autenticado.
         && request.resource.data.submittedBy == request.auth.uid
+
+        // Campos obligatorios.
         && request.resource.data.keys().hasAll([
-          'studentName', 'grade', 'gradeLabel', 'areas', 'answers', 'failedAreas',
-          'totalCorrect', 'totalQuestions', 'scorePercentage', 'submittedBy', 'createdAt'
+          'studentName',
+          'grade',
+          'gradeLabel',
+          'performedOn',
+          'areas',
+          'answers',
+          'failedAreas',
+          'totalCorrect',
+          'totalQuestions',
+          'scorePercentage',
+          'submittedBy',
+          'createdAt'
         ])
+
+        // No permitir campos adicionales.
         && request.resource.data.keys().hasOnly([
-          'studentName', 'grade', 'gradeLabel', 'areas', 'answers', 'failedAreas',
-          'totalCorrect', 'totalQuestions', 'scorePercentage', 'submittedBy', 'createdAt'
+          'studentName',
+          'grade',
+          'gradeLabel',
+          'performedOn',
+          'areas',
+          'answers',
+          'failedAreas',
+          'totalCorrect',
+          'totalQuestions',
+          'scorePercentage',
+          'submittedBy',
+          'createdAt'
         ])
+
+        // Validar el nombre del estudiante.
         && request.resource.data.studentName is string
         && request.resource.data.studentName.size() <= 80
+
+        // Validar grado y etiqueta.
         && (
-          (request.resource.data.grade == 1 && request.resource.data.gradeLabel == '1°')
-          || (request.resource.data.grade == 2 && request.resource.data.gradeLabel == '2°')
-          || (request.resource.data.grade == 3 && request.resource.data.gradeLabel == '3°')
+          (
+            request.resource.data.grade == 1
+            && request.resource.data.gradeLabel == '1°'
+          )
+          || (
+            request.resource.data.grade == 2
+            && request.resource.data.gradeLabel == '2°'
+          )
+          || (
+            request.resource.data.grade == 3
+            && request.resource.data.gradeLabel == '3°'
+          )
         )
+
+        // CORRECCIÓN: permitir y validar la fecha.
+        && request.resource.data.performedOn is string
+        && request.resource.data.performedOn.matches(
+          '^[0-9]{4}-[0-9]{2}-[0-9]{2}$'
+        )
+
+        // Validar áreas y respuestas.
         && request.resource.data.areas is map
         && request.resource.data.answers is list
         && request.resource.data.answers.size() == 8
+
+        // Validar áreas que necesitan refuerzo.
         && request.resource.data.failedAreas is list
         && request.resource.data.failedAreas.size() <= 8
+
+        // Validar total de respuestas correctas.
         && request.resource.data.totalCorrect is int
         && request.resource.data.totalCorrect >= 0
         && request.resource.data.totalCorrect <= 8
+
+        // El diagnóstico tiene exactamente ocho preguntas.
         && request.resource.data.totalQuestions == 8
+
+        // Validar porcentaje de puntuación.
         && request.resource.data.scorePercentage is int
         && request.resource.data.scorePercentage >= 0
         && request.resource.data.scorePercentage <= 100
+
+        // Validar usuario y fecha de creación.
         && request.resource.data.submittedBy is string
         && request.resource.data.createdAt is timestamp;
 
+      // Impedir modificaciones o eliminaciones.
       allow update, delete: if false;
     }
   }
