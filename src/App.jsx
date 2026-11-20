@@ -441,6 +441,16 @@ const curriculumData = {
         title: '1. Videoclase de Segundo',
         desc: 'Video de apoyo para el curso de segundo grado.',
       },
+      {
+        id: 'wpvbUzA6F2w',
+        title: '2. Videoclase de Segundo',
+        desc: 'Video de apoyo para el curso de segundo grado.',
+      },
+      {
+        id: 'FqisIpDSxEc',
+        title: '3. Videoclase de Segundo',
+        desc: 'Video de apoyo para el curso de segundo grado.',
+      },
     ],
   },
   3: {
@@ -480,6 +490,16 @@ const curriculumData = {
       {
         id: 'leEOmCZLqa4',
         title: '1. Videoclase de Tercero',
+        desc: 'Video de apoyo para el curso de tercer grado.',
+      },
+      {
+        id: 'wpvbUzA6F2w',
+        title: '2. Videoclase de Tercero',
+        desc: 'Video de apoyo para el curso de tercer grado.',
+      },
+      {
+        id: 'FqisIpDSxEc',
+        title: '3. Videoclase de Tercero',
         desc: 'Video de apoyo para el curso de tercer grado.',
       },
     ],
