@@ -1986,11 +1986,12 @@ function AppPage({
                               type="button"
                               className="primary-button"
                               onClick={() => {
-                                const grade1StoryIndex = currentGrade === 1
-                                  ? readingStoriesByGrade[1].findIndex(({ title }) => title === reading.title)
+                                const hasReadingImages = currentGrade === 1 || currentGrade === 3
+                                const storyImageIndex = hasReadingImages
+                                  ? readingStoriesByGrade[currentGrade].findIndex(({ title }) => title === reading.title)
                                   : -1
-                                const image = currentGrade === 1 && grade1StoryIndex >= 0
-                                  ? `${import.meta.env.BASE_URL}reading-images/grade1-${String(grade1StoryIndex + 1).padStart(2, '0')}.png`
+                                const image = hasReadingImages && storyImageIndex >= 0
+                                  ? `${import.meta.env.BASE_URL}reading-images/grade${currentGrade}-${String(storyImageIndex + 1).padStart(2, '0')}.png`
                                   : null
                                 openReadingModal(reading.title, reading.fullText, image)
                               }}
