@@ -6047,15 +6047,39 @@ button {
 
 .teacher-assigned-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(16rem, 1fr));
-  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
+  gap: 0.75rem;
+}
+
+.teacher-assigned-grid .curriculum-game-card {
+  gap: 0.45rem;
+  padding: 0.75rem;
+  border-radius: 0.9rem;
+}
+
+.teacher-assigned-grid .curriculum-game-card h4 {
+  font-size: 1rem;
+}
+
+.teacher-assigned-grid .curriculum-game-card > p {
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+
+.teacher-assigned-grid .digital-practice-status {
+  font-size: 0.68rem;
+}
+
+.teacher-assigned-grid .practice-load-button {
+  padding: 0.45rem 0.65rem;
+  font-size: 0.82rem;
 }
 
 .teacher-assigned-image {
   display: block;
   max-width: 100%;
-  max-height: 18rem;
-  margin: 0.8rem auto 0;
+  max-height: 10rem;
+  margin: 0.45rem auto 0;
   border-radius: 0.8rem;
   object-fit: contain;
 }
