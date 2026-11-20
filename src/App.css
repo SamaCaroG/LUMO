@@ -5224,6 +5224,119 @@ button {
   padding: 1rem 1.2rem;
 }
 
+.about-page .assessment-results-section {
+  margin-bottom: clamp(2rem, 4vw, 3rem);
+}
+
+.about-page .assessment-results-eyebrow {
+  margin-bottom: 0.35rem;
+  color: #56806f;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.about-page .assessment-results-section .section-heading {
+  margin-bottom: 0.5rem;
+}
+
+.about-page .assessment-results-section .section-subheading {
+  max-width: 42rem;
+  margin: 0 auto 1.5rem;
+}
+
+.about-page .assessment-results-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: clamp(1rem, 2vw, 1.5rem);
+}
+
+.about-page .assessment-result-card {
+  min-width: 0;
+  padding: clamp(1rem, 2vw, 1.5rem);
+  border: 1px solid rgba(255, 255, 255, 0.92);
+  border-radius: 1.25rem;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 12px 30px rgba(31, 41, 55, 0.08);
+}
+
+.about-page .assessment-result-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.about-page .assessment-result-label {
+  display: inline-block;
+  margin-bottom: 0.25rem;
+  color: #56806f;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+}
+
+.about-page .assessment-result-heading h3 {
+  color: #03658c;
+  font-size: clamp(1.15rem, 2vw, 1.45rem);
+}
+
+.about-page .assessment-result-score {
+  display: flex;
+  flex: 0 0 auto;
+  flex-direction: column;
+  align-items: flex-end;
+  color: #52779a;
+  font-size: 0.72rem;
+  text-align: right;
+}
+
+.about-page .assessment-result-score strong {
+  color: #18765b;
+  font-family: var(--font-title);
+  font-size: 1.7rem;
+  line-height: 1.1;
+}
+
+.about-page .assessment-result-meta {
+  margin: 0.75rem 0 1rem;
+  color: #52779a;
+  font-size: 0.82rem;
+}
+
+.about-page .assessment-result-figure {
+  overflow: hidden;
+  border: 1px solid #dce8ed;
+  border-radius: 0.8rem;
+  background: #f4f8fc;
+}
+
+.about-page .assessment-result-figure img {
+  width: 100%;
+  height: auto;
+}
+
+.about-page .assessment-result-figure figcaption {
+  padding: 0.65rem 0.8rem;
+  border-top: 1px solid #dce8ed;
+  color: #52779a;
+  font-size: 0.75rem;
+}
+
+.about-page .assessment-results-note {
+  max-width: 52rem;
+  margin: 1rem auto 0;
+  padding: 0.85rem 1rem;
+  border-left: 3px solid #8e4ec0;
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.75);
+  color: #526579;
+  font-size: 0.82rem;
+  line-height: 1.6;
+}
+
 .about-page .team-section {
   margin-bottom: clamp(2rem, 4vw, 3rem);
 }
@@ -5396,6 +5509,10 @@ button {
   }
 
   .about-page .tech-resources-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .about-page .assessment-results-grid {
     grid-template-columns: 1fr;
   }
 
