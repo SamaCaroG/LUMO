@@ -3734,7 +3734,7 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                   <span className="badge badge-firebase">
                     <img src={firebaseLogo} alt="Firebase" className="badge-logo-image" />
                     Firebase
-                    <span className="badge-category">Backend como servicio</span>
+                    <span className="badge-category">Frontend</span>
                   </span>
                 </div>
               </div>
