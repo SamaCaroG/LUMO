@@ -1992,10 +1992,7 @@ function AppPage({
                                 const storyImageIndex = supportsGradeImages
                                   ? readingStoriesByGrade[currentGrade].findIndex(({ title }) => title === reading.title)
                                   : -1
-                                const hasStoryImage = supportsGradeImages
-                                  && storyImageIndex >= 0
-                                  && reading.title !== 'Cuento: "Engañando al Ojo con Texturas Dibujadas"'
-                                const image = hasStoryImage && storyImageIndex >= 0
+                                const image = supportsGradeImages && storyImageIndex >= 0
                                   ? `${import.meta.env.BASE_URL}reading-images/grade${currentGrade}-${String(storyImageIndex + 1).padStart(2, '0')}.png`
                                   : null
                                 openReadingModal(reading.title, reading.fullText, image)
