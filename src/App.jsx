@@ -175,19 +175,14 @@ const curriculumData = {
     ],
     videos: [
       {
-        id: '3v3H_3BOHL8',
-        title: '1. Colores Primarios para 1°',
-        desc: 'Aprende a identificar el Amarillo, Azul y Rojo en tu entorno.',
+        id: 'wpvbUzA6F2w',
+        title: '1. Videoclase de Primero',
+        desc: 'Video de apoyo para el curso de primer grado.',
       },
       {
-        id: '2B4_S2v1C0A',
-        title: '2. Puntos y Líneas Divertidas',
-        desc: 'Descubre cómo las líneas rectas y curvas forman objetos.',
-      },
-      {
-        id: 'X4uUf9z8S2Y',
-        title: '3. Dibujando Figuras Básicas',
-        desc: 'Crea casas y soles con círculos y cuadrados.',
+        id: 'FqisIpDSxEc',
+        title: '2. Videoclase de Primero',
+        desc: 'Video de apoyo para el curso de primer grado.',
       },
     ],
   },
@@ -225,19 +220,9 @@ const curriculumData = {
     ],
     videos: [
       {
-        id: 'pS9d3JCE3R0',
-        title: '1. Técnica del Puntillismo 2°',
-        desc: 'Crea paisajes con textura usando marcadores o hisopos.',
-      },
-      {
-        id: '3v3H_3BOHL8',
-        title: '2. Mezcla de Colores Secundarios',
-        desc: 'Tutorial interactivo de combinación de pinturas.',
-      },
-      {
-        id: 'X4uUf9z8S2Y',
-        title: '3. Composición con Formas',
-        desc: 'Ensambla figuras secundarias e ilustraciones complejas.',
+        id: 'GGGgDX0TVsQ',
+        title: '1. Videoclase de Segundo',
+        desc: 'Video de apoyo para el curso de segundo grado.',
       },
     ],
   },
@@ -275,19 +260,9 @@ const curriculumData = {
     ],
     videos: [
       {
-        id: '3v3H_3BOHL8',
-        title: '1. Colores Cálidos vs Fríos',
-        desc: 'Aprende a transmitir emociones mediante la temperatura cromática.',
-      },
-      {
-        id: '2B4_S2v1C0A',
-        title: '2. Dibujo Simétrico y Proporcional',
-        desc: 'Construye máscaras y elementos simétricos perfectos.',
-      },
-      {
-        id: 'X4uUf9z8S2Y',
-        title: '3. Simbolismo Precolombino',
-        desc: 'Tutorial para recrear patrones ancestrales indígenas.',
+        id: 'leEOmCZLqa4',
+        title: '1. Videoclase de Tercero',
+        desc: 'Video de apoyo para el curso de tercer grado.',
       },
     ],
   },
@@ -1455,7 +1430,7 @@ function AppPage({
                   <div className="video-frame">
                     {isSelected ? (
                       <iframe
-                        src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=0`}
+                        src={`https://www.youtube-nocookie.com/embed/${video.id}?autoplay=0&cc_load_policy=1&hl=es&cc_lang_pref=es`}
                         title={video.title}
                         allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                         allowFullScreen
