@@ -392,12 +392,12 @@ const curriculumData = {
     videos: [
       {
         id: 'wpvbUzA6F2w',
-        title: '1. Videoclase de Primero',
+        title: 'LÍNEAS Y FORMAS | Video Educativo LÜMØ',
         desc: 'Video de apoyo para el curso de primer grado.',
       },
       {
         id: 'FqisIpDSxEc',
-        title: '2. Videoclase de Primero',
+        title: 'TEXTURAS EN EL DIBUJO | Video Educativo',
         desc: 'Video de apoyo para el curso de primer grado.',
       },
     ],
@@ -438,17 +438,17 @@ const curriculumData = {
     videos: [
       {
         id: 'GGGgDX0TVsQ',
-        title: '1. Videoclase de Segundo',
+        title: 'RECOPILACIÓN de LÍNEAS, FORMAS, FIGURAS, VOLUMEN y TEXTURAS',
         desc: 'Video de apoyo para el curso de segundo grado.',
       },
       {
         id: 'wpvbUzA6F2w',
-        title: '2. Videoclase de Segundo',
+        title: 'LÍNEAS Y FORMAS | Video Educativo LÜMØ',
         desc: 'Video de apoyo para el curso de segundo grado.',
       },
       {
         id: 'FqisIpDSxEc',
-        title: '3. Videoclase de Segundo',
+        title: 'TEXTURAS EN EL DIBUJO | Video Educativo',
         desc: 'Video de apoyo para el curso de segundo grado.',
       },
     ],
@@ -489,17 +489,17 @@ const curriculumData = {
     videos: [
       {
         id: 'leEOmCZLqa4',
-        title: '1. Videoclase de Tercero',
+        title: 'FORMAS PLANAS | Video de Arte Educativo',
         desc: 'Video de apoyo para el curso de tercer grado.',
       },
       {
         id: 'wpvbUzA6F2w',
-        title: '2. Videoclase de Tercero',
+        title: 'LÍNEAS Y FORMAS | Video Educativo LÜMØ',
         desc: 'Video de apoyo para el curso de tercer grado.',
       },
       {
         id: 'FqisIpDSxEc',
-        title: '3. Videoclase de Tercero',
+        title: 'TEXTURAS EN EL DIBUJO | Video Educativo',
         desc: 'Video de apoyo para el curso de tercer grado.',
       },
     ],
