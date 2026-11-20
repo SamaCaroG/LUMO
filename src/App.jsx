@@ -3653,62 +3653,41 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
 
             {/* SECCIÓN: RESULTADOS DE LAS EVALUACIONES */}
             <section className="assessment-results-section" aria-labelledby="assessment-results-title">
-              <p className="assessment-results-eyebrow">Evaluación del proyecto</p>
               <h2 className="section-heading" id="assessment-results-title">Resultados del pretest y postest</h2>
-              <p className="section-subheading">
-                Resultados generales de las evaluaciones sobre habilidades artísticas de primero a tercero de primaria.
-              </p>
 
               <div className="assessment-results-grid">
                 <article className="assessment-result-card">
                   <div className="assessment-result-heading">
-                    <div>
-                      <span className="assessment-result-label">PRETEST</span>
-                      <h3>Evaluación inicial</h3>
-                    </div>
+                    <h3>Pretest</h3>
                     <div className="assessment-result-score">
                       <strong>72%</strong>
-                      <span>aciertos promedio</span>
                     </div>
                   </div>
-                  <p className="assessment-result-meta">24 estudiantes · 24 evaluaciones completas</p>
                   <figure className="assessment-result-figure">
                     <img
                       src="/resultados/pretest.png"
                       alt="Resultados del pretest: 24 estudiantes evaluados y 72 por ciento de aciertos promedio."
                       loading="lazy"
                     />
-                    <figcaption>Resultados generales del pretest</figcaption>
                   </figure>
                 </article>
 
                 <article className="assessment-result-card">
                   <div className="assessment-result-heading">
-                    <div>
-                      <span className="assessment-result-label">POSTEST</span>
-                      <h3>Evaluación posterior</h3>
-                    </div>
+                    <h3>Postest</h3>
                     <div className="assessment-result-score">
                       <strong>81%</strong>
-                      <span>aciertos promedio</span>
                     </div>
                   </div>
-                  <p className="assessment-result-meta">15 estudiantes · 15 evaluaciones completas</p>
                   <figure className="assessment-result-figure">
                     <img
                       src="/resultados/postest.png"
                       alt="Resultados del postest: 15 estudiantes evaluados y 81 por ciento de aciertos promedio."
                       loading="lazy"
                     />
-                    <figcaption>Resultados generales del postest</figcaption>
                   </figure>
                 </article>
               </div>
-
-              <p className="assessment-results-note">
-                Los reportes corresponden a grupos de distinto tamaño: 24 estudiantes en el pretest y 15 en el postest.
-                La comparación es descriptiva y no representa el seguimiento individual de los mismos participantes.
-              </p>
             </section>
 
             {/* SECCIÓN: NUESTRO EQUIPO (ESTUDIANTES SOLICITADOS) */}
