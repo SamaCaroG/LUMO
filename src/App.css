@@ -6047,40 +6047,44 @@ button {
 
 .teacher-assigned-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 14rem), 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 13rem), 1fr));
+  gap: 0.65rem;
 }
 
 .teacher-assigned-grid .curriculum-game-card {
-  gap: 0.45rem;
-  padding: 0.75rem;
-  border-radius: 0.9rem;
+  gap: 0.4rem;
+  padding: 0.7rem;
+  border-radius: 0.85rem;
 }
 
 .teacher-assigned-grid .curriculum-game-card h4 {
-  font-size: 1rem;
+  font-size: 0.95rem;
 }
 
 .teacher-assigned-grid .curriculum-game-card > p {
+  display: -webkit-box;
+  overflow: hidden;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
   font-size: 0.78rem;
-  line-height: 1.5;
+  line-height: 1.4;
 }
 
 .teacher-assigned-grid .digital-practice-status {
-  font-size: 0.68rem;
+  font-size: 0.65rem;
 }
 
 .teacher-assigned-grid .practice-load-button {
-  padding: 0.45rem 0.65rem;
-  font-size: 0.82rem;
+  padding: 0.4rem 0.6rem;
+  font-size: 0.78rem;
 }
 
 .teacher-assigned-image {
   display: block;
   max-width: 100%;
-  max-height: 10rem;
-  margin: 0.45rem auto 0;
-  border-radius: 0.8rem;
+  max-height: 6rem;
+  margin: 0.35rem auto 0;
+  border-radius: 0.6rem;
   object-fit: contain;
 }
 
