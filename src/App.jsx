@@ -1,10 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import { Navigate, Route, Routes, useLocation, useNavigate, useParams } from 'react-router-dom'
+import { onAuthStateChanged, signInWithEmailAndPassword, signOut as signOutFirebase } from 'firebase/auth'
 import './App.css'
+import './login.css'
 import lumoColorLogo from '../Lumo logo (1).png'
 import lumoLogoOnLight from '../fghneth.png'
 import colSamShield from '../escudo colsam png.png'
 import houseShield from '../escudo de la casa.png'
+import loginIllustration from './assets/login-illustration.png'
+import lumoBlackLogo from './assets/lumo-black-logo.png'
+import selectedBookIcon from './assets/student-book-icon-selected.png'
+import selectedPaletteIcon from './assets/student-palette-icon-selected.png'
+import teacherEmptyIllustration from './assets/teacher-empty-illustration.png'
+import vercelLogo from '../vercel-logo.jpg'
+import javascriptLogo from '../JavaScript-logo.png'
+import firebaseLogo from '../firebase.logo.png'
+import githubLogo from '../github-logo.png'
+import canvaLogo from '../canva-logo.jpg'
+import contenidoLogo from '../contenido-logo.png'
+import html5Logo from '../HTML5_log0.png'
+import css3Logo from '../CSS3_logo.webp'
+import reactLogo from '../React-logo.webp'
 import alanPhoto from '../Alan E.png'
 import hectorPhoto from '../Hector B.png'
 import juanPhoto from '../juan D.png'
@@ -14,8 +30,20 @@ import {
   curriculumDigitalPractices,
   curriculumGames,
 } from './curriculumActivities.js'
+import { readingStoriesByGrade } from './readingStories.js'
 import DiagnosticGroupReport from './diagnostics/DiagnosticGroupReport.jsx'
 import DiagnosticTest from './diagnostics/DiagnosticTest.jsx'
+import { auth } from './firebase/config.js'
+import {
+  compressImage,
+  fileToDataUrl,
+  publishActivity,
+  removeActivity,
+  saveSubmission,
+  subscribeToGradeActivities,
+  subscribeToGradeSubmissions,
+  subscribeToMyActivitySubmissions,
+} from './activities/activitiesStore.js'
 
 const formatCompletionDate = (dateValue) => {
   const date = new Date(dateValue)
@@ -24,15 +52,10 @@ const formatCompletionDate = (dateValue) => {
     : date.toLocaleDateString('es-CO', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-const readingExampleLabels = [
-  'Espacio reservado para una imagen de ejemplo',
-  'Espacio reservado para otra imagen de ejemplo',
-]
-
 const gradeUiCopy = {
   1: {
     welcome: 'Elige tu curso y vamos a crear.',
-    navSubtitles: ['Cuentos para descubrir', 'Videos para mirar', 'Juegos y retos', 'Dibuja a tu manera'],
+    navSubtitles: ['Cuentos para descubrir', 'Inspirate y crea', 'Juegos y retos', 'Dibuja a tu manera'],
     menuPrompt: 'Elige qué quieres explorar.',
     readingIntro: 'Lee estas historias y encuentra ideas para tus dibujos.',
     videoIntro: 'Elige un video para mirar y descubrir algo nuevo.',
@@ -56,7 +79,7 @@ const gradeUiCopy = {
     clearCanvas: 'Borrar mi dibujo',
     saveCanvas: 'Guardar mi dibujo',
     submissionTitle: '¿Ya tienes tu dibujo?',
-    submissionHelp: 'Elige una imagen o adjunta tu dibujo del lienzo. Después, pulsa «Entregar mi dibujo». Tu trabajo se guarda en esta página y no se envía a tu docente.',
+    submissionHelp: 'Elige una imagen o adjunta tu dibujo del lienzo. Después, pulsa «Entregar mi dibujo». Tu docente podrá ver tu dibujo cuando lo entregues.',
     attachedLabel: 'Imagen lista en esta página',
     pending: 'Todavía no has adjuntado una imagen.',
     attached: 'Ya adjuntaste tu imagen. Pulsa «Entregar mi dibujo» para terminar.',
@@ -92,7 +115,7 @@ const gradeUiCopy = {
     clearCanvas: 'Limpiar mi dibujo',
     saveCanvas: 'Guardar mi obra',
     submissionTitle: 'Adjunta tu creación',
-    submissionHelp: 'Sube una imagen de tu trabajo o adjunta tu dibujo del lienzo. Cuando esté listo, confirma la entrega. El archivo se conserva mientras esta página esté abierta y no se envía a un docente.',
+    submissionHelp: 'Sube una imagen de tu trabajo o adjunta tu dibujo del lienzo. Cuando esté listo, confirma la entrega. Tu docente podrá ver el archivo cuando lo entregues.',
     attachedLabel: 'Archivo adjunto en esta sesión',
     pending: 'Aún no has adjuntado una imagen.',
     attached: 'Tu imagen está adjunta. Confirma la entrega cuando quieras finalizar.',
@@ -128,7 +151,7 @@ const gradeUiCopy = {
     clearCanvas: 'Limpiar el lienzo',
     saveCanvas: 'Descargar mi obra',
     submissionTitle: 'Presenta tu creación',
-    submissionHelp: 'Adjunta una imagen de tu obra o el dibujo del lienzo. Revísala y confirma la entrega para registrar la actividad. El archivo queda guardado solo mientras esta página esté abierta y no se envía a un docente.',
+    submissionHelp: 'Adjunta una imagen de tu obra o el dibujo del lienzo. Revísala y confirma la entrega para registrar la actividad. Tu docente podrá ver el archivo cuando lo entregues.',
     attachedLabel: 'Archivo adjunto temporalmente en esta página',
     pending: 'No hay una imagen adjunta; la actividad sigue pendiente.',
     attached: 'La imagen está adjunta, pero la entrega sigue pendiente hasta que la confirmes.',
@@ -138,6 +161,194 @@ const gradeUiCopy = {
     confirm: 'Confirmar entrega',
     update: 'Actualizar entrega',
   },
+}
+
+const pdfStory = (tag, title, summary, fullText) => ({
+  tag,
+  color: '#4BD166',
+  title,
+  summary,
+  fullText,
+})
+
+const sharedProcessStories = [
+  pdfStory(
+    'Unidad 1',
+    'Cuento: "La hojita y el mundo de las formas"',
+    '¡Hola! Soy una hojita suave que cayó de un árbol grande.',
+    `¡Hola! Soy una hojita suave que cayó de un árbol grande. Si me pasas tu dedito, sentirás mis caminitos y cómo me doy forma.
+
+En la naturaleza nada es totalmente plano. Las piedritas, las flores y los tronquitos tienen volumen y ocupan un lugar real para que los puedas tocar. Si usas una hojita o una ramita para pintar, ¡estás creando arte con la naturaleza!
+
+Además, cuando suena la música alegre del vallenato, nuestras manos bailan al ritmo del acordeón.
+
+¿Qué tesoro de la naturaleza vas a tocar hoy para inspirarte?`,
+  ),
+  pdfStory(
+    'Unidad 2',
+    'Cuento: "El lápiz que quería bailar"',
+    '¡Hola! Soy tu lápiz amigo y me encanta bailar suelto sobre la hoja.',
+    `¡Hola! Soy tu lápiz amigo y me encanta bailar suelto sobre la hoja. Cuando dibujo sin usar regla, creo perritos, carritos y paisajes que parecen cobrar vida.
+
+Si dibujo un árbol grande y cerquita, está al frente; si lo hago chiquitico al fondo, se ve muy lejos. Así jugamos a dar profundidad a cada dibujo.
+
+Al ritmo de la cumbia y el mapalé, mis trazos bailan felices en la hoja.
+
+¿Te animas a hacer bailar a tu lápiz para dibujar un bailarín?`,
+  ),
+  pdfStory(
+    'Unidad 3',
+    'Cuento: "El baile de las mezclas"',
+    '¡Hola! Somos los colores y nos encanta jugar a los abrazos.',
+    `¡Hola! Somos los colores y nos encanta jugar a los abrazos. Cuando el Amarillo abraza al Azul, ¡nace el Verde! Y cuando el Rojo le da la mano al Amarillo, ¡aparece el Naranja!
+
+Así creamos el círculo cromático, que parece una rueda mágica llena de tonos secundarios. Con tus lápices de colores puedes pintar suave o fuerte para darle sombrita a tus dibujos.
+
+Nuestros artesanos usan todos estos colores para tejer mochilas hermosas.
+
+¿Qué color mágico vas a inventar hoy mezclando tus pinturas?`,
+  ),
+  pdfStory(
+    'Unidad 4',
+    'Cuento: "Los amiguitos de la precisión"',
+    '¡Hola! Somos la Regla, la Escuadra y el Compás.',
+    `¡Hola! Somos la Regla, la Escuadra y el Compás. Nos gusta ayudarte para que tus líneas y círculos queden súper limpios y parejitos.
+
+El Compás se para en un piecito y da vueltas redonditas sin cansarse. La Regla y la Escuadra te ayudan a hacer líneas bien derechitas para dibujar cajas, juguetes o casitas desde varios lados.
+
+Somos tus mejores ayudantes de dibujo.
+
+¿Estás listo para hacer rodar el compás y crear mundos maravillosos?`,
+  ),
+]
+
+const pdfStoriesByGrade = {
+  1: [
+    pdfStory(
+      'Unidad 2',
+      'Cuento: "Soy un punto"',
+      '¡Hola! Soy un punto. Parezco pequeñito, pero puedo ser el comienzo de un dibujo enorme.',
+      `¡Hola! Soy un punto. Parezco pequeñito, pero puedo ser el comienzo de un dibujo enorme. Cuando me quedo quieto, soy una marquita; cuando salgo a pasear por el papel, dejo un caminito detrás de mí.
+
+Si camino derechito, mi camino es una línea recta. Si me muevo despacito y me mezo, puedo formar curvas, olas o zigzags. A ese camino lo llamamos línea. ¿Qué crees que pasaría si mi línea da una vuelta entera y regresa a donde empezó?
+
+Otros puntos amiguitos pueden jugar conmigo. Algunos se juntan mucho y otros se quedan separados. Si muchos puntitos de colores se dan la mano, pueden llenar un dibujo de magias y texturas. Esa forma bonita de pintar se llama puntillismo.
+
+Un punto puede ser una semillita, una estrella brillante, una pelota o los ojitos de un personaje. ¿Ves a tu alrededor? Seguro hay puntos y líneas jugando a las escondidas en tu salón.
+
+¿Qué podrías dibujar tú empezando con un pequeño punto?`,
+    ),
+    pdfStory(
+      'Unidad 3',
+      'Cuento: "El secreto de las figuras"',
+      '¡Hola! Somos las figuras geométricas y nos encanta jugar a las escondidas contigo.',
+      `¡Hola! Somos las figuras geométricas y nos encanta jugar a las escondidas contigo. Si miras la ventana, verás un rectángulo; si miras las ruedas de tu juguete, verás un círculo bien redondito.
+
+Cuando un triángulo se pone encima de un cuadrado, ¡mira, formamos una casita! Si juegas a juntarnos en tu papel o haces moldes con cartón, puedes inventar todo lo que imagines.
+
+¿Te gustaría dibujar tu juguete favorito usando solo círculos, cuadrados y triángulos? ¡Abre bien los ojos y a crear!`,
+    ),
+    pdfStory(
+      'Unidad 4',
+      'Cuento: "La fiesta de los tres colores"',
+      '¡Hola! Somos tres amiguitos mágicos: el Amarillo, el Azul y el Rojo.',
+      `¡Hola! Somos tres amiguitos mágicos: el Amarillo, el Azul y el Rojo. Nos llaman colores primarios porque somos únicos y nadie nos puede crear mezclando otros tonos.
+
+El Amarillo llega contento y brilla como un sol de mañana. El Azul es tranquilo como el agua del mar y el cielo. El Rojo es súper alegre, nos avisa cuando hay que tener cuidado y llena de amor cada dibujo.
+
+Juntos hacemos que tus hojas se llenen de alegría, así como las pinturas de Keith Haring.
+
+¿Qué color vas a usar primero hoy en tu dibujo?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "La carroza sonriente"',
+      '¡Hola! Soy una carroza gigante hecha de papel y muchos colores en la ciudad de Pasto.',
+      `¡Hola! Soy una carroza gigante hecha de papel y muchos colores en la ciudad de Pasto. Cada año salgo a las calles a ver a los niños jugar en el Carnaval de Negros y Blancos.
+
+Todos se pintan la carita con polvitos de colores y harina para recordar que todos somos amigos e iguales. Los artesanos trabajan con amor para crear máscaras divertidas.
+
+¿De qué color te gustaría pintarte la carita hoy para jugar en el carnaval?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El tiple cantarín"',
+      '¡Hola! Soy el tiple, una guitarrita de madera que vive en las montañas verdes.',
+      `¡Hola! Soy el tiple, una guitarrita de madera que vive en las montañas verdes. Cuando mis cuerdas suenan, la gente baila el torbellino con mucha alegría.
+
+Las faldas de las campesinas giran como mariposas de colores mientras tocamos música del campo. Cada nota musical es como una sonrisa dibujada en el aire.
+
+¿Te imaginas dar vueltitas escuchando la música del tiple?`,
+    ),
+  ],
+  2: [
+    ...sharedProcessStories,
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El castillo de piedra junto al mar"',
+      '¡Hola! Soy una piedra muy antigua de las murallas de Cartagena.',
+      `¡Hola! Soy una piedra muy antigua de las murallas de Cartagena. Llevo muchos años frente al mar grande, cuidando la historia de nuestra hermosa ciudad.
+
+Desde arriba parezco un gran juego de cubos de piedra con formas gigantes. A los pintores les encanta sentarse a pintar el sol brillante cuando se esconde en las olas.
+
+¿Qué color le pondrías al agua del mar cuando se va el sol?`,
+    ),
+  ],
+  3: [
+    ...sharedProcessStories,
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "La montaña que toca las nubes"',
+      '¡Hola! Soy un pequeño frailejón que vive muy arriba en la montaña, donde hay nieve blanca, mirando hacia las playas azules del Parque Tayrona.',
+      `¡Hola! Soy un pequeño frailejón que vive muy arriba en la montaña, donde hay nieve blanca, mirando hacia las playas azules del Parque Tayrona.
+
+Este lugar es mágico porque cuida a muchos pajaritos, monitos y árboles. Las familias indígenas nos enseñan a amar la tierra y respetarla siempre.
+
+La naturaleza es la artista más linda de todas.
+
+¿Qué animalito te gustaría dibujar hoy?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El acordeón de los cuentos"',
+      '¡Hola! Soy el acordeón alegre de Valledupar.',
+      `¡Hola! Soy el acordeón alegre de Valledupar. En el Festival Vallenato abro y cierro mis pliegues para cantar historias sobre ríos, flores y amigos.
+
+Cada canción vallenata es como un dibujo hecho con palabras y música. Cuando suena la caja y la guacharaca, dan ganas de pintar y bailar al mismo tiempo.
+
+¿Qué cuento bonito te gustaría cantar hoy con el acordeón?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El tambor de la alegría"',
+      '¡Hola! Soy el tamborcito de la costa.',
+      `¡Hola! Soy el tamborcito de la costa. Cuando me tocan despacito, suena la cumbia suave; y cuando me golpean con energía, ¡el mapalé pone a todos a saltar!
+
+Nuestros ritmos nos enseñan a mover el cuerpo con alegría y a querer mucho nuestras raíces. El sonido del tambor nos hace sentir el corazón contento.
+
+¿Puedes aplaudir al ritmo de mi tambor mientras dibujas?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "Manitas tejedoras"',
+      '¡Hola! Somos el barro suavecito y los hilos de colores.',
+      `¡Hola! Somos el barro suavecito y los hilos de colores. En las manos amorosas de los artesanos de Colombia, nos convertimos en vasijas, sombreritos y mochilas de colores.
+
+Cada cosita hecha a mano es especial y única porque se hace con paciencia y mucho cariño. Ninguna pieza es igual a otra.
+
+Si tuvieras un poquito de plastilina o barro, ¿qué figura linda amasarías hoy con tus manos?`,
+    ),
+    pdfStory(
+      'Patrimonio',
+      'Cuento: "El puente de madera y hierro"',
+      '¡Hola! Soy el Puente de Occidente, un puente muy largo que pasa sobre un río grande en Santa Fe de Antioquia.',
+      `¡Hola! Soy el Puente de Occidente, un puente muy largo que pasa sobre un río grande en Santa Fe de Antioquia.
+
+Mis cables y maderas se cruzaron con mucho cuidado usando líneas rectas para sostener a las personas que me cruzan. A los niños les encanta mirarme y dibujar mis líneas sobre su papel.
+
+¿Te animas a usar tu regla para dibujar las líneas de un puente fuerte y bonito?`,
+    ),
+  ],
 }
 
 const curriculumData = {
@@ -172,6 +383,11 @@ const curriculumData = {
         fullText:
           'En la ciudad de Pasto, en el departamento de Nariño, se celebra cada año el Carnaval de Negros y Blancos. Durante la fiesta, las calles se llenan de música, bailes, disfraces y encuentros entre personas de distintos lugares.\n\nUno de sus momentos más llamativos son las carrozas. Artistas y comunidades preparan figuras grandes y coloridas que avanzan por las calles. Para imaginarlas, observan formas, crean personajes y trabajan con materiales como papel, cartón y otros elementos de construcción.\n\nEl carnaval también es una celebración de la identidad y de las tradiciones de la región. Los colores, las máscaras y las comparsas cuentan historias y muestran el talento de quienes participan. Cada creación puede tener detalles que las personas descubren al mirarla con atención.\n\nLas fiestas tradicionales forman parte del patrimonio cultural de un lugar. Conocerlas nos ayuda a valorar las diferentes maneras de celebrar y a cuidar las expresiones que las comunidades comparten.',
       },
+      ...pdfStoriesByGrade[1].filter(({ title }) => ![
+        'Cuento: "Soy un punto"',
+        'Cuento: "La fiesta de los tres colores"',
+        'Cuento: "La carroza sonriente"',
+      ].includes(title)),
     ],
     videos: [
       {
@@ -190,6 +406,7 @@ const curriculumData = {
     title: '¡Líneas, formas, volumen y color!',
     desc: 'Talleres para experimentar con elementos del dibujo, técnicas pictóricas y patrimonio cultural en segundo grado.',
     textos: [
+      ...pdfStoriesByGrade[2],
       {
         tag: 'Unidad 1',
         color: '#4BD166',
@@ -230,6 +447,7 @@ const curriculumData = {
     title: '¡Espacio, color y técnicas!',
     desc: 'Explora la naturaleza, las relaciones espaciales, las mezclas de color y el dibujo con instrumentos en tercer grado.',
     textos: [
+      ...pdfStoriesByGrade[3],
       {
         tag: 'Unidad 1',
         color: '#4BD166',
@@ -268,6 +486,9 @@ const curriculumData = {
   },
 }
 
+const readingSectionsByGrade = Object.entries(readingStoriesByGrade)
+  .map(([grade, readings]) => ({ grade: Number(grade), readings }))
+
 // Preguntas predefinidas para el buscador asistido
 const searchKnowledgeBase = {
   '¿Cuáles son los colores primarios?': 'Los colores primarios son el Amarillo, el Azul y el Rojo. Se llaman así porque son puros y no se pueden obtener mezclando otros colores.',
@@ -282,71 +503,120 @@ const normalizeSearchText = (value) => String(value ?? '')
   .toLowerCase()
 
 const USER_SESSION_KEY = 'lumo-user'
-const PROFILE_PHOTO_CLEANUP_KEY = 'lumo-profile-photo-cleanup-v1'
 
-function getStoredUser() {
-  const storedUser = localStorage.getItem(USER_SESSION_KEY)
-  if (!storedUser) return null
+function getLoginEmail(identifier) {
+  const normalized = identifier.trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+  const studentMatch = normalized.match(/^([a-z]+)@artesestudiante([123])$/)
+  const teacherMatch = normalized.match(/^([a-z]+)@artesplasticasdocente$/)
+  if (studentMatch) return `${studentMatch[1]}@artesestudiante${studentMatch[2]}.lumo.invalid`
+  if (teacherMatch) return `${teacherMatch[1]}@artesplasticasdocente.lumo.invalid`
+  return null
+}
 
-  try {
-    const user = JSON.parse(storedUser)
-    if (localStorage.getItem(PROFILE_PHOTO_CLEANUP_KEY) !== 'done') {
-      delete user.avatarImage
-      localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user))
-      localStorage.setItem(PROFILE_PHOTO_CLEANUP_KEY, 'done')
+function getSessionIdentity(email) {
+  const studentMatch = email?.match(/^([a-z]+)@artesestudiante([123])\.lumo\.invalid$/)
+  if (studentMatch) {
+    return {
+      name: studentMatch[1],
+      displayName: formatPersonName(studentMatch[1]),
+      role: 'student',
+      grade: Number(studentMatch[2]),
     }
-    const validName = typeof user.name === 'string' && user.name.length > 0
-    const validTeacher = user.role === 'teacher' && validName && user.grade === null
-    const validStudent = user.role === 'student' && validName && [1, 2, 3].includes(user.grade)
-    return validTeacher || validStudent ? user : null
-  } catch {
-    localStorage.removeItem(USER_SESSION_KEY)
-    return null
   }
+
+  const teacherMatch = email?.match(/^([a-z]+)@artesplasticasdocente\.lumo\.invalid$/)
+  if (teacherMatch) {
+    return {
+      name: teacherMatch[1],
+      displayName: formatPersonName(teacherMatch[1]),
+      role: 'teacher',
+      grade: null,
+    }
+  }
+
+  return null
 }
 
 function getUserHomePath(user) {
   return user.role === 'teacher' ? '/docente' : `/estudiante/${user.grade}`
 }
 
+function formatPersonName(name) {
+  return name.replace(/(^|[\s._-])(\p{L})/gu, (_, separator, letter) => `${separator}${letter.toLocaleUpperCase('es')}`)
+}
+
 function App() {
-  const [session, setSession] = useState(getStoredUser)
+  const [session, setSession] = useState(null)
+  const [authLoading, setAuthLoading] = useState(true)
   const navigate = useNavigate()
 
-  const signIn = (email, password) => {
-    const normalizedEmail = email.trim().toLowerCase()
-    const studentMatch = normalizedEmail.match(/^([a-záéíóúüñ]+)@artesestudiante([123])$/u)
-    const teacherMatch = normalizedEmail.match(/^([a-záéíóúüñ]+)@artesplasticasdocente$/u)
-    let user
-
-    if (studentMatch) {
-      user = {
-        name: studentMatch[1],
-        displayName: studentMatch[1],
-        role: 'student',
-        grade: Number(studentMatch[2]),
-      }
-    } else if (teacherMatch && password.trim().toLowerCase() === teacherMatch[1]) {
-      user = {
-        name: teacherMatch[1],
-        displayName: teacherMatch[1],
-        role: 'teacher',
-        grade: null,
-      }
-    } else {
-      return 'Verifica el correo institucional y la contraseña.'
+  useEffect(() => onAuthStateChanged(auth, (firebaseUser) => {
+    if (!firebaseUser) {
+      localStorage.removeItem(USER_SESSION_KEY)
+      setSession(null)
+      setAuthLoading(false)
+      return
     }
 
-    localStorage.setItem(USER_SESSION_KEY, JSON.stringify(user))
-    setSession(user)
-    navigate(getUserHomePath(user), { replace: true })
-    return ''
-  }
+    const identity = getSessionIdentity(firebaseUser.email)
+    if (!identity) {
+      setSession(null)
+      setAuthLoading(false)
+      return
+    }
 
-  const signOut = () => {
+    let profile = {}
+    try {
+      const savedProfile = JSON.parse(localStorage.getItem(USER_SESSION_KEY) ?? 'null')
+      if (savedProfile?.uid === firebaseUser.uid) {
+        profile = {
+          displayName: savedProfile.displayName,
+          avatarColor: savedProfile.avatarColor,
+          avatarImage: savedProfile.avatarImage,
+        }
+      }
+    } catch {
+      localStorage.removeItem(USER_SESSION_KEY)
+    }
+
+    setSession({ ...identity, ...profile, uid: firebaseUser.uid })
+    setAuthLoading(false)
+  }), [])
+
+ const signIn = async (identifier, password) => {
+    if (!identifier.trim()) return 'Escribe tu usuario o correo.'
+    if (!password) return 'Ingresa tu contraseña.'
+
+    try {
+      const normalizedIdentifier = identifier.trim().toLowerCase()
+      const email = getLoginEmail(normalizedIdentifier) ?? normalizedIdentifier
+
+      await signInWithEmailAndPassword(auth, email, password)
+      return ''
+    } catch (error) {
+      console.error('Error al iniciar sesión:', error)
+      if (
+        error.code === 'auth/invalid-credential' ||
+        error.code === 'auth/user-not-found' ||
+        error.code === 'auth/wrong-password'
+      ) {
+        return 'Correo o contraseña incorrectos.'
+      }
+      return 'No se pudo iniciar sesión. Verifica tus datos o conexión.'
+    }
+  }
+  
+
+  const signOut = async () => {
     localStorage.removeItem(USER_SESSION_KEY)
     setSession(null)
     navigate('/login', { replace: true })
+
+    try {
+      await signOutFirebase(auth)
+    } catch (error) {
+      console.error('No se pudo cerrar la sesión de Firebase.', error)
+    }
   }
 
   const updateSession = (changes) => {
@@ -365,7 +635,9 @@ function App() {
     <Routes>
       <Route
         path="/login"
-        element={session
+        element={authLoading
+          ? <div role="status">Verificando sesión…</div>
+          : session
           ? <Navigate to={getUserHomePath(session)} replace />
           : <AppPage pageView="login" onLogin={signIn} />}
       />
@@ -399,6 +671,96 @@ function StudentRoute({ session, onLogout, onUpdateSession }) {
       onUpdateSession={onUpdateSession}
       onGoHome={() => navigate(getUserHomePath(session))}
     />
+  )
+}
+
+function LobbyCardIllustration({ type }) {
+  if (type === 'book') {
+    return (
+      <img src={selectedBookIcon} className="lobby-card-illustration lobby-book-icon" alt="" />
+    )
+  }
+
+  if (type === 'palette') {
+    return (
+      <img src={selectedPaletteIcon} className="lobby-card-illustration lobby-palette-icon" alt="" />
+    )
+  }
+
+  if (type === 'video') {
+    return (
+      <svg viewBox="0 0 160 100" className="lobby-card-illustration" aria-hidden="true">
+        <defs>
+          <linearGradient id="lobby-video-screen" x1="0" y1="0" x2="0.9" y2="1">
+            <stop stopColor="#28bfd0" />
+            <stop offset="1" stopColor="#0787aa" />
+          </linearGradient>
+          <filter id="lobby-video-shadow" x="-20%" y="-20%" width="140%" height="150%">
+            <feDropShadow dx="0" dy="4" floodColor="#8c6813" floodOpacity=".19" stdDeviation="3" />
+          </filter>
+        </defs>
+        <ellipse cx="80" cy="54" rx="47" ry="39" fill="#fff0bf" />
+        <path d="M25 42l-8-5m8 18H13m12 13-7 5m117-31 8-5m-8 18h12m-14 13 7 5" fill="none" stroke="#efa91f" strokeLinecap="round" strokeWidth="4" />
+        <g filter="url(#lobby-video-shadow)">
+          <rect x="43" y="28" width="74" height="49" rx="14" fill="url(#lobby-video-screen)" stroke="#08799e" strokeWidth="4" />
+          <path d="M53 37c10-4 20-4 30-2" fill="none" stroke="#fff" strokeLinecap="round" strokeOpacity=".36" strokeWidth="2.5" />
+          <path d="M74 41c-1.6-.9-3.5.2-3.5 2v18c0 1.8 1.9 2.9 3.5 2l16-9c1.7-.9 1.7-3.2 0-4.1z" fill="#fff" />
+        </g>
+        <path d="M66 83h28m-21 4h14" fill="none" stroke="#d8a31e" strokeLinecap="round" strokeWidth="3" />
+      </svg>
+    )
+  }
+
+  return (
+    <svg viewBox="0 0 160 100" className="lobby-card-illustration" aria-hidden="true">
+      <defs>
+        <linearGradient id="lobby-crayon-body" x1="0" y1="0" x2="1" y2="0">
+          <stop stopColor="#633aab" />
+          <stop offset=".28" stopColor="#a779e2" />
+          <stop offset=".53" stopColor="#8756ca" />
+          <stop offset=".78" stopColor="#6d43b1" />
+          <stop offset="1" stopColor="#51328f" />
+        </linearGradient>
+        <linearGradient id="lobby-crayon-tip" x1="0" y1="0" x2="1" y2="0">
+          <stop stopColor="#d8c3f1" />
+          <stop offset=".5" stopColor="#f4eaff" />
+          <stop offset="1" stopColor="#a787ce" />
+        </linearGradient>
+        <filter id="lobby-crayon-shadow" x="-20%" y="-20%" width="150%" height="160%">
+          <feDropShadow dx="0" dy="4" floodColor="#54358a" floodOpacity=".22" stdDeviation="3" />
+        </filter>
+      </defs>
+      <ellipse cx="80" cy="53" rx="46" ry="39" fill="#eee0fa" />
+      <path d="M27 42l-8-5m8 18H15m12 13-7 5m103-31 8-5m-8 18h12m-14 13 7 5" fill="none" stroke="#a875d6" strokeLinecap="round" strokeWidth="4" />
+      <g transform="rotate(43 81 51)" filter="url(#lobby-crayon-shadow)">
+        <path d="M69 24 81 8l12 16z" fill="url(#lobby-crayon-tip)" stroke="#56368f" strokeLinejoin="round" strokeWidth="2.5" />
+        <path d="M77 19l4-11 4 11z" fill="#49317c" />
+        <rect x="68.5" y="23" width="25" height="56" rx="7" fill="url(#lobby-crayon-body)" stroke="#56368f" strokeWidth="2.5" />
+        <path d="M73 28v42" stroke="#e9d8ff" strokeLinecap="round" strokeOpacity=".7" strokeWidth="3" />
+        <path d="M88 28v42" stroke="#4d3086" strokeLinecap="round" strokeOpacity=".65" strokeWidth="2" />
+        <path d="M69 34h24m-24 34h24" stroke="#e5d1fa" strokeWidth="3" />
+        <path d="M69 37h24m-24 28h24" stroke="#5d3c98" strokeOpacity=".55" strokeWidth="1.5" />
+        <path d="M75 41h12v18H75z" fill="#f5eaff" fillOpacity=".17" />
+        <path d="M72 77h18" stroke="#c6a9ec" strokeWidth="2" />
+      </g>
+    </svg>
+  )
+}
+
+function LobbyHeadingArt() {
+  return (
+    <svg viewBox="0 0 90 90" className="workspace-heading-art" aria-hidden="true">
+      <path d="M16 19l-7-5m9 18-9 1m58-13 7-6m-9 19 9 1" fill="none" stroke="#f5be32" strokeLinecap="round" strokeWidth="4" />
+      <path d="M31 38c0-12 9-21 22-21 8 0 13 4 16 10 5 10 0 20-8 24-5 3-10 2-15 2-4 0-6 2-5 5 1 4-2 7-6 7-9 0-16-8-16-17 0-5 1-8 4-12" fill="#ffd56c" stroke="#e3a72d" strokeWidth="2" />
+      <circle cx="34" cy="33" r="4" fill="#ef6876" /><circle cx="47" cy="27" r="4" fill="#36b885" />
+      <circle cx="60" cy="33" r="4" fill="#8355c4" /><circle cx="31" cy="46" r="4" fill="#21a7c3" />
+      <g transform="rotate(35 70 57)">
+        <path d="M67 31h9v42l-4.5 9L67 73z" fill="#168baa" stroke="#0d6885" strokeWidth="2" />
+        <path d="M67 39h9m-9 5h9" stroke="#f7d15c" strokeWidth="3" />
+        <path d="M67 31c0-5 9-5 9 0z" fill="#b55b38" />
+        <path d="M67 73h9" stroke="#d5e6db" strokeWidth="3" />
+      </g>
+    </svg>
   )
 }
 
@@ -453,6 +815,11 @@ function AppPage({
   const [profileImageDraft, setProfileImageDraft] = useState(session?.avatarImage ?? '')
   const [profileError, setProfileError] = useState('')
   const profileUser = session
+  const profileDisplayName = profileUser
+    ? profileUser.displayName === profileUser.name
+      ? formatPersonName(profileUser.name)
+      : profileUser.displayName ?? formatPersonName(profileUser.name)
+    : 'Usuario'
   const profileBoxRef = useRef(null)
   const [currentGrade, setCurrentGrade] = useState(grade)
   const hasEnteredSite = session?.role === 'student'
@@ -461,9 +828,16 @@ function AppPage({
   const [activityUnit, setActivityUnit] = useState('all')
   const [digitalPeriod, setDigitalPeriod] = useState('all')
   const [digitalPracticeId, setDigitalPracticeId] = useState(curriculumDigitalPractices[grade][0].id)
+  // 'free' = dibujo libre (sin entrega), 'practice' = reto del currículo, 'teacher' = actividad del docente
+  const [drawingMode, setDrawingMode] = useState('free')
+  const [teacherDrawingId, setTeacherDrawingId] = useState(null)
   const [drawingUploads, setDrawingUploads] = useState({})
   const [digitalCompletions, setDigitalCompletions] = useState({})
+  const drawingUploadsRef = useRef({})
   const [uploadError, setUploadError] = useState('')
+  const [savingSubmission, setSavingSubmission] = useState(false)
+  const [teacherActivities, setTeacherActivities] = useState([])
+  const [activitiesError, setActivitiesError] = useState('')
   const [tool, setTool] = useState('brush')
   const [shapeType, setShapeType] = useState('rectangle')
   const [toolSizes, setToolSizes] = useState({ brush: 8, pencil: 4, eraser: 18 })
@@ -480,6 +854,8 @@ function AppPage({
   const [headerScrolled, setHeaderScrolled] = useState(false)
 
   const canvasRef = useRef(null)
+  const canvasDraftsRef = useRef({})
+  const activeCanvasKeyRef = useRef(null)
   const isDrawingRef = useRef(false)
   const shapeStartRef = useRef(null)
   const shapeSnapshotRef = useRef(null)
@@ -500,13 +876,80 @@ function AppPage({
     }
   }, [])
 
+  useEffect(() => {
+    if (session?.role !== 'student') return undefined
+    return subscribeToGradeActivities(
+      currentGrade,
+      (items) => {
+        setTeacherActivities(items)
+        setActivitiesError('')
+      },
+      (error) => {
+        console.error('No se pudieron cargar las actividades del docente.', error)
+        setActivitiesError('No se pudieron cargar las actividades de tu docente.')
+      },
+    )
+  }, [session?.role, currentGrade])
+
+  useEffect(() => {
+    if (session?.role !== 'student' || !session.uid) return undefined
+    const stop = subscribeToMyActivitySubmissions(
+      session.uid,
+      (items) => {
+        // items viene de más reciente a más antigua: la primera de cada practiceKey es la última entrega.
+        const latest = new Map()
+        for (const item of items) {
+          if (item.practiceKey && !latest.has(item.practiceKey)) latest.set(item.practiceKey, item)
+        }
+        setDrawingUploads((uploads) => {
+          const next = { ...uploads }
+          for (const [key, item] of latest) {
+            // No pisar un adjunto nuevo que aún no se ha confirmado.
+            if (uploads[key] && !uploads[key].saved) continue
+            next[key] = { name: item.fileName, dataUrl: item.imageData, saved: true }
+          }
+          return next
+        })
+        setDigitalCompletions((completions) => {
+          const next = { ...completions }
+          for (const [key, item] of latest) {
+            const pending = drawingUploadsRef.current[key]
+            if (pending && !pending.saved) continue
+            next[key] = {
+              completedAt: (item.createdAt?.toDate?.() ?? new Date()).toISOString(),
+              fileName: item.fileName,
+            }
+          }
+          return next
+        })
+      },
+      (error) => console.error('No se pudieron cargar tus entregas.', error),
+    )
+    return () => {
+      stop()
+      setDrawingUploads({})
+      setDigitalCompletions({})
+    }
+  }, [session?.role, session?.uid])
+
+  drawingUploadsRef.current = drawingUploads
+
   const data = curriculumData[currentGrade]
   const currentToolSize = toolSizes[tool] ?? toolSizes.brush
   const pageCopy = gradeUiCopy[currentGrade]
   const games = curriculumGames[currentGrade]
   const digitalPractices = curriculumDigitalPractices[currentGrade]
   const selectedDigitalPractice = digitalPractices.find((item) => item.id === digitalPracticeId) ?? digitalPractices[0]
-  const selectedPracticeKey = `${currentGrade}-${selectedDigitalPractice.id}`
+  const selectedTeacherActivity = drawingMode === 'teacher'
+    ? teacherActivities.find((item) => item.id === teacherDrawingId)
+    : undefined
+  const effectiveDrawingMode = drawingMode === 'teacher' && !selectedTeacherActivity ? 'free' : drawingMode
+  const isFreeDrawing = effectiveDrawingMode === 'free'
+  const selectedPracticeKey = selectedTeacherActivity
+    ? `docente-${selectedTeacherActivity.id}`
+    : `${currentGrade}-${selectedDigitalPractice.id}`
+  const selectedPracticeTitle = selectedTeacherActivity ? selectedTeacherActivity.title : selectedDigitalPractice.title
+  const canvasKey = isFreeDrawing ? 'libre' : selectedPracticeKey
   const selectedUpload = drawingUploads[selectedPracticeKey]
   const selectedCompletion = digitalCompletions[selectedPracticeKey]
   const activityUnits = [...new Set([
@@ -523,9 +966,15 @@ function AppPage({
   const normalizedSearchQuery = normalizeSearchText(searchQuery.trim())
   const matchesSearch = (...values) => !normalizedSearchQuery
     || normalizeSearchText(values.join(' ')).includes(normalizedSearchQuery)
-  const filteredReadings = data.textos.filter((reading) => matchesSearch(
-    reading.title, reading.tag, reading.summary, reading.fullText,
-  ))
+  const filteredReadings = readingSectionsByGrade
+    .filter(({ grade: readingGrade }) => readingGrade === currentGrade)
+    .flatMap(({ grade: readingGrade, readings }) => (
+      readings
+        .map((reading, index) => ({ ...reading, grade: readingGrade, index }))
+        .filter((reading) => matchesSearch(
+          reading.title, reading.tag, reading.summary, reading.fullText,
+        ))
+    ))
   const filteredVideos = data.videos.filter((video) => matchesSearch(video.title, video.desc))
   const filteredGames = visibleGames.filter((game) => matchesSearch(
     game.unit, game.title, game.goal, game.instructions, game.materials,
@@ -533,14 +982,11 @@ function AppPage({
   const filteredDigitalPractices = visibleDigitalPractices.filter((practice) => matchesSearch(
     practice.unit, practice.topic, practice.title, practice.instructions,
   ))
-  const drawingMatchesSearch = matchesSearch(
-    selectedDigitalPractice.unit,
-    selectedDigitalPractice.topic,
-    selectedDigitalPractice.title,
-    selectedDigitalPractice.instructions,
-  )
   const sectionSearchOptions = activeTab === 'textos'
-    ? filteredReadings.map((item, index) => ({ title: item.title, id: `reading-result-${index}` }))
+    ? filteredReadings.map((item) => ({
+        title: `${item.grade}° grado · ${item.title}`,
+        id: `reading-result-${item.grade}-${item.index}`,
+      }))
     : activeTab === 'videos'
       ? filteredVideos.map((item, index) => ({ title: item.title, id: `video-result-${index}` }))
       : activeTab === 'actividades'
@@ -548,9 +994,7 @@ function AppPage({
             ...filteredGames.map((item, index) => ({ title: item.title, id: `game-result-${index}` })),
             ...filteredDigitalPractices.map((item, index) => ({ title: item.title, id: `practice-result-${index}` })),
           ]
-        : activeTab === 'dibujos'
-          ? drawingMatchesSearch ? [{ title: selectedDigitalPractice.title, id: 'drawing-workspace' }] : []
-          : []
+        : []
 
   const selectGrade = (grade) => {
     setCurrentGrade(grade)
@@ -605,6 +1049,31 @@ function AppPage({
     return () => window.removeEventListener('resize', resizeCanvas)
   }, [activeTab, currentGrade])
 
+  // Cada actividad (y el dibujo libre) tiene su propio lienzo: al cambiar de contexto
+  // se guarda el dibujo actual en memoria, se limpia el lienzo y se restaura el que corresponda.
+  useEffect(() => {
+    if (activeTab !== 'dibujos') return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const previousKey = activeCanvasKeyRef.current
+    if (previousKey === canvasKey) return
+
+    if (previousKey !== null && canvas.width > 0 && canvas.height > 0) {
+      canvasDraftsRef.current[previousKey] = canvas.toDataURL('image/png')
+    }
+    canvas.getContext('2d').clearRect(0, 0, canvas.width, canvas.height)
+    activeCanvasKeyRef.current = canvasKey
+
+    const draft = canvasDraftsRef.current[canvasKey]
+    if (!draft) return
+    const image = new Image()
+    image.onload = () => {
+      if (activeCanvasKeyRef.current !== canvasKey) return
+      canvas.getContext('2d').drawImage(image, 0, 0, canvas.width, canvas.height)
+    }
+    image.src = draft
+  }, [activeTab, canvasKey])
+
   useEffect(() => {
     const updateHeaderState = () => setHeaderScrolled(window.scrollY > 32)
     updateHeaderState()
@@ -628,8 +1097,8 @@ function AppPage({
     }
   }, [modalText])
 
-  const openReadingModal = (title, text) => {
-    setModalText({ title, text })
+  const openReadingModal = (title, text, image = null) => {
+    setModalText({ title, text, image })
   }
 
   const closeReadingModal = () => {
@@ -803,7 +1272,15 @@ function AppPage({
     })
   }
 
+  const openTeacherActivity = (activity) => {
+    setDrawingMode('teacher')
+    setTeacherDrawingId(activity.id)
+    setUploadError('')
+    setActiveTab('dibujos')
+  }
+
   const chooseDigitalPractice = (practice) => {
+    setDrawingMode('practice')
     setDigitalPracticeId(practice.id)
     setActivityUnit(practice.unit)
     setUploadError('')
@@ -876,7 +1353,7 @@ function AppPage({
     setDrawingUploads((uploads) => ({
       ...uploads,
       [selectedPracticeKey]: {
-        name: `LUMO_Grado${currentGrade}_${selectedDigitalPractice.title}.png`,
+        name: `LUMO_Grado${currentGrade}_${selectedPracticeTitle}.png`,
         dataUrl: image,
       },
     }))
@@ -884,20 +1361,42 @@ function AppPage({
     setUploadError('')
   }
 
-  const confirmDigitalPractice = () => {
+  const confirmDigitalPractice = async () => {
     if (!selectedUpload?.name || !selectedUpload.dataUrl) {
       setUploadError('Adjunta una imagen o el dibujo del lienzo antes de confirmar la actividad.')
       return
     }
 
-    setDigitalCompletions((completions) => ({
-      ...completions,
-      [selectedPracticeKey]: {
-        completedAt: new Date().toISOString(),
-        fileName: selectedUpload.name,
-      },
-    }))
+    setSavingSubmission(true)
     setUploadError('')
+    try {
+      const imageData = await compressImage(selectedUpload.dataUrl)
+      await saveSubmission({
+        practiceKey: selectedPracticeKey,
+        practiceTitle: selectedPracticeTitle.slice(0, 200),
+        grade: currentGrade,
+        studentName: String(session?.displayName ?? session?.name ?? 'Estudiante').slice(0, 80),
+        fileName: selectedUpload.name,
+        imageData,
+      })
+      setDigitalCompletions((completions) => ({
+        ...completions,
+        [selectedPracticeKey]: {
+          completedAt: new Date().toISOString(),
+          fileName: selectedUpload.name,
+        },
+      }))
+      setDrawingUploads((uploads) => (
+        uploads[selectedPracticeKey]
+          ? { ...uploads, [selectedPracticeKey]: { ...uploads[selectedPracticeKey], saved: true } }
+          : uploads
+      ))
+    } catch (error) {
+      console.error('No se pudo entregar el dibujo.', error)
+      setUploadError('No se pudo enviar tu dibujo al docente. Revisa tu conexión e inténtalo de nuevo.')
+    } finally {
+      setSavingSubmission(false)
+    }
   }
 
   const handleDrawingUpload = (event) => {
@@ -999,7 +1498,7 @@ function AppPage({
   }
 
   return (
-    <div className="lumo-app">
+    <div className={`lumo-app ${pageView === 'login' ? 'is-login' : ''} ${session?.role === 'student' ? 'is-student-view' : ''} ${session?.role === 'teacher' && pageView === 'grades' ? 'is-teacher-grade-selection' : ''} ${showAboutPage ? 'is-about-page' : ''} ${session?.role === 'student' && activeTab === null && !showAboutPage ? 'is-student-lobby' : ''}`}>
       <header className={`main-header ${headerScrolled ? 'is-scrolled' : ''}`}>
         <div className="header-inner">
           <div
@@ -1019,74 +1518,76 @@ function AppPage({
           </div>
 
           {/* BUSCADOR ASISTIDO INTEGRADO */}
-          <div className="search-container">
-            <input
-              type="text"
-              className="search-box"
-              id="searchInput"
-              placeholder={activeTab ? `Buscar en ${sectionLabels[activeTab]}...` : 'Buscar...'}
-              value={searchQuery}
-              onClick={() => {
-                setSearchOpen(true)
-                setSearchSubmitted(true)
-              }}
-              onChange={(e) => {
-                setSearchQuery(e.target.value)
-                setSearchSubmitted(false)
-                setSearchOpen(activeTab === null)
-              }}
-              onKeyDown={(event) => {
-                if (event.key === 'Enter') {
-                  event.preventDefault()
-                  setSearchSubmitted(true)
+          {!showAboutPage && activeTab !== 'diagnostico' && activeTab !== 'dibujos' && (
+            <div className="search-container">
+              <input
+                type="text"
+                className="search-box"
+                id="searchInput"
+                placeholder={activeTab ? `Buscar en ${sectionLabels[activeTab]}...` : 'Buscar...'}
+                value={searchQuery}
+                onClick={() => {
                   setSearchOpen(true)
-                } else if (event.key === 'Escape') {
-                  setSearchOpen(false)
-                }
-              }}
-              aria-label={activeTab ? `Buscar en ${sectionLabels[activeTab]}` : 'Buscar'}
-              aria-expanded={searchOpen}
-              aria-controls="searchOptions"
-            />
-            <div className={`search-options ${searchOpen ? 'show' : ''}`} id="searchOptions">
-              {activeTab === null ? (
-                Object.keys(searchKnowledgeBase)
-                  .filter((question) => matchesSearch(question))
-                  .map((question) => (
+                  setSearchSubmitted(true)
+                }}
+                onChange={(e) => {
+                  setSearchQuery(e.target.value)
+                  setSearchSubmitted(false)
+                  setSearchOpen(activeTab === null)
+                }}
+                onKeyDown={(event) => {
+                  if (event.key === 'Enter') {
+                    event.preventDefault()
+                    setSearchSubmitted(true)
+                    setSearchOpen(true)
+                  } else if (event.key === 'Escape') {
+                    setSearchOpen(false)
+                  }
+                }}
+                aria-label={activeTab ? `Buscar en ${sectionLabels[activeTab]}` : 'Buscar'}
+                aria-expanded={searchOpen}
+                aria-controls="searchOptions"
+              />
+              <div className={`search-options ${searchOpen ? 'show' : ''}`} id="searchOptions">
+                {activeTab === null ? (
+                  Object.keys(searchKnowledgeBase)
+                    .filter((question) => matchesSearch(question))
+                    .map((question) => (
+                      <button
+                        key={question}
+                        type="button"
+                        className="option-item"
+                        onClick={() => handleSelectQuestion(question)}
+                      >
+                        {question.includes('color') ? '🎨 ' : question.includes('puntillismo') ? '🖌️ ' : question.includes('figuras') ? '📐 ' : '🌈 '}
+                        {question}
+                      </button>
+                    ))
+                ) : searchSubmitted ? (
+                  sectionSearchOptions.length ? sectionSearchOptions.map((option) => (
                     <button
-                      key={question}
+                      key={option.id}
                       type="button"
                       className="option-item"
-                      onClick={() => handleSelectQuestion(question)}
+                      onClick={() => {
+                        setSearchOpen(false)
+                        document.getElementById(option.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+                      }}
                     >
-                      {question.includes('color') ? '🎨 ' : question.includes('puntillismo') ? '🖌️ ' : question.includes('figuras') ? '📐 ' : '🌈 '}
-                      {question}
+                      <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                      {option.title}
                     </button>
-                  ))
-              ) : searchSubmitted ? (
-                sectionSearchOptions.length ? sectionSearchOptions.map((option) => (
-                  <button
-                    key={option.id}
-                    type="button"
-                    className="option-item"
-                    onClick={() => {
-                      setSearchOpen(false)
-                      document.getElementById(option.id)?.scrollIntoView({ behavior: 'smooth', block: 'center' })
-                    }}
-                  >
-                    <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                    {option.title}
-                  </button>
-                )) : (
-                  <p className="search-options-empty">No se encontró contenido en {sectionLabels[activeTab]}.</p>
-                )
-              ) : null}
+                  )) : (
+                    <p className="search-options-empty">No se encontró contenido en {sectionLabels[activeTab]}.</p>
+                  )
+                ) : null}
+              </div>
             </div>
-          </div>
+          )}
 
           <div className="profile-box" ref={profileBoxRef}>
             <span className="teacher-header-name">
-              {profileUser?.displayName ?? profileUser?.name ?? 'Usuario'}
+              {profileDisplayName}
             </span>
             <button
               type="button"
@@ -1107,7 +1608,7 @@ function AppPage({
                 {!profileEditing ? (
                   <>
                     <div className="profile-menu-heading">
-                      <strong>{profileUser?.displayName ?? profileUser?.name}</strong>
+                      <strong>{profileDisplayName}</strong>
                       <span>{profileUser?.role === 'teacher' ? 'Docente' : `Estudiante · ${profileUser?.grade}° grado`}</span>
                     </div>
                     <button
@@ -1115,7 +1616,7 @@ function AppPage({
                       className="profile-menu-action"
                       role="menuitem"
                       onClick={() => {
-                        setProfileNameDraft(profileUser?.displayName ?? profileUser?.name ?? '')
+                        setProfileNameDraft(profileDisplayName)
                         setProfileColorDraft(profileUser?.avatarColor ?? '#03658c')
                         setProfileImageDraft(profileUser?.avatarImage ?? '')
                         setProfileError('')
@@ -1243,7 +1744,7 @@ function AppPage({
         </div>
       </header>
 
-      <main className="main-shell">
+      <main className={`main-shell ${pageView === 'login' ? 'login-shell' : ''}`}>
         {pageView === 'login' ? (
           <LoginScreen onSubmit={onLogin} />
         ) : session?.role === 'teacher' && pageView === 'grades' ? (
@@ -1257,7 +1758,14 @@ function AppPage({
             onNavigate={onTeacherNavigate}
           />
         ) : showAboutPage ? (
-          <NosotrosPage hideNavbar onBack={() => setShowAboutPage(false)} />
+          <NosotrosPage
+            hideNavbar
+            onBack={() => {
+              setShowAboutPage(false)
+              setSearchOpen(false)
+              setSearchSubmitted(false)
+            }}
+          />
         ) : !hasEnteredSite ? (
           <section className="grade-lobby" aria-labelledby="grade-lobby-title">
             <div className="grade-lobby-heading">
@@ -1305,22 +1813,36 @@ function AppPage({
           <section className="section-lobby">
             <div className="workspace-heading">
               <div className="workspace-heading-copy">
-                <h1>¡MEJORA TUS HABILIDADES!</h1>
+                <h1 aria-label="¡MEJORA TUS HABILIDADES!">
+                  <span className="workspace-title-primary" aria-hidden="true">¡MEJORA TUS </span>
+                  <span className="workspace-title-rainbow" aria-hidden="true">
+                    {'HABILIDADES!'.split('').map((letter, index) => (
+                      <span key={`${letter}-${index}`}>{letter}</span>
+                    ))}
+                  </span>
+                </h1>
                 <p>{data.desc}</p>
               </div>
+              <span className="workspace-heading-confetti workspace-heading-confetti-left" aria-hidden="true" />
+              <span className="workspace-heading-confetti workspace-heading-confetti-right" aria-hidden="true" />
+              <LobbyHeadingArt />
             </div>
 
             <div className="nav-grid">
               {[
-                { id: 'textos', label: 'TEXTOS', subtitle: pageCopy.navSubtitles[0], color: 'green', icon: 'fa-book-open' },
-                { id: 'videos', label: 'VIDEOS', subtitle: pageCopy.navSubtitles[1], color: 'gold', icon: 'fa-play' },
-                { id: 'actividades', label: 'ACTIVIDADES', subtitle: pageCopy.navSubtitles[2], color: 'crimson', icon: 'fa-pencil' },
-                { id: 'dibujos', label: 'DIBUJOS', subtitle: pageCopy.navSubtitles[3], color: 'purple', icon: 'fa-paint-brush' },
+                { id: 'textos', label: 'TEXTOS', subtitle: pageCopy.navSubtitles[0], color: 'green', illustration: 'book' },
+                { id: 'videos', label: 'VIDEOS', subtitle: pageCopy.navSubtitles[1], color: 'gold', illustration: 'video' },
+                { id: 'actividades', label: 'ACTIVIDADES', subtitle: pageCopy.navSubtitles[2], color: 'crimson', illustration: 'palette' },
+                { id: 'dibujos', label: 'DIBUJOS', subtitle: pageCopy.navSubtitles[3], color: 'purple', illustration: 'crayon' },
               ].map((tab) => (
                 <button
                   key={tab.id}
                   type="button"
                   onClick={() => {
+                    if (tab.id === 'dibujos') {
+                      setDrawingMode('free')
+                      setUploadError('')
+                    }
                     setActiveTab(tab.id)
                     setSearchOpen(false)
                     setSearchSubmitted(false)
@@ -1329,8 +1851,12 @@ function AppPage({
                 >
                   <span className={`nav-card-title nav-${tab.color}`}>{tab.label}</span>
                   <span className="nav-card-content">
-                    <span className={`tab-icon-wrap nav-icon-${tab.color}`}>
-                      <i className={`fa-solid ${tab.icon}`} aria-hidden="true" />
+                    <span className={`tab-icon-wrap nav-icon-${tab.color} ${tab.illustration ? 'has-illustration' : ''}`}>
+                      {tab.illustration ? (
+                        <LobbyCardIllustration type={tab.illustration} />
+                      ) : (
+                        <i className={`fa-solid ${tab.icon}`} aria-hidden="true" />
+                      )}
                     </span>
                   </span>
                   <span className="nav-card-subtitle">{tab.subtitle}</span>
@@ -1353,6 +1879,7 @@ function AppPage({
                 <small>Responde preguntas sobre lo que has aprendido en arte.</small>
               </span>
               <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+              <span className="diagnostic-featured-art" aria-hidden="true">🎨</span>
             </button>
 
             <div className="menu-prompt">
@@ -1361,7 +1888,7 @@ function AppPage({
             </div>
           </section>
         ) : (
-          <div className="content-page-heading">
+          <div className={`content-page-heading ${activeTab === 'diagnostico' ? 'diagnostic-page-heading' : ''}`}>
             <button
               type="button"
               className="change-grade-button"
@@ -1393,24 +1920,72 @@ function AppPage({
               <h2 className="section-title green"><i className="fa-solid fa-book-open" /> Lecturas e Historias</h2>
               <p>{pageCopy.readingIntro}</p>
             </div>
-            <span className="section-badge green">Unidades de Grado {currentGrade}°</span>
+            <span className="section-badge green">Lecturas de grado {currentGrade}°</span>
           </div>
-          <div className="card-grid">
-            {filteredReadings.length ? filteredReadings.map((reading, index) => (
-              <article key={reading.title} id={`reading-result-${index}`} className="reading-card">
-                <div className="card-head">
-                  <span className="mini-tag">{reading.tag}</span>
-                  <span className="reading-card-number" aria-hidden="true">{String(index + 1).padStart(2, '0')}</span>
+          {filteredReadings.length ? readingSectionsByGrade.map(({ grade: readingGrade }) => {
+            const gradeReadings = filteredReadings.filter((reading) => reading.grade === readingGrade)
+            if (!gradeReadings.length) return null
+
+            return (
+              <div className="reading-grade-section" key={readingGrade}>
+                <div className="reading-grade-heading">
+                  <h3>{readingGrade}° grado</h3>
+                  <span>{gradeReadings.length} {gradeReadings.length === 1 ? 'texto' : 'textos'}</span>
                 </div>
-                <h3>{reading.title}</h3>
-                <p>{reading.summary}</p>
-                <button type="button" className="primary-button" onClick={() => openReadingModal(reading.title, reading.fullText)}>
-                  <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
-                  <i className="fa-solid fa-arrow-right" aria-hidden="true" />
-                </button>
-              </article>
-            )) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
-          </div>
+                {[1, 2, 3, 4].map((unit) => {
+                  const unitReadings = gradeReadings.filter((reading) => reading.tag === `Unidad ${unit}`)
+                  if (!unitReadings.length) return null
+
+                  return (
+                    <div className="reading-unit-section" key={unit}>
+                      <div className="reading-grade-heading">
+                        <h3>Unidad {unit}</h3>
+                        <span>{unitReadings.length} cuentos</span>
+                      </div>
+                      <div className="card-grid">
+                        {unitReadings.map((reading) => (
+                          <article
+                            key={reading.title}
+                            id={`reading-result-${reading.grade}-${reading.index}`}
+                            className="reading-card"
+                          >
+                            <div className="card-head">
+                              <span className="mini-tag">{reading.tag}</span>
+                              <span className="reading-card-number" aria-hidden="true">
+                                {String(reading.index + 1).padStart(2, '0')}
+                              </span>
+                            </div>
+                            <h3>{reading.title}</h3>
+                            <p>{reading.summary}</p>
+                            <button
+                              type="button"
+                              className="primary-button"
+                              onClick={() => {
+                                const supportsGradeImages = currentGrade === 1
+                                  || currentGrade === 2
+                                  || currentGrade === 3
+                                const storyImageIndex = supportsGradeImages
+                                  ? readingStoriesByGrade[currentGrade].findIndex(({ title }) => title === reading.title)
+                                  : -1
+                                const image = supportsGradeImages && storyImageIndex >= 0
+                                  ? `${import.meta.env.BASE_URL}reading-images/grade${currentGrade}-${String(storyImageIndex + 1).padStart(2, '0')}.png`
+                                  : null
+                                openReadingModal(reading.title, reading.fullText, image)
+                              }}
+                            >
+                              <span>{reading.title.startsWith('Cuento:') ? 'Leer el cuento' : pageCopy.readMore}</span>
+                              <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                            </button>
+                          </article>
+                        ))}
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+            )
+          }) : <p className="search-empty-message">No se encontró contenido en Textos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>}
+
         </section>
 
         <section className={`content-section video-section ${activeTab === 'videos' ? '' : 'hidden'}`}>
@@ -1478,6 +2053,54 @@ function AppPage({
             <p>{pageCopy.activityPrompt}</p>
           </div>
 
+          {(teacherActivities.length > 0 || activitiesError) && (
+            <div className="teacher-assigned-section">
+              <h3><i className="fa-solid fa-chalkboard-user" aria-hidden="true" /> Actividades de tu docente</h3>
+              {activitiesError && <p className="drawing-upload-error" role="alert">{activitiesError}</p>}
+              <div className="teacher-assigned-grid">
+                {teacherActivities.map((activity) => {
+                  const activityKey = `docente-${activity.id}`
+                  const activityCompletion = digitalCompletions[activityKey]
+                  const activityUpload = drawingUploads[activityKey]
+                  return (
+                    <article key={activity.id} className="curriculum-game-card">
+                      <span className="activity-unit-tag">{activity.grade}° grado</span>
+                      <span className={`digital-practice-status ${activityCompletion ? 'is-complete' : ''}`}>
+                        <i className={`fa-solid ${activityCompletion ? 'fa-circle-check' : activityUpload ? 'fa-paperclip' : 'fa-clock'}`} aria-hidden="true" />
+                        {activityCompletion
+                          ? `Entrega confirmada · ${formatCompletionDate(activityCompletion.completedAt)}`
+                          : activityUpload
+                            ? 'Adjunto listo · falta confirmar'
+                            : 'Pendiente de entrega'}
+                      </span>
+                      <h4>{activity.title}</h4>
+                      {activity.dueDate && (
+                        <p><strong>Entrega hasta:</strong> {formatCompletionDate(`${activity.dueDate}T12:00:00`)}</p>
+                      )}
+                      <p className="curriculum-game-instructions">{activity.content}</p>
+                      {activity.attachmentData && (
+                        <img
+                          className="teacher-assigned-image"
+                          src={activity.attachmentData}
+                          alt={activity.attachmentName || 'Imagen de la actividad'}
+                        />
+                      )}
+                      <button
+                        type="button"
+                        className="practice-load-button"
+                        aria-pressed={effectiveDrawingMode === 'teacher' && selectedTeacherActivity?.id === activity.id}
+                        onClick={() => openTeacherActivity(activity)}
+                      >
+                        <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+                        {activityCompletion ? pageCopy.viewSubmission : 'Abrir actividad'}
+                      </button>
+                    </article>
+                  )
+                })}
+              </div>
+            </div>
+          )}
+
           {!filteredGames.length && !filteredDigitalPractices.length && (
             <p className="search-empty-message">No se encontró contenido en Actividades{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>
           )}
@@ -1538,7 +2161,7 @@ function AppPage({
                         <article
                           key={practice.id}
                           id={`practice-result-${searchResultIndex}`}
-                          className={`digital-practice-card ${selectedDigitalPractice.id === practice.id ? 'is-active' : ''}`}
+                          className={`digital-practice-card ${effectiveDrawingMode === 'practice' && selectedDigitalPractice.id === practice.id ? 'is-active' : ''}`}
                         >
                           <span className="activity-unit-tag">{practice.unit}</span>
                           <span className="digital-practice-topic">{practice.topic}</span>
@@ -1555,7 +2178,7 @@ function AppPage({
                           <button
                             type="button"
                             className="practice-load-button"
-                            aria-pressed={selectedDigitalPractice.id === practice.id}
+                            aria-pressed={effectiveDrawingMode === 'practice' && selectedDigitalPractice.id === practice.id}
                             onClick={() => chooseDigitalPractice(practice)}
                           >
                             <i className="fa-solid fa-arrow-right" aria-hidden="true" />
@@ -1577,7 +2200,7 @@ function AppPage({
           <div className="section-header drawings-header">
             <div>
               <h2 className="section-title purple"><i className="fa-solid fa-palette" /> {pageCopy.drawingTitle}</h2>
-              <p>{pageCopy.drawingIntro}</p>
+              <p>{isFreeDrawing ? 'Dibuja lo que quieras. Cuando termines, guarda tu obra.' : pageCopy.drawingIntro}</p>
             </div>
             <div className="canvas-actions">
               <button type="button" className="soft-button" onClick={clearCanvas}>
@@ -1589,13 +2212,21 @@ function AppPage({
             </div>
           </div>
 
-          {drawingMatchesSearch ? (
-            <>
-          <div id="drawing-workspace" className="selected-practice-note">
-            <strong>{selectedDigitalPractice.title}</strong>
-            <span>{selectedDigitalPractice.instructions}</span>
-            <span>{pageCopy.canvasReady}</span>
-          </div>
+          <>
+          {!isFreeDrawing && (
+            <div id="drawing-workspace" className="selected-practice-note">
+              <strong>{selectedPracticeTitle}</strong>
+              <span>{selectedTeacherActivity ? selectedTeacherActivity.content : selectedDigitalPractice.instructions}</span>
+              {selectedTeacherActivity?.attachmentData && (
+                <img
+                  className="selected-practice-image"
+                  src={selectedTeacherActivity.attachmentData}
+                  alt={selectedTeacherActivity.attachmentName || 'Imagen de la actividad'}
+                />
+              )}
+              <span>{pageCopy.canvasReady}</span>
+            </div>
+          )}
 
           <div className="toolbar">
             <div className="tool-group">
@@ -1741,7 +2372,7 @@ function AppPage({
             />
           </div>
 
-          <section className="drawing-submission" aria-labelledby="drawing-submission-title">
+          {!isFreeDrawing && <section className="drawing-submission" aria-labelledby="drawing-submission-title">
             <div>
               <h3 id="drawing-submission-title">{pageCopy.submissionTitle}</h3>
               <p>{pageCopy.submissionHelp}</p>
@@ -1776,21 +2407,23 @@ function AppPage({
                 <div>
                   <strong>{selectedUpload.name}</strong>
                   <span>{pageCopy.attachedLabel}</span>
-                  <button
-                    type="button"
-                    className="remove-upload-button"
-                    onClick={() => {
-                      setDrawingUploads((uploads) => {
-                        const nextUploads = { ...uploads }
-                        delete nextUploads[selectedPracticeKey]
-                        return nextUploads
-                      })
-                      clearPracticeCompletion(selectedPracticeKey)
-                      setUploadError('')
-                    }}
-                  >
-                    Quitar adjunto
-                  </button>
+                  {!selectedUpload.saved && (
+                    <button
+                      type="button"
+                      className="remove-upload-button"
+                      onClick={() => {
+                        setDrawingUploads((uploads) => {
+                          const nextUploads = { ...uploads }
+                          delete nextUploads[selectedPracticeKey]
+                          return nextUploads
+                        })
+                        clearPracticeCompletion(selectedPracticeKey)
+                        setUploadError('')
+                      }}
+                    >
+                      Quitar adjunto
+                    </button>
+                  )}
                 </div>
               </div>
             )}
@@ -1798,16 +2431,13 @@ function AppPage({
               type="button"
               className="confirm-drawing-button"
               onClick={confirmDigitalPractice}
-              disabled={!selectedUpload}
+              disabled={!selectedUpload || savingSubmission}
             >
               <i className="fa-solid fa-circle-check" aria-hidden="true" />
               {selectedCompletion ? pageCopy.update : pageCopy.confirm}
             </button>
-          </section>
+          </section>}
             </>
-          ) : (
-            <p className="search-empty-message">No se encontró contenido en Dibujos{searchQuery.trim() ? ` para «${searchQuery.trim()}»` : ''}.</p>
-          )}
         </section>
         </>
         )}
@@ -1840,13 +2470,19 @@ function AppPage({
                   <p key={`${index}-${paragraph.slice(0, 20)}`}>{paragraph}</p>
                 ))}
               </div>
-              <aside className="reading-example-spaces" aria-label="Espacios para futuras imágenes de ejemplo">
-                {readingExampleLabels.map((label) => (
-                  <div key={label} className="reading-example-placeholder">
+              <aside className="reading-example-spaces" aria-label="Imagen ilustrativa del cuento">
+                {modalText.image ? (
+                  <img
+                    className="reading-example-image"
+                    src={modalText.image}
+                    alt={`Ilustración de ${modalText.title}`}
+                  />
+                ) : (
+                  <div className="reading-example-placeholder">
                     <i className="fa-regular fa-image" aria-hidden="true" />
-                    <span>{label}</span>
+                    <span>Espacio reservado para una imagen de ejemplo</span>
                   </div>
-                ))}
+                )}
               </aside>
             </div>
             <div className="modal-actions">
@@ -1868,7 +2504,7 @@ function TeacherGradeSelection({ onSelectGrade }) {
     <section className="grade-lobby" aria-labelledby="grade-lobby-title">
       <div className="grade-lobby-heading">
         <h1 id="grade-lobby-title">¡BIENVENIDO!</h1>
-        <p>{gradeUiCopy[1].welcome}</p>
+        <p>Elige tu curso.</p>
       </div>
       <div className="grade-card-grid">
         {[1, 2, 3].map((grade) => (
@@ -1903,20 +2539,33 @@ function LoginScreen({ onSubmit }) {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault()
-    setError(onSubmit(email, password))
+    setIsSubmitting(true)
+    try {
+      setError(await onSubmit(email, password))
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
     <section className="teacher-login-page" aria-labelledby="teacher-login-title">
       <div className="teacher-login-art" aria-hidden="true">
+        <img className="teacher-login-art-image" src={loginIllustration} alt="" />
         <img className="teacher-login-crest" src={colSamShield} alt="" />
       </div>
       <form className="teacher-login-card" onSubmit={handleSubmit}>
-        <h1 id="teacher-login-title">¡BIENVENIDO!</h1>
-        <p>Ingresa con tus credenciales institucionales</p>
+        <h1 id="teacher-login-title" aria-label="¡Bienvenido!">
+          {Array.from('¡Bienvenido!').map((letter, index) => (
+            <span className="welcome-letter" key={`${letter}-${index}`} aria-hidden="true">
+              {letter}
+            </span>
+          ))}
+        </h1>
+        <p>Ingresa tu correo y contraseña para entrar</p>
         <div className="teacher-login-divider"><span>✦</span></div>
         <label className="teacher-login-field">
           <i className="fa-regular fa-envelope" aria-hidden="true" />
@@ -1925,7 +2574,7 @@ function LoginScreen({ onSubmit }) {
             inputMode="email"
             autoComplete="username"
             placeholder="Correo"
-            aria-label="Correo institucional"
+            aria-label="Correo electrónico"
             value={email}
             onChange={(event) => setEmail(event.target.value)}
             required
@@ -1937,17 +2586,22 @@ function LoginScreen({ onSubmit }) {
             type="password"
             autoComplete="current-password"
             placeholder="Contraseña"
-            aria-label="Contraseña (solo docentes)"
+            aria-label="Contraseña"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
+            required
           />
         </label>
         {error && <p className="teacher-form-error" role="alert">{error}</p>}
-        <button className="teacher-login-submit" type="submit">
-          <i className="fa-solid fa-arrow-right-to-bracket" aria-hidden="true" />
-          Ingresar
+        <button className="teacher-login-submit" type="submit" disabled={isSubmitting}>
+          <i className="fa-solid fa-arrow-right" aria-hidden="true" />
+          {isSubmitting ? 'Ingresando…' : 'Ingresar'}
         </button>
-        <span className="teacher-login-brand">LÜMØ</span>
+        <img className="teacher-login-brand" src={lumoBlackLogo} alt="LÜMØ" />
+        <div className="login-palette" aria-hidden="true">
+          <i className="fa-solid fa-palette" />
+          <i className="fa-solid fa-paintbrush" />
+        </div>
       </form>
     </section>
   )
@@ -1959,60 +2613,118 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
   const [activityGrade, setActivityGrade] = useState(grade)
   const [activityTitle, setActivityTitle] = useState('')
   const [activityContent, setActivityContent] = useState('')
-  const [activityDate, setActivityDate] = useState('')
   const [activityAttachment, setActivityAttachment] = useState(null)
-  const [latestActivity, setLatestActivity] = useState(null)
+  const [activities, setActivities] = useState([])
+  const [submissions, setSubmissions] = useState([])
+  const [dataError, setDataError] = useState('')
+  const [savingActivity, setSavingActivity] = useState(false)
   const [formError, setFormError] = useState('')
   const [minScheduleDateValue] = useState(() => {
     const date = new Date()
     date.setMinutes(date.getMinutes() - date.getTimezoneOffset())
     return date.toISOString().slice(0, 10)
   })
+  const [activityPublishedDate, setActivityPublishedDate] = useState(minScheduleDateValue)
+  const [activityDueDate, setActivityDueDate] = useState('')
+  const [activityDatesProgrammed, setActivityDatesProgrammed] = useState(false)
 
-  const saveActivity = (event) => {
+  useEffect(() => {
+    const showError = (error) => {
+      console.error('No se pudieron cargar los datos del grado.', error)
+      setDataError('No se pudieron cargar las actividades o entregas. Revisa tu conexión y los permisos.')
+    }
+    const stopActivities = subscribeToGradeActivities(grade, (items) => {
+      setActivities(items)
+      setDataError('')
+    }, showError)
+    const stopSubmissions = subscribeToGradeSubmissions(grade, setSubmissions, showError)
+    return () => {
+      stopActivities()
+      stopSubmissions()
+    }
+  }, [grade])
+
+  const deleteActivity = async (id) => {
+    if (!window.confirm('¿Eliminar esta actividad para los estudiantes?')) return
+    try {
+      await removeActivity(id)
+    } catch (error) {
+      console.error('No se pudo eliminar la actividad.', error)
+      setDataError('No se pudo eliminar la actividad.')
+    }
+  }
+
+  const programActivityDates = () => {
+    if (!activityPublishedDate || activityPublishedDate > minScheduleDateValue) {
+      setFormError('Elige una fecha de publicación válida.')
+      return
+    }
+    if (!activityDueDate) {
+      setFormError('Elige el plazo de entrega de la actividad.')
+      return
+    }
+    if (activityDueDate < activityPublishedDate) {
+      setFormError('El plazo de entrega debe ser igual o posterior a la fecha de publicación.')
+      return
+    }
+
+    setFormError('')
+    setActivityDatesProgrammed(true)
+  }
+
+  const saveActivity = async (event) => {
     event.preventDefault()
-    const action = event.nativeEvent.submitter?.value
     if (!activityTitle.trim() || !activityContent.trim()) {
       setFormError('Escribe el título y el contenido de la actividad.')
       return
     }
-    if (action === 'schedule' && !activityDate) {
-      setFormError('Elige una fecha para programar la actividad.')
+    if (!activityPublishedDate) {
+      setFormError('Elige la fecha de publicación de la actividad.')
       return
     }
-    if (action === 'schedule' && activityDate < minScheduleDateValue) {
-      setFormError('Elige hoy o una fecha futura para programar la actividad.')
+    if (activityPublishedDate > minScheduleDateValue) {
+      setFormError('La fecha de publicación no puede ser futura.')
+      return
+    }
+    if (activityDatesProgrammed && activityDueDate < activityPublishedDate) {
+      setFormError('El plazo de entrega debe ser igual o posterior a la fecha de publicación.')
       return
     }
 
-    const attachment = activityAttachment
-      ? {
-          name: activityAttachment.name,
-          url: URL.createObjectURL(activityAttachment),
-        }
-      : null
-    setLatestActivity({
-      title: activityTitle.trim(),
-      content: activityContent.trim(),
-      date: action === 'schedule' ? activityDate : '',
-      attachment,
-      grade: activityGrade,
-      status: action === 'schedule' ? 'Programada' : 'Publicada',
-    })
-    setFormError('')
-    setActivityTitle('')
-    setActivityContent('')
-    setActivityDate('')
-    setActivityAttachment(null)
-    onNavigate('recent', activityGrade)
+    if (activityAttachment && !activityAttachment.type.startsWith('image/')) {
+      setFormError('Adjunta una imagen (PNG, JPG o WebP).')
+      return
+    }
+
+    setSavingActivity(true)
+    try {
+      const attachmentData = activityAttachment
+        ? await compressImage(await fileToDataUrl(activityAttachment))
+        : ''
+      await publishActivity({
+        title: activityTitle.trim(),
+        content: activityContent.trim(),
+        grade: activityGrade,
+        publishedDate: activityPublishedDate,
+        dueDate: activityDatesProgrammed ? activityDueDate : '',
+        attachmentName: activityAttachment?.name ?? '',
+        attachmentData,
+      })
+      setFormError('')
+      setActivityTitle('')
+      setActivityContent('')
+      setActivityPublishedDate(minScheduleDateValue)
+      setActivityDueDate('')
+      setActivityDatesProgrammed(false)
+      setActivityAttachment(null)
+      onNavigate('recent', activityGrade)
+    } catch (error) {
+      console.error('No se pudo publicar la actividad.', error)
+      setFormError('No se pudo publicar la actividad. Revisa tu conexión e inténtalo de nuevo.')
+    } finally {
+      setSavingActivity(false)
+    }
   }
-
-  useEffect(() => {
-    const attachmentUrl = latestActivity?.attachment?.url
-    return () => {
-      if (attachmentUrl) URL.revokeObjectURL(attachmentUrl)
-    }
-  }, [latestActivity])
 
   return (
     <section className="teacher-portal" aria-label="Panel docente">
@@ -2064,24 +2776,30 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
       </aside>
 
       <div className="teacher-main">
-        <h1 className="teacher-page-title">
-          {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
-        </h1>
-        <div className="teacher-panel-frame">
+        <div className="teacher-dashboard-heading">
+          <h1 className="teacher-page-title">
+            {view === 'recent' && <span className="teacher-title-confetti teacher-title-confetti-left" aria-hidden="true"><i /><i /><i /></span>}
+            {view === 'recent' ? 'LO MÁS RECIENTE' : 'Nueva Actividad'}
+            {view === 'recent' && <span className="teacher-title-confetti teacher-title-confetti-right" aria-hidden="true"><i /><i /><i /></span>}
+          </h1>
+          {view === 'recent' && (
+            <div className="teacher-panel-toolbar">
+              <span className="teacher-grade-caption">{grade}° grado</span>
+              <span className="teacher-name-caption">Docente {teacherName}</span>
+              <button
+                type="button"
+                className="teacher-diagnostics-button"
+                onClick={() => setShowDiagnostics((visible) => !visible)}
+              >
+                <i className="fa-solid fa-chart-column" aria-hidden="true" />
+                {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : 'DIAGNÓSTICO DE GRUPO'}
+              </button>
+            </div>
+          )}
+        </div>
+        <div className={`teacher-panel-frame ${view === 'recent' ? 'is-recent' : ''}`}>
           {view === 'recent' ? (
-            <>
-              <div className="teacher-panel-toolbar">
-                <span className="teacher-grade-caption">{grade}° grado</span>
-                <span className="teacher-name-caption">Docente {teacherName}</span>
-                <button
-                  type="button"
-                  className="teacher-diagnostics-button"
-                  onClick={() => setShowDiagnostics((visible) => !visible)}
-                >
-                  {showDiagnostics ? 'VOLVER A LO MÁS RECIENTE' : '📊 DIAGNÓSTICO DE GRUPO'}
-                </button>
-              </div>
-              <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''}`}>
+            <div className={`teacher-panel-content ${showDiagnostics ? 'has-diagnostic-report' : ''} ${!showDiagnostics && activities.length === 0 && submissions.length === 0 && !dataError ? 'is-empty' : ''}`}>
                 {showDiagnostics ? (
                   <DiagnosticGroupReport
                     key={grade}
@@ -2099,36 +2817,69 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                       onNavigate('activity', grade)
                     }}
                   />
-                ) : latestActivity ? (
-                  <article className="teacher-latest-activity">
-                    <span className="teacher-activity-status">{latestActivity.status}</span>
-                    <span className="teacher-activity-course">{latestActivity.grade}° grado</span>
-                    <h2>{latestActivity.title}</h2>
-                    {latestActivity.date && (
-                      <time dateTime={latestActivity.date}>
-                        Programada para {new Date(`${latestActivity.date}T12:00:00`).toLocaleDateString('es-CO', {
-                          day: 'numeric',
-                          month: 'long',
-                          year: 'numeric',
-                        })}
-                      </time>
+                ) : (activities.length > 0 || submissions.length > 0 || dataError) ? (
+                  <div className="teacher-feed">
+                    {dataError && <p className="teacher-form-error" role="alert">{dataError}</p>}
+                    {activities.map((activity) => (
+                      <article key={activity.id} className="teacher-latest-activity">
+                        <span className="teacher-activity-status">Publicada</span>
+                        <span className="teacher-activity-course">{activity.grade}° grado</span>
+                        <h2>{activity.title}</h2>
+                        {activity.publishedDate && (
+                          <time dateTime={activity.publishedDate}>
+                            Publicada el {new Date(`${activity.publishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </time>
+                        )}
+                        {activity.dueDate && (
+                          <time dateTime={activity.dueDate}>
+                            Plazo de entrega hasta {new Date(`${activity.dueDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </time>
+                        )}
+                        <p>{activity.content}</p>
+                        {activity.attachmentData && (
+                          <img className="teacher-assigned-image" src={activity.attachmentData} alt={activity.attachmentName || 'Imagen adjunta'} />
+                        )}
+                        <button type="button" className="remove-upload-button" onClick={() => deleteActivity(activity.id)}>
+                          Eliminar actividad
+                        </button>
+                      </article>
+                    ))}
+                    {submissions.length > 0 && (
+                      <section className="teacher-submissions">
+                        <h2>Dibujos entregados ({submissions.length})</h2>
+                        <div className="teacher-submissions-grid">
+                          {submissions.map((submission) => (
+                            <figure key={submission.id} className="teacher-submission-card">
+                              <img src={submission.imageData} alt={`Dibujo de ${submission.studentName}`} />
+                              <figcaption>
+                                <strong>{submission.studentName}</strong>
+                                <span>{submission.practiceTitle}</span>
+                                {submission.createdAt?.toDate && (
+                                  <time>{submission.createdAt.toDate().toLocaleDateString('es-CO')}</time>
+                                )}
+                              </figcaption>
+                            </figure>
+                          ))}
+                        </div>
+                      </section>
                     )}
-                    <p>{latestActivity.content}</p>
-                    {latestActivity.attachment && (
-                      <a
-                        className="teacher-attachment-name"
-                        href={latestActivity.attachment.url}
-                        download={latestActivity.attachment.name}
-                      >
-                        <i className="fa-solid fa-paperclip" aria-hidden="true" /> {latestActivity.attachment.name}
-                      </a>
-                    )}
-                  </article>
+                  </div>
                 ) : (
-                  <p className="teacher-empty-history">Texto o historial de lo último hecho por el docente</p>
+                  <div className="teacher-empty-state">
+                    <img className="teacher-empty-illustration" src={teacherEmptyIllustration} alt="" aria-hidden="true" />
+                    <h2>Aún no hay novedades</h2>
+                    <p>Aquí aparecerán las actividades recientes del grupo.</p>
+                  </div>
                 )}
               </div>
-            </>
           ) : (
             <>
               <form className="teacher-activity-form" onSubmit={saveActivity}>
@@ -2167,27 +2918,74 @@ function TeacherDashboard({ view, teacherName, grade, gradeResources, onNavigate
                   <div className="teacher-activity-options">
                     <label className="teacher-image-upload">
                       <i className="fa-solid fa-paperclip" aria-hidden="true" />
-                      <span>{activityAttachment ? activityAttachment.name : 'Adjuntar contenido'}</span>
+                      <span>{activityAttachment ? activityAttachment.name : 'Adjuntar imagen'}</span>
                       <input
                         type="file"
+                        accept="image/png,image/jpeg,image/webp"
                         onChange={(event) => setActivityAttachment(event.target.files?.[0] ?? null)}
                       />
                     </label>
                     <div className="teacher-activity-actions">
-                      <label className="teacher-visually-hidden" htmlFor="teacher-activity-date">Programar fecha</label>
-                      <input
-                        id="teacher-activity-date"
-                        className="teacher-date-input"
-                        type="date"
-                        min={minScheduleDateValue}
-                        value={activityDate}
-                        onChange={(event) => setActivityDate(event.target.value)}
-                      />
-                      <button className="teacher-upload-button" type="submit" value="publish">
-                        <i className="fa-solid fa-arrow-up" aria-hidden="true" /> SUBIR
-                      </button>
-                      <button className="teacher-schedule-button" type="submit" value="schedule">
+                      <label className="teacher-date-field" htmlFor="teacher-activity-published-date">
+                        Fecha de publicación
+                        <input
+                          id="teacher-activity-published-date"
+                          className="teacher-date-input"
+                          type="date"
+                          max={minScheduleDateValue}
+                          value={activityPublishedDate}
+                          onChange={(event) => {
+                            setActivityPublishedDate(event.target.value)
+                            setActivityDatesProgrammed(false)
+                            setFormError('')
+                          }}
+                          required
+                        />
+                      </label>
+                      <label className="teacher-date-field" htmlFor="teacher-activity-due-date">
+                        Plazo de entrega
+                        <input
+                          id="teacher-activity-due-date"
+                          className="teacher-date-input"
+                          type="date"
+                          min={activityPublishedDate || minScheduleDateValue}
+                          value={activityDueDate}
+                          onChange={(event) => {
+                            setActivityDueDate(event.target.value)
+                            setActivityDatesProgrammed(false)
+                            setFormError('')
+                          }}
+                        />
+                      </label>
+                      {activityDatesProgrammed && (
+                        <div className="teacher-date-confirmation" role="status">
+                          <strong>Fechas programadas</strong>
+                          <span>
+                            Fecha de publicación: {new Date(`${activityPublishedDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </span>
+                          <span>
+                            Plazo de entrega: {new Date(`${activityDueDate}T12:00:00`).toLocaleDateString('es-CO', {
+                              day: 'numeric',
+                              month: 'long',
+                              year: 'numeric',
+                            })}
+                          </span>
+                        </div>
+                      )}
+                      <button
+                        className="teacher-schedule-button"
+                        type="button"
+                        onClick={programActivityDates}
+                        disabled={!activityPublishedDate || activityPublishedDate > minScheduleDateValue || !activityDueDate || activityDueDate < activityPublishedDate}
+                      >
                         <i className="fa-regular fa-calendar" aria-hidden="true" /> Programar fecha
+                      </button>
+                      <button className="teacher-upload-button" type="submit" value="publish" disabled={savingActivity}>
+                        <i className="fa-solid fa-arrow-up" aria-hidden="true" /> SUBIR
                       </button>
                     </div>
                   </div>
@@ -2639,6 +3437,22 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
           gap: 6px;
         }
 
+        .badge-with-logo {
+          padding-right: 12px;
+        }
+
+        .badge-logo-image {
+          width: 30px;
+          height: 30px;
+          object-fit: contain;
+          display: block;
+        }
+
+        .badge-logo-content {
+          width: 48px;
+          height: 48px;
+        }
+
         /* FOOTER ESTILO LUMØ */
         .footer {
           background: #ffffff;
@@ -2704,11 +3518,6 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
           <div className="logo-text">LÜMØ<span className="logo-dot">•</span></div>
         </div>
 
-        <div className="search-bar">
-          <input type="text" className="search-input" placeholder="Buscar en LÜMØ..." />
-          <div className="search-icon">🔍</div>
-        </div>
-
         <div className="nav-actions">
           <button 
             className={`nav-btn ${activeTab === 'inicio' ? 'active' : ''}`}
@@ -2742,77 +3551,85 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
             aria-label="Volver al contenido de LÜMØ"
             title="Volver al contenido"
           >
-            <img src={lumoColorLogo} alt="" />
+            <span aria-hidden="true">←</span>
             <span>Volver</span>
           </button>
         )}
         {activeTab === 'nosotros' ? (
           <div>
-            <div className="page-header">
-              <h1 className="page-title">¡CONOCE MÁS SOBRE NOSOTROS!</h1>
+            <div className="page-header about-page-header">
+              <span className="about-confetti about-confetti-left" aria-hidden="true"><i /><i /><i /></span>
+              <h1 className="page-title">
+                <span>¡CONOCE</span>{' '}
+                <span>MÁS</span>{' '}
+                <span>SOBRE</span>{' '}
+                <span>NOSOTROS</span>
+                <span>!</span>
+              </h1>
               <p className="page-subtitle">El proyecto detrás de la plataforma didáctica y artística LÜMØ</p>
+              <span className="about-confetti about-confetti-right" aria-hidden="true"><i /><i /><i /></span>
             </div>
 
             {/* SECCIÓN: MISIÓN Y PROYECTO */}
-            <div className="grid-two">
-              <div className="card">
-                <h3 className="card-title">🎯 Nuestra misión</h3>
+            <div className="grid-two about-intro-grid">
+              <div className="card mission-card">
+                <h3 className="card-title mission-card-title"><span aria-hidden="true">🎯</span> Nuestra misión</h3>
                 <p className="card-text">
-                  Fomentar curiosidad y habilidades artísticas.
-                  Evaluando proyectos de 1° a 3°.
-                  Mediante exploración visual y digital.
-                  Aplicando el arte a diario.
-                  Durante este ciclo escolar actual.
-
+                  Fomentar la curiosidad y habilidades artísticas en niños y niñas de 1° a 3° de primaria, mediante la exploración visual y digital. Aplicamos el arte de forma divertida, creativa y cercana a su realidad cotidiana.
                 </p>
-                <div className="illustration-box" style={{ background: '#fef3c7', borderColor: '#fde047' }}>
+                <div className="illustration-box mission-illustration" aria-hidden="true">
                   🎮 🎨 ✏️
                 </div>
               </div>
 
-              <div className="card">
-                <h3 className="card-title">🧩 ¿Por qué existe LÜMØ?</h3>
+              <div className="card project-card">
+                <h3 className="card-title project-card-title"><span aria-hidden="true">🧩</span> ¿Por qué existe LÜMØ?</h3>
                 <p className="card-text">
-                  Su núcleo pedagógico está alineado con los lineamientos curriculares de Educación Artística establecidos por el Ministerio de Educación Nacional de Colombia. El MEN estipula que la educación en estas edades no busca formar artistas técnicos, sino seres humanos integrales a través de tres dimensiones fundamentales.
+                  Porque está alineado con los lineamientos del Ministerio de Educación de Colombia en Educación Artística, y busca contribuir al desarrollo integral de los niños y niñas, fortaleciendo su expresión, creatividad, sensibilidad y pensamiento crítico.
                 </p>
-                <div className="illustration-box" style={{ background: '#e0f2fe', borderColor: '#bae6fd' }}>
+                <div className="illustration-box project-illustration" aria-hidden="true">
                   🧩 💡 🌟
                 </div>
               </div>
             </div>
 
-            {/* SECCIÓN: OBJETIVOS */}
-            <div className="objectives-section">
-              <div className="card-title" style={{ marginBottom: '20px' }}>
-                📌 SIGNIFICADO DE LÜMØ
-              </div>
-              
-              <div className="obj-general">
-                <h4>Objetivo General</h4>
-                <p>
-                LÜMØ representa una luz creativa en el entorno digital.
-                Los dos puntos sobre la Ü forman una diéresis y evocan curiosidad.
-                La Ø representa la conexión entre creatividad y tecnología.
-                El nombre reúne exploración artística, aprendizaje y expresión.
-                </p>
-              </div>
-
-              <div className="obj-specifics-title">Objetivos específicos:</div>
-              <ul className="obj-list">
-                <li className="obj-item">
-                  <span>🎨</span>
-                  <span>Diseñar e implementar actividades interactivas en el aplicativo web que promuevan la exploración de formas y colores.</span>
-                </li>
-                <li className="obj-item">
-                  <span>🖌️</span>
-                  <span>Construir y aplicar ejercicios didácticos a través del lienzo digital para mejorar las habilidades perceptivas.</span>
-                </li>
-                <li className="obj-item">
-                  <span>📊</span>
-                  <span>Evaluar el desarrollo creativo e interactivad de los estudiantes mediante módulos didácticos adaptables.</span>
-                </li>
-              </ul>
+          {/* SECCIÓN: OBJETIVOS */}
+          <div className="objectives-section">
+            <div className="card-title" style={{ marginBottom: '20px' }}>
+              📌 SIGNIFICADO DE LÜMØ
             </div>
+            
+            <div className="obj-general">
+              <h4>Significado de LÜMØ</h4>
+              <p>
+              LÜMØ representa una luz creativa en el entorno digital.
+              Los dos puntos sobre la Ü evocan curiosidad y alegria con la que un niño ve el mundo.
+              La Ø representa la conexión entre creatividad y tecnología usada por estetica y marca de programadores.
+              LÜMØ conecta tecnología y uso infantil. Es luz creativa en un entorno digital.
+              </p>
+
+              <h4 style={{ marginTop: '16px' }}>Objetivo General</h4>
+              <p>
+                Diseñar un aplicativo web para el uso y la practica de las artes plasticas de 1°-3° en la institucion educativa San Alberto Magno.
+              </p>
+            </div>
+
+            <div className="obj-specifics-title">Objetivos específicos:</div>
+            <ul className="obj-list">
+              <li className="obj-item">
+                <span>🎨</span>
+                <span>Diseñar e implementar actividades interactivas en el aplicativo web que promuevan la exploración de formas y colores mediante la expliracion audio-visual.</span>
+              </li>
+              <li className="obj-item">
+                <span>🖌️</span>
+                <span>Construir y aplicar ejercicios didácticos a través del lienzo digital para mejorar las habilidades perceptivas evaluando proyectos de 1° a 3°.</span>
+              </li>
+              <li className="obj-item">
+                <span>📊</span>
+                <span>Evaluar el desarrollo creativo e interactivad de los estudiantes mediante módulos didácticos adaptables aplicando el arte diario.</span>
+              </li>
+            </ul>
+          </div>
 
             {/* SECCIÓN: NUESTRO EQUIPO (ESTUDIANTES SOLICITADOS) */}
             <section className="team-section">
@@ -2839,12 +3656,24 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h3 className="card-title">💻 Tecnologías empleadas</h3>
                 <p className="card-text">Lenguajes y herramientas para la estructuración y dinamismo del sitio:</p>
                 <div className="badge-list">
-                  <span className="badge"><i className="fa-brands fa-html5" aria-hidden="true" /> HTML5</span>
-                  <span className="badge"><i className="fa-brands fa-css3-alt" aria-hidden="true" /> CSS3</span>
-                  <span className="badge"><i className="fa-brands fa-react" aria-hidden="true" /> React</span>
-                  <span className="badge"><i className="fa-brands fa-js" aria-hidden="true" /> JavaScript</span>
+                  <span className="badge badge-with-logo">
+                    <img src={html5Logo} alt="HTML5" className="badge-logo-image" />
+                    HTML5
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={css3Logo} alt="CSS3" className="badge-logo-image" />
+                    CSS3
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={reactLogo} alt="React" className="badge-logo-image" />
+                    React
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={javascriptLogo} alt="JavaScript" className="badge-logo-image" />
+                    JavaScript
+                  </span>
                   <span className="badge badge-firebase">
-                    <i className="fa-solid fa-fire-flame-curved" aria-hidden="true" />
+                    <img src={firebaseLogo} alt="Firebase" className="badge-logo-image" />
                     Firebase
                     <span className="badge-category">Backend como servicio</span>
                   </span>
@@ -2855,10 +3684,22 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
                 <h3 className="card-title">🛠️ Recursos usados</h3>
                 <p className="card-text">Plataformas e instrumentos de apoyo pedagógico y visual:</p>
                 <div className="badge-list">
-                  <span className="badge"><i className="fa-brands fa-github" aria-hidden="true" /> GitHub</span>
-                  <span className="badge"><i className="fa-solid fa-triangle" aria-hidden="true" /> Vercel</span>
-                  <span className="badge"><i className="fa-solid fa-palette" aria-hidden="true" /> Canva e ilustración</span>
-                  <span className="badge"><i className="fa-solid fa-book-open" aria-hidden="true" /> Contenido pedagógico</span>
+                  <span className="badge badge-with-logo">
+                    <img src={githubLogo} alt="GitHub" className="badge-logo-image" />
+                    GitHub
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={vercelLogo} alt="Vercel" className="badge-logo-image" />
+                    Vercel
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={canvaLogo} alt="Canva" className="badge-logo-image" />
+                    Canva e ilustración
+                  </span>
+                  <span className="badge badge-with-logo">
+                    <img src={contenidoLogo} alt="Contenido pedagógico" className="badge-logo-image badge-logo-content" />
+                    Contenido pedagógico
+                  </span>
                 </div>
               </div>
             </div>
@@ -2887,15 +3728,6 @@ function NosotrosPage({ hideNavbar = false, onBack }) {
         )}
       </main>
 
-      {/* PIE DE PÁGINA ESTILO LUMØ */}
-      <footer className="footer">
-        <div>
-          <span className="footer-logo">LÜMØ</span> — Arte Digital e Interactividad Educativa.
-        </div>
-        <div>
-          © 2026 LÜMØ Educativo. Arte, cultura y creatividad para aprender en comunidad.
-        </div>
-      </footer>
     </div>
   );
 }

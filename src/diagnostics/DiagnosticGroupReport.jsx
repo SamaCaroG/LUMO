@@ -9,6 +9,23 @@ function getDateValue(value) {
   return Number.isNaN(parsed) ? 0 : parsed
 }
 
+function formatDiagnosticDate(value) {
+  const timestamp = getDateValue(value)
+  return timestamp
+    ? new Date(timestamp).toLocaleString('es-CO', {
+      dateStyle: 'medium',
+      timeStyle: 'short',
+    })
+    : 'Fecha no disponible'
+}
+
+function formatPerformedDate(value) {
+  const dateParts = /^(\d{4})-(\d{2})-(\d{2})$/.exec(value ?? '')
+  if (!dateParts) return 'Fecha no disponible'
+  return new Date(Number(dateParts[1]), Number(dateParts[2]) - 1, Number(dateParts[3]))
+    .toLocaleDateString('es-CO', { dateStyle: 'medium' })
+}
+
 function getAreaScore(result, categoryId) {
   const area = result.areas?.[categoryId]
   if (Number.isFinite(area?.percentage)) return area.percentage
@@ -86,6 +103,7 @@ export default function DiagnosticGroupReport({
       students: validResults.length,
       averageScore,
       categoryScores,
+      submissions: validResults,
       topics: [...topics.values()].sort((first, second) => second.count - first.count || first.topic.localeCompare(second.topic, 'es')),
     }
   }, [results])
@@ -144,7 +162,44 @@ export default function DiagnosticGroupReport({
       </section>
 
       <section className="diagnostic-report-block">
-        <h3>b) Temas a Reforzar Detallados</h3>
+        <h3>b) Envíos individuales</h3>
+        <div className="diagnostic-submission-list">
+          {report.submissions.map((submission) => (
+            <details key={submission.id} className="diagnostic-submission">
+              <summary>
+                <span>
+                  <strong>{submission.studentName || 'Estudiante'}</strong>
+                  <small>
+                    {submission.performedOn
+                      ? `Realizado: ${formatPerformedDate(submission.performedOn)} · Enviado: ${formatDiagnosticDate(submission.createdAt)}`
+                      : formatDiagnosticDate(submission.createdAt)}
+                  </small>
+                </span>
+                <span className="diagnostic-submission-score">
+                  {submission.totalCorrect}/{submission.totalQuestions} · {submission.scorePercentage}%
+                </span>
+              </summary>
+              {Array.isArray(submission.answers) && submission.answers.length > 0 && (
+                <ol className="diagnostic-submission-answers">
+                  {submission.answers.map((answer) => (
+                    <li key={answer.questionId} className={answer.isCorrect ? 'is-correct' : 'is-incorrect'}>
+                      <strong>{answer.topic}</strong>
+                      <span>{answer.prompt}</span>
+                      <small>
+                        Respuesta: {answer.selectedAnswer}
+                        {!answer.isCorrect && ` · Correcta: ${answer.correctAnswer}`}
+                      </small>
+                    </li>
+                  ))}
+                </ol>
+              )}
+            </details>
+          ))}
+        </div>
+      </section>
+
+      <section className="diagnostic-report-block">
+        <h3>c) Temas a Reforzar Detallados</h3>
         {report.topics.length ? (
           <ul className="diagnostic-topic-list">
             {report.topics.map((topic) => (
@@ -163,7 +218,7 @@ export default function DiagnosticGroupReport({
       </section>
 
       <section className="diagnostic-report-block">
-        <h3>c) Recomendaciones de Acción en LÜMØ</h3>
+        <h3>d) Recomendaciones de Acción en LÜMØ</h3>
         {report.topics.length ? (
           <div className="diagnostic-recommendations">
             {report.topics.map((topic) => {
